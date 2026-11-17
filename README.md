@@ -194,5 +194,16 @@ python tools/build_exe.py          # dist/PropSim/PropSim.exe
 python tools/build_installer.py    # dist/installer/PropSim-<version>-Setup.exe (needs Inno Setup 6)
 ```
 
+## License and credits
+PropSim's own code is released under the [MIT License](LICENSE). Third-party notes are in [NOTICE](NOTICE).
+- **Thermochemistry**: the shipped tables (`propsim/core/thermo/data/cea_tables.npz`) are numbers computed with
+  NASA's Chemical Equilibrium with Applications (Gordon and McBride, NASA RP-1311) through RocketCEA. Neither
+  program is distributed with PropSim.
+- **Optional extras** are installed separately and keep their own licenses: `rocketcea` (GPL-3.0) and
+  `pygasflow` (GPL-3.0). PropSim does not import them unless you install them.
+- **Qt for Python (PySide6)** is used under the LGPL-3.0; the Windows build ships the Qt libraries as separate files.
+- The remaining runtime libraries (NumPy, SciPy, Matplotlib, PyVista and VTK, pyqtgraph, pydantic, h5py, CoolProp,
+  scikit-image, Numba) are permissively licensed; see NOTICE for each.
+
 ## Help and feedback
 Questions and bug reports: [GitHub Issues](https://github.com/Chiyami1213/propsim/issues).

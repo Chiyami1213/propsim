@@ -7,6 +7,7 @@ name = "propsim"
 version = "1.0.0"
 description = "Interactive 3D rocket propulsion simulator (liquid, hybrid, solid, electric)"
 requires-python = ">=3.11"
+license = {text = "MIT"}
 dependencies = [
     "numpy>=1.26",
     "scipy>=1.11",
@@ -23,8 +24,8 @@ dependencies = [
 
 [project.optional-dependencies]
 rao = ["pygasflow>=1.4"]               # Rao bell angles from the Huzel & Huang chart (GPL-3.0, not bundled)
-cea = ["rocketcea>=1.2"]
-fast = ["numba>=0.68"]                 # compiled level-set kernel; without it a NumPy fallback is used              # direct NASA-CEA; without it the shipped CEA tables are used
+cea = ["rocketcea>=1.2"]              # direct NASA-CEA (GPL-3.0, not bundled); without it the shipped CEA tables are used
+fast = ["numba>=0.68"]                 # compiled level-set kernel; without it a NumPy fallback is used
 dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black", "rocketcea>=1.2"]
 
 [project.scripts]
