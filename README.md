@@ -152,9 +152,10 @@ The installed application needs no Python and works fully offline. Windows on AR
 Running from source needs Python 3.11 or newer.
 
 ## Installation
-**Windows installer**: run `PropSim-<version>-Setup.exe` from the
-[Releases](https://github.com/Chiyami1213/propsim/releases) page. It installs for your account (or for all users),
-adds Start-menu shortcuts for PropSim and this help page, and can be removed from Windows *Apps & features*.
+**Windows installer**: v1.0.0 is not released yet. Build the installer yourself with
+`python tools/build_installer.py` (see *Building the Windows package* below); once released, `PropSim-<version>-Setup.exe`
+will be on the [Releases](https://github.com/Chiyami1213/propsim/releases) page. It installs for your account (or for all
+users), adds Start-menu shortcuts for PropSim and this help page, and can be removed from Windows *Apps & features*.
 
 **From source**:
 ```powershell
