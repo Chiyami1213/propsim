@@ -7,6 +7,7 @@ matplotlib.use("Agg", force=False)
 import matplotlib.pyplot as plt  # noqa: E402
 
 from ..core.result import TabSpec  # noqa: E402
+from .text import apa, to_math  # noqa: E402
 from .theme import theme  # noqa: E402
 
 
@@ -20,7 +21,7 @@ def tab_to_figure(tab: TabSpec, cursor_t: float | None = None, dpi: int = 160):
             ax.set_facecolor(t["plot_bg"])
             for c in ps.curves:
                 ax.plot(c.x, c.y, color=theme.color(c.color), lw=1.8, ls="--" if c.style == "dash" else "-",
-                        label=c.label or None)
+                        label=to_math(c.label) if c.label else None)
             for x, y, col in ps.markers:
                 ax.plot([x], [y], "o", color=theme.color(col), ms=6)
             if cursor_t is not None and ps.cursor:
@@ -28,9 +29,9 @@ def tab_to_figure(tab: TabSpec, cursor_t: float | None = None, dpi: int = 160):
             ax.grid(True, which="major", color=t["grid_major"], lw=0.7)
             ax.minorticks_on()
             ax.grid(True, which="minor", color=t["grid_minor"], lw=0.4)
-            ax.set_xlabel(ps.xlabel, fontsize=9)
-            ax.set_ylabel(ps.ylabel, fontsize=9)
-            ax.set_title(ps.title, fontsize=9.5, color=t["text"])
+            ax.set_xlabel(to_math(ps.xlabel), fontsize=9)
+            ax.set_ylabel(to_math(ps.ylabel), fontsize=9)
+            ax.set_title(to_math(apa(ps.title)), fontsize=9.5, color=t["text"])
             if any(c.label for c in ps.curves):
                 ax.legend(fontsize=7, facecolor=t["panel"], edgecolor=t["edge"], labelcolor=t["text"])
             for sp in ax.spines.values():

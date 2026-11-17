@@ -8,7 +8,7 @@ from pathlib import Path
 from PySide6.QtCore import QByteArray, QProcess, QSettings, Qt
 from PySide6.QtGui import QAction, QKeySequence, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDockWidget, QFileDialog, QFrame, QLabel, QListWidget,
-                               QListWidgetItem, QMainWindow, QMessageBox, QPlainTextEdit, QScrollArea, QSplitter,
+                               QListWidgetItem, QMainWindow, QMessageBox, QScrollArea, QSplitter,
                                QTreeView, QVBoxLayout, QWidget)
 
 from ..core import io as pio
@@ -17,7 +17,10 @@ from ..modules import registry
 from ..modules.base import ModelController
 from . import latex
 from .export import save_tab_png
+from .. import __version__
 from .latex import LatexLabel
+from .latex_widgets import LatexItemDelegate, LatexLog
+from .text import apa
 from .params import ParamForm
 from .playback import PlaybackBar, PlaybackModel
 from .plots import PlotTabs
@@ -36,7 +39,7 @@ def default_home() -> Path:
 
 
 def _heading(text: str) -> QLabel:
-    lbl = QLabel(text)
+    lbl = QLabel(apa(text))
     lbl.setObjectName("heading")
     lbl.setContentsMargins(10, 8, 10, 4)
     return lbl
@@ -93,32 +96,34 @@ class MainWindow(QMainWindow):
         self.tree.setEditTriggers(QTreeView.NoEditTriggers)
         self.tree_model = QStandardItemModel()
         for mod, entries in registry.TREE.items():
-            top = QStandardItem(mod)
+            top = QStandardItem(apa(mod))
             top.setFlags(Qt.ItemIsEnabled)
             for label, mode, cls in entries:
-                it = QStandardItem(f"{label}  ({mode})")
+                it = QStandardItem(f"{apa(label)}  ({'Live' if mode == 'live' else 'Run'})")
                 it.setData(cls.key if cls else None, KEY_ROLE)
                 it.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable if cls else Qt.NoItemFlags)
                 top.appendRow(it)
             self.tree_model.appendRow(top)
         self.tree.setModel(self.tree_model)
+        self.tree.setItemDelegate(LatexItemDelegate(9.5, "dim", "accent", self.tree))
         self.tree.setIndentation(18)
         self.tree.expand(self.tree_model.index(list(registry.TREE).index("Hybrid"), 0))
         self.tree.selectionModel().currentChanged.connect(self._on_tree)
         self.runs_list = QListWidget()
         self.runs_list.itemClicked.connect(self._on_run_clicked)
-        self.compare_cb = QCheckBox("compare overlay")
+        self.compare_cb = QCheckBox("Compare Overlay")
         self.compare_cb.toggled.connect(lambda _: self._refresh_tabs())
         left = QWidget()
         ll = QVBoxLayout(left)
         ll.setContentsMargins(4, 0, 4, 8)
         ll.addWidget(self.tree, 3)
-        ll.addWidget(_heading("SAVED RUNS"))
+        ll.addWidget(_heading("Saved Runs"))
         ll.addWidget(self.runs_list, 2)
         ll.addWidget(self.compare_cb)
-        self.left_dock = self._dock("Modules", "MODULES", left, Qt.LeftDockWidgetArea)
+        self.left_dock = self._dock("Modules", "Modules", left, Qt.LeftDockWidgetArea)
         # --- right dock ---
-        self.params_title = _heading("PARAMETERS")
+        self.params_title = LatexLabel(apa("Parameters"), "text", 10.0)
+        self.params_title.setContentsMargins(10, 8, 10, 4)
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.hover = LatexLabel("", "dim", 9.0)
@@ -133,14 +138,12 @@ class MainWindow(QMainWindow):
         tl.addWidget(self.params_title)
         tl.addWidget(self.scroll, 1)
         tl.addWidget(hb)
-        self.log = QPlainTextEdit()
-        self.log.setReadOnly(True)
-        self.log.setMaximumBlockCount(500)
+        self.log = LatexLog()
         self.summary = LatexLabel("", "accent", 9.5)
         bot = QWidget()
         bl = QVBoxLayout(bot)
         bl.setContentsMargins(4, 0, 4, 6)
-        bl.addWidget(_heading("RUN LOG"))
+        bl.addWidget(_heading("Run Log"))
         bl.addWidget(self.log, 1)
         bl.addWidget(self.summary)
         rs = QSplitter(Qt.Vertical)
@@ -190,10 +193,10 @@ class MainWindow(QMainWindow):
         self._act(va, "Run reference + core tests", self.run_validation)
         h = mb.addMenu("&Help")
         self._act(h, "About PropSim", lambda: QMessageBox.about(
-            self, "PropSim", "PropSim 0.1 (Phase 1 skeleton)\nInteractive 3D rocket propulsion simulator."))
+            self, "About PropSim", f"PropSim {__version__}\nInteractive 3D Rocket Propulsion Simulator"))
 
     def _act(self, menu, text, slot, shortcut=None) -> QAction:
-        a = QAction(text, self)
+        a = QAction(apa(text), self)                       # menus use APA title case
         a.triggered.connect(lambda _=False: slot())
         if shortcut:
             a.setShortcut(shortcut)
@@ -237,7 +240,7 @@ class MainWindow(QMainWindow):
         self.form.changed.connect(self._on_params_changed)
         self.form.hovered.connect(self.hover.setLatex)
         self.scroll.setWidget(self.form)
-        self.params_title.setText(f"PARAMETERS — {ctrl.title}")
+        self.params_title.setLatex(f"{apa('Parameters')} — {apa(ctrl.title)}")
         self.vp.plotter.clear()                  # drop the previous model's meshes (their handles are reset below)
         ctrl.reset_scene()
         self.vp.set_fields(ctrl.fields)
@@ -271,7 +274,7 @@ class MainWindow(QMainWindow):
 
     def _sync_title(self) -> None:
         mod = MODULE_TITLES.get(self.ctrl.module, self.ctrl.module) if self.ctrl else ""
-        self.setWindowTitle(f"PropSim — {mod} · case: {self.case_name}")
+        self.setWindowTitle(f"PropSim — {apa(mod)} · Case: {self.case_name}")
 
     # =================================================================== Live mode
     def _on_params_changed(self) -> None:
@@ -432,7 +435,7 @@ class MainWindow(QMainWindow):
 
     # =================================================================== files
     def open_case(self, path: str | None = None) -> None:
-        path = path or QFileDialog.getOpenFileName(self, "Open case", str(self.home), "PropSim case (*.psim.json)")[0]
+        path = path or QFileDialog.getOpenFileName(self, apa("Open case"), str(self.home), "PropSim case (*.psim.json)")[0]
         if not path:
             return
         model, params = pio.load_case(path)
@@ -442,7 +445,7 @@ class MainWindow(QMainWindow):
     def save_case(self, path: str | None = None) -> None:
         if self.ctrl is None:
             return
-        path = path or QFileDialog.getSaveFileName(self, "Save case", str(self.home / "case.psim.json"),
+        path = path or QFileDialog.getSaveFileName(self, apa("Save case"), str(self.home / "case.psim.json"),
                                                    "PropSim case (*.psim.json)")[0]
         if path:
             pio.save_case(path, self.ctrl.key, self.form.values().model_dump())
@@ -450,7 +453,7 @@ class MainWindow(QMainWindow):
             self._sync_title()
 
     def open_result(self, path: str | None = None) -> None:
-        path = path or QFileDialog.getOpenFileName(self, "Open result", str(self.runs_dir), "PropSim result (*.psim.h5)")[0]
+        path = path or QFileDialog.getOpenFileName(self, apa("Open result"), str(self.runs_dir), "PropSim result (*.psim.h5)")[0]
         if path:
             res, model, params = pio.load_result_h5(path)
             self.load_result(res, model, params)
@@ -495,7 +498,7 @@ class MainWindow(QMainWindow):
 
     # =================================================================== misc
     def _log(self, s: str) -> None:
-        self.log.appendPlainText(f"{time.strftime('%H:%M:%S')}  {s}")
+        self.log.append_line(f"{time.strftime('%H:%M:%S')}  {s}")
 
     def run_validation(self) -> None:
         root = Path(__file__).resolve().parents[2]

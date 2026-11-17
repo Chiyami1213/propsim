@@ -42,7 +42,7 @@ def test_live_tool_renders_within_budget(win, key):
     win.select_model(key)
     for _ in range(5):
         QApplication.processEvents()
-    assert win.ctrl.key == key and win.bar.badge.text() == "LIVE"
+    assert win.ctrl.key == key and win.bar.badge.text() == "Live"
     assert win.last_eval_ms < 50.0, win.last_eval_ms
     plots = win.plot_tabs.grid_plots()
     assert len(plots) >= 6
@@ -89,7 +89,7 @@ def test_run_models_through_the_worker(win, key, seek):
     for _ in range(10):
         QApplication.processEvents()
     assert win.vp.caption.latex().startswith(r"$t$ = ")
-    assert [win.plot_tabs.tabText(i) for i in range(win.plot_tabs.count())][0] in ("Time histories", "Tank & feed")
+    assert [win.plot_tabs.tabText(i) for i in range(win.plot_tabs.count())][0] in ("Time Histories", "Tank && Feed")
     assert win.summary.latex()
     if key == "hybrid.n2o":
         assert {"tank", "tank_liquid"} <= set(win.vp.plotter.renderer.actors)

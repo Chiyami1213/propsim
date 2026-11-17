@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QTabWidget, QWidget
 
 from ..core.result import Curve, PlotSpec, TabSpec
 from .latex import LatexLabel, latex_pixmap
+from .text import apa, to_math
 from .theme import theme
 
 pg.setConfigOptions(antialias=True, background=None)
@@ -25,7 +26,7 @@ class GridPlot(QWidget):
         self.pi.showGrid(x=True, y=True, alpha=0.35)
         self.pi.hideButtons()
         self.pi.setMenuEnabled(False)
-        self.title = LatexLabel(spec.title, "text", 10.0)
+        self.title = LatexLabel(apa(spec.title), "text", 10.0)
         self.xl = LatexLabel(spec.xlabel, "text", 9.5)
         self.yl = LatexLabel(spec.ylabel, "text", 9.5, rotate=90)
         self.cursor = pg.InfiniteLine(angle=90, movable=False)
@@ -48,7 +49,7 @@ class GridPlot(QWidget):
     # ---- content ------------------------------------------------------------------------
     def set_spec(self, spec: PlotSpec) -> None:
         self.spec = spec
-        for lab, txt in ((self.title, spec.title), (self.xl, spec.xlabel), (self.yl, spec.ylabel)):
+        for lab, txt in ((self.title, apa(spec.title)), (self.xl, spec.xlabel), (self.yl, spec.ylabel)):
             if lab.latex() != txt:
                 lab.setLatex(txt)
         for it, _ in self._items:
@@ -160,12 +161,13 @@ class PlotTabs(QTabWidget):
 
     def _icons(self, *_) -> None:
         for i, tab in enumerate(self._tabs):
-            if "$" not in tab.name:                      # plain caption: let Qt draw it (crisper)
-                self.setTabText(i, tab.name)
+            name = apa(tab.name)                          # tabs are titles: APA capitalization
+            if "$" not in to_math(name):                  # plain caption: let Qt draw it (crisper)
+                self.setTabText(i, name.replace("&", "&&"))   # '&' is a mnemonic marker in Qt tab labels
                 self.setTabIcon(i, QIcon())
                 continue
             col = theme.color("text" if i == self.currentIndex() else "dim")
-            pm = latex_pixmap(tab.name, col, 9.5)
+            pm = latex_pixmap(name, col, 9.5)
             self.setTabText(i, "")
             self.setTabIcon(i, QIcon(pm))
             self.setIconSize(QSize(max(int(pm.width() / pm.devicePixelRatio()), 40), 18))

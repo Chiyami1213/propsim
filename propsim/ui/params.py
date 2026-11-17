@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import math
+import re
 
 from PySide6.QtCore import QEvent, Qt, Signal
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
 
 from ..core.schema import ParamModel
 from .latex import LatexLabel
+from .latex_widgets import LatexComboBox
+from .text import apa, hover_message, to_math
 
 
 def _decimals(step: float) -> int:
@@ -39,9 +42,6 @@ class _Row(QWidget):
         top.addWidget(self.value_lbl)
         v.addLayout(top)
         v.addWidget(self.slider)
-        tip = f"{meta['desc']}  [{meta['dims'] or '1'}]"
-        for w in (self, self.label, self.slider, self.value_lbl):
-            w.setToolTip(tip)
         self.set_value(value)
         self.slider.valueChanged.connect(self._moved)
 
@@ -70,17 +70,16 @@ class _ChoiceRow(QWidget):
     def __init__(self, meta: dict, value: str, parent=None) -> None:
         super().__init__(parent)
         self.meta = meta
-        self.label = LatexLabel(rf"${meta['symbol']}$", "text", 10.0)
-        self.slider = QComboBox()                      # named ``slider`` so the form treats all rows alike
+        sym = meta["symbol"]
+        m = re.fullmatch(r"\\mathrm\{(.+)\}", sym)                # a worded label, e.g. \mathrm{nozzle\ flow}
+        self.label = LatexLabel(apa(m.group(1).replace(r"\ ", " ")) if m else rf"${sym}$", "text", 10.0)
+        self.slider = LatexComboBox(9.5)                 # named ``slider`` so the form treats all rows alike
         self.slider.addItems(meta["labels"])
         v = QVBoxLayout(self)
         v.setContentsMargins(0, 2, 0, 2)
         v.setSpacing(2)
         v.addWidget(self.label)
         v.addWidget(self.slider)
-        tip = f"{meta['desc']}  [{meta['dims'] or '1'}]"
-        for w in (self, self.label, self.slider):
-            w.setToolTip(tip)
         self.set_value(value)
         self.slider.currentIndexChanged.connect(lambda *_: self.changed.emit())
 
@@ -111,7 +110,8 @@ class ParamForm(QWidget):
         for meta in model_cls.fields_meta():
             if meta["group"] != group:
                 group = meta["group"]
-                g = QLabel(group)
+                title = apa(group)                                   # section headers: APA title case
+                g = LatexLabel(title, "accent", 10.0) if "$" in to_math(title) else QLabel(title)
                 g.setObjectName("groupTitle")
                 g.setContentsMargins(0, 8, 0, 2)
                 lay.addWidget(g)
@@ -128,7 +128,7 @@ class ParamForm(QWidget):
             for r in self.rows.values():
                 if obj in (r, r.label, r.slider):
                     m = r.meta
-                    self.hovered.emit(rf"hover: ${m['symbol']}$ — {m['desc']}  [{m['dims'] or '1'}]")
+                    self.hovered.emit(hover_message(m["symbol"], m["desc"], m["dims"]))
                     break
         return False
 

@@ -25,9 +25,9 @@ def win(tmp_path_factory):
 
 def test_listed_under_common_and_live(win):
     assert win.ctrl.key == KEY and win.ctrl.mode == "live"
-    assert win.bar.badge.text() == "LIVE"
+    assert win.bar.badge.text() == "Live"
     tabs = win.plot_tabs
-    assert [tabs.tabText(i) for i in range(tabs.count())] == ["Performance", "Nozzle flow"]
+    assert [tabs.tabText(i) for i in range(tabs.count())] == ["Performance", "Nozzle Flow"]
 
 
 def test_form_has_choice_and_slider_rows(win):

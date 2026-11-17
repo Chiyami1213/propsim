@@ -65,7 +65,7 @@ QLabel#value {{ color: {t['dim']}; font-size: 9pt; }}
 QLabel#caption {{ color: {t['dim']}; font-size: 8.5pt; }}
 QFrame#hoverbox {{ background: {t['hover_bg']}; border: 1px solid {t['hover_edge']}; border-radius: 5px; }}
 QFrame#readout {{ background: {t['card']}; border: 1px solid {t['edge']}; border-radius: 6px; }}
-QPlainTextEdit {{ background: {t['panel']}; border: none; color: {t['dim']};
+QPlainTextEdit, QTextBrowser {{ background: {t['panel']}; border: none; color: {t['dim']};
                  font-family: "Cascadia Mono", "Consolas", monospace; font-size: 9pt; }}
 QTreeView, QListWidget {{ background: {t['panel']}; border: none; color: {t['dim']}; outline: 0; }}
 QTreeView::item, QListWidget::item {{ padding: 3px 2px; }}

@@ -13,6 +13,7 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QImage, QPixmap, QTransform
 from PySide6.QtWidgets import QLabel, QPushButton
 
+from .text import to_math
 from .theme import theme
 
 matplotlib.rcParams["mathtext.fontset"] = "cm"
@@ -25,7 +26,12 @@ def latex_pixmap(text: str, color: str, size_pt: float = 10.0, dpr: float = 2.0)
     Sizes follow Qt's 96-dpi point convention. ``math_to_image`` yields an opaque white background in current Matplotlib, so the glyphs are rendered in
     black and the luminance is converted to an alpha mask tinted with ``color`` (transparent background)."""
     buf = io.BytesIO()
-    mathtext.math_to_image(text, buf, prop=FontProperties(size=size_pt), dpi=96 * dpr, format="png", color="black")
+    try:                                                   # all math as LaTeX: units, dims, formulas, loose tokens
+        mathtext.math_to_image(to_math(text), buf, prop=FontProperties(size=size_pt), dpi=96 * dpr, format="png",
+                               color="black")
+    except ValueError:                                     # never lose a label to a normalisation corner case
+        buf = io.BytesIO()
+        mathtext.math_to_image(text, buf, prop=FontProperties(size=size_pt), dpi=96 * dpr, format="png", color="black")
     buf.seek(0)
     img = imread(buf, format="png")                       # float RGB(A) in [0, 1]
     alpha = 1.0 - img[..., :3].mean(axis=-1)

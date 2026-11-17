@@ -45,7 +45,7 @@ def test_live_tools(win, key):
     win.select_model(key)
     for _ in range(5):
         QApplication.processEvents()
-    assert win.ctrl.key == key and win.bar.badge.text() == "LIVE"
+    assert win.ctrl.key == key and win.bar.badge.text() == "Live"
     assert win.last_eval_ms < 50.0, win.last_eval_ms
     _standards(win)
 

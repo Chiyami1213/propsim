@@ -12,6 +12,7 @@ from PySide6.QtCore import QEvent, Qt, Signal
 from PySide6.QtGui import QColor, QImage, QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
+from .text import apa
 from .latex import LatexButton, LatexLabel, latex_pixmap
 from .theme import theme
 
@@ -86,11 +87,11 @@ class Viewport3D(QWidget):
         self._fields: list[str] = []
         self._field_i = 0
         # toolbar row
-        self.b_reset = QPushButton("⟲ reset")
-        self.b_cut = QPushButton("✂ cutaway 45°")
-        self.b_field = LatexButton(r"field: $T$ (K)")
-        self.b_bar = QPushButton("◧ colorbar")
-        self.b_snap = QPushButton("snapshot")
+        self.b_reset = QPushButton("⟲ Reset")
+        self.b_cut = LatexButton(r"Cutaway $45^{\circ}$")
+        self.b_field = LatexButton(r"Field: $T$ (K)")
+        self.b_bar = QPushButton("◧ Colorbar")
+        self.b_snap = QPushButton("Snapshot")
         row = QHBoxLayout()
         row.setContentsMargins(8, 8, 8, 4)
         for b in (self.b_reset, self.b_cut, self.b_field, self.b_bar, self.b_snap):
@@ -184,7 +185,7 @@ class Viewport3D(QWidget):
     def _next_cut(self) -> None:
         self._cut_i = (self._cut_i + 1) % len(CUTAWAYS)
         a = self.cutaway
-        self.b_cut.setText(f"✂ cutaway {a}°" if a else "✂ no cutaway")
+        self.b_cut.setLatex(rf"Cutaway ${a}^{{\circ}}$" if a else "No Cutaway")
         self.cutawayChanged.emit(a)
 
     def _next_field(self) -> None:
@@ -194,7 +195,7 @@ class Viewport3D(QWidget):
 
     def _show_field(self) -> None:
         if self._fields:
-            self.b_field.setLatex(f"field: {self._fields[self._field_i]}")
+            self.b_field.setLatex(f"Field: {apa(self._fields[self._field_i])}")
 
     def _place(self) -> None:
         w, h = self.stage.width(), self.stage.height()

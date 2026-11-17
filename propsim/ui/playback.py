@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QElapsedTimer, QObject, Qt, QTimer, Signal
-from PySide6.QtWidgets import (QComboBox, QLabel, QProgressBar, QPushButton, QSizePolicy, QSlider, QToolBar,
+from PySide6.QtWidgets import (QLabel, QProgressBar, QPushButton, QSizePolicy, QSlider, QToolBar,
                                QWidget)
 
+from .latex_widgets import LatexComboBox
 from .latex import LatexLabel
 
 SPEEDS = [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
@@ -94,7 +95,7 @@ class PlaybackBar(QToolBar):
         self.setMovable(False)
         self.setFloatable(False)
         self.setFixedHeight(40)
-        self.badge = QLabel("LIVE")
+        self.badge = QLabel("Live")
         self.badge.setObjectName("badge")
         self.badge.setProperty("mode", "live")
         self.run_btn = QPushButton("▶ Run")
@@ -110,7 +111,7 @@ class PlaybackBar(QToolBar):
         for b in (self.b_start, self.b_play, self.b_end):
             b.setFlat(True)
             b.setFixedWidth(34)
-        self.speed = QComboBox()
+        self.speed = LatexComboBox(9.0)
         for s in SPEEDS:
             self.speed.addItem(f"{s:g}×", s)
         self.speed.setCurrentIndex(SPEEDS.index(1.0))
@@ -165,7 +166,7 @@ class PlaybackBar(QToolBar):
 
     def set_mode(self, mode: str) -> None:
         run = mode == "run"
-        self.badge.setText("RUN" if run else "LIVE")
+        self.badge.setText("Run" if run else "Live")
         self.badge.setProperty("mode", "run" if run else "live")
         self.badge.style().unpolish(self.badge)
         self.badge.style().polish(self.badge)

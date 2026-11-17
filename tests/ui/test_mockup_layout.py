@@ -63,7 +63,7 @@ def test_regions_exist_and_proportions(win):
     for b in (win.vp.b_reset, win.vp.b_cut, win.vp.b_field, win.vp.b_bar, win.vp.b_snap):
         assert b.isVisible()
     assert set(win.bar.export_btns) == {"PNG", "CSV", ".mat", ".h5"}
-    assert win.bar.badge.text() == "RUN"
+    assert win.bar.badge.text() == "Run"
 
 
 def test_math_labels_are_latex(win):
@@ -81,7 +81,7 @@ def test_screenshot_saved(win):
 def test_live_mode_exports_and_theme(win, tmp_path):
     win.open_case(str(ROOT / "cases" / "nozzle_demo.psim.json"))
     QApplication.processEvents()
-    assert win.bar.badge.text() == "LIVE" and not win.bar.run_btn.isEnabled()
+    assert win.bar.badge.text() == "Live" and not win.bar.run_btn.isEnabled()
     before = win.live_state["cf"]
     row = win.form.rows["eps"]
     row.slider.setValue(row.slider.value() + 100)                       # drag the eps slider
