@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 import pytest
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QDockWidget
 
 from propsim.ui.latex import LatexLabel
@@ -47,19 +48,22 @@ def test_run_completed_and_seeked(win):
 
 def test_regions_exist_and_proportions(win):
     assert (win.width(), win.height()) == (1600, 1000)
-    assert win.left_dock.width() == pytest.approx(245, rel=0.10)
+    assert win.left_dock.width() == pytest.approx(265, rel=0.10)
     assert win.right_dock.width() == pytest.approx(450, rel=0.10)
     assert win.bar.height() == 40
-    s = win.centre.sizes()
-    assert s[0] / sum(s) == pytest.approx(0.55, rel=0.10)
-    rs = win.right_split.sizes()
-    assert rs[0] / sum(rs) == pytest.approx(0.75, rel=0.10)
+    h = lambda d: d.height()
+    assert h(win.vp_dock) / (h(win.vp_dock) + h(win.plots_dock)) == pytest.approx(0.55, rel=0.10)
+    assert h(win.right_dock) / (h(win.right_dock) + h(win.log_dock)) == pytest.approx(0.75, rel=0.10)
     assert win.vp.width() > 0.5 * win.width()
     plots = win.plot_tabs.grid_plots()[:3]
     xs = [p.mapTo(win, p.rect().topLeft()).x() for p in plots]
     assert len(plots) == 3 and xs == sorted(xs)
     assert all(p.pi.ctrl.xGridCheck.isChecked() and p.pi.ctrl.yGridCheck.isChecked() for p in plots)
-    assert {d.objectName() for d in win.findChildren(QDockWidget)} == {"ModulesDock", "ParametersDock"}
+    assert {d.objectName() for d in win.findChildren(QDockWidget)} == {
+        "ModulesDock", "SavedRunsDock", "View3DDock", "PlotsDock", "ParametersDock", "RunLogDock"}
+    for d in win.findChildren(QDockWidget):                       # every panel can be dragged and floated
+        assert d.features() & QDockWidget.DockWidgetMovable and d.features() & QDockWidget.DockWidgetFloatable
+        assert d.titleBarWidget() is not None and d.titleBarWidget().height() > 0
     assert len(win.vp.readout_lbls) == 4 and all(lbl.latex() for lbl in win.vp.readout_lbls)
     assert win.vp.colorbar.isVisible() and win.vp.caption.latex().startswith(r"$t$ = 6.40")
     for b in (win.vp.b_reset, win.vp.b_cut, win.vp.b_field, win.vp.b_bar, win.vp.b_snap):
@@ -121,3 +125,17 @@ def test_cancel_stops_worker(win):
     win.cancel_run()
     _wait(win, 30)
     assert win.worker is None
+
+
+def test_panels_restore_default_layout(win):
+    win.vp_dock.setFloating(True)
+    win.removeDockWidget(win.log_dock)
+    QApplication.processEvents()
+    act = next(a for a in win.findChildren(QAction) if a.text() == "Restore Default Layout")
+    assert act.shortcut().toString() == "Ctrl+Shift+R"
+    act.trigger()
+    for _ in range(5):
+        QApplication.processEvents()
+    assert not any(d.isFloating() for d in win.docks) and all(d.isVisible() for d in win.docks)
+    assert win.vp_dock.x() > win.left_dock.x() and win.right_dock.x() > win.vp_dock.x()
+    assert win.plots_dock.y() > win.vp_dock.y() and win.log_dock.y() > win.right_dock.y()

@@ -54,8 +54,11 @@ QMainWindow, QDockWidget, QToolBar {{ background: {t['bg']}; }}
 QMainWindow::separator {{ background: {t['bg']}; width: 4px; height: 4px; }}
 QMenuBar {{ background: {t['bg']}; color: {t['dim']}; }}
 QMenuBar::item:selected {{ background: {t['select_bg']}; }}
-QMenu {{ background: {t['panel']}; border: 1px solid {t['edge']}; }}
+QMenu {{ background: {t['panel']}; border: 1px solid {t['edge']}; padding: 4px 0; }}
+QMenu::item {{ padding: 5px 40px 5px 14px; }}
 QMenu::item:selected {{ background: {t['select_bg']}; color: {t['accent']}; }}
+QMenu::separator {{ height: 1px; background: {t['edge']}; margin: 4px 10px; }}
+QMenu::right-arrow {{ right: 10px; }}
 QDockWidget > QWidget {{ background: {t['panel']}; }}
 QFrame#card, QWidget#card {{ background: {t['panel']}; border: 1px solid {t['edge']}; border-radius: 6px; }}
 QLabel {{ background: transparent; border: none; }}

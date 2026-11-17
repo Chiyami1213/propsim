@@ -1,4 +1,4 @@
-"""Main window: docks, centre splitter, bottom playback bar (Section 5.1). Wires every region together."""
+"""Main window: six dockable panels, bottom playback bar (Section 5.1). Wires every region together."""
 from __future__ import annotations
 
 import os
@@ -40,11 +40,26 @@ def default_home() -> Path:
     return storage.resolve_home(QSettings("PropSim", "PropSim").value("data_dir") or None)
 
 
+PAD = 10                                                  # one padding for every panel (title and content)
+LAYOUT_VERSION = 2                                        # bump when the dock set changes: old saved states are ignored
+
+
 def _heading(text: str) -> QLabel:
     lbl = QLabel(apa(text))
     lbl.setObjectName("heading")
-    lbl.setContentsMargins(10, 8, 10, 4)
+    lbl.setContentsMargins(PAD, PAD, PAD, PAD // 2)
     return lbl
+
+
+def _panel(*widgets: QWidget, stretch: int = 0) -> QWidget:
+    """Panel body with the shared padding; the first widget takes the free space."""
+    w = QWidget()
+    lay = QVBoxLayout(w)
+    lay.setContentsMargins(PAD, 0, PAD, PAD)
+    lay.setSpacing(PAD // 2 + 1)
+    for i, x in enumerate(widgets):
+        lay.addWidget(x, 1 if i == 0 else stretch)
+    return w
 
 
 class MainWindow(QMainWindow):
@@ -82,21 +97,10 @@ class MainWindow(QMainWindow):
 
     # =================================================================== construction
     def _build_ui(self) -> None:
-        # --- viewport + plots (centre) ---
-        self.vp = Viewport3D()
-        self.plot_tabs = PlotTabs()
-        self.centre = QSplitter(Qt.Vertical)
-        for w in (self.vp, self.plot_tabs):
-            card = QFrame()
-            card.setObjectName("card")
-            lay = QVBoxLayout(card)
-            lay.setContentsMargins(0, 0, 0, 0)
-            lay.addWidget(w)
-            self.centre.addWidget(card)
-        self.centre.setSizes([550, 450])
-        self.centre.setChildrenCollapsible(False)
-        self.setCentralWidget(self.centre)
-        # --- left dock ---
+        """Six dockable panels (drag any title bar; View > Restore Default Layout puts them back), one padding."""
+        self.setDockOptions(QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
+        self.setDockNestingEnabled(True)
+        # --- modules tree ---
         self.tree = QTreeView()
         self.tree.setHeaderHidden(True)
         self.tree.setEditTriggers(QTreeView.NoEditTriggers)
@@ -115,49 +119,37 @@ class MainWindow(QMainWindow):
         self.tree.setIndentation(18)
         self.tree.expand(self.tree_model.index(list(registry.TREE).index("Hybrid"), 0))
         self.tree.selectionModel().currentChanged.connect(self._on_tree)
+        self.left_dock = self._dock("Modules", _heading("Modules"), _panel(self.tree))
+        # --- saved runs ---
         self.runs_list = QListWidget()
         self.runs_list.itemClicked.connect(self._on_run_clicked)
         self.compare_cb = QCheckBox("Compare Overlay")
         self.compare_cb.toggled.connect(lambda _: self._refresh_tabs())
-        left = QWidget()
-        ll = QVBoxLayout(left)
-        ll.setContentsMargins(4, 0, 4, 8)
-        ll.addWidget(self.tree, 3)
-        ll.addWidget(_heading("Saved Runs"))
-        ll.addWidget(self.runs_list, 2)
-        ll.addWidget(self.compare_cb)
-        self.left_dock = self._dock("Modules", "Modules", left, Qt.LeftDockWidgetArea)
-        # --- right dock ---
-        self.params_title = LatexLabel(apa("Parameters"), "text", 10.0)
-        self.params_title.setContentsMargins(10, 8, 10, 4)
+        self.runs_dock = self._dock("SavedRuns", _heading("Saved Runs"), _panel(self.runs_list, self.compare_cb))
+        # --- 3D view and plots ---
+        self.vp = Viewport3D()
+        self.plot_tabs = PlotTabs()
+        self.vp_dock = self._dock("View3D", _heading("3D View"), _panel(self.vp))
+        self.plots_dock = self._dock("Plots", _heading("Plots"), _panel(self.plot_tabs))
+        # --- parameters ---
+        self.params_title = LatexLabel("", "text", 10.0)            # model name, first line of the panel body
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.hover = LatexLabel("", "dim", 9.0)
         hb = QFrame()
         hb.setObjectName("hoverbox")
         hl = QVBoxLayout(hb)
-        hl.setContentsMargins(10, 6, 10, 6)
+        hl.setContentsMargins(PAD, PAD // 2, PAD, PAD // 2)
         hl.addWidget(self.hover)
-        top = QWidget()
-        tl = QVBoxLayout(top)
-        tl.setContentsMargins(4, 0, 4, 6)
-        tl.addWidget(self.params_title)
-        tl.addWidget(self.scroll, 1)
-        tl.addWidget(hb)
+        body = _panel(self.scroll, hb)
+        body.layout().insertWidget(0, self.params_title)
+        self.right_dock = self._dock("Parameters", _heading("Parameters"), body)
+        # --- run log ---
         self.log = LatexLog()
         self.summary = LatexLabel("", "accent", 9.5)
-        bot = QWidget()
-        bl = QVBoxLayout(bot)
-        bl.setContentsMargins(4, 0, 4, 6)
-        bl.addWidget(_heading("Run Log"))
-        bl.addWidget(self.log, 1)
-        bl.addWidget(self.summary)
-        rs = QSplitter(Qt.Vertical)
-        rs.addWidget(top)
-        rs.addWidget(bot)
-        rs.setSizes([750, 250])
-        self.right_split = rs
-        self.right_dock = self._dock("Parameters", None, rs, Qt.RightDockWidgetArea)
+        self.log_dock = self._dock("RunLog", _heading("Run Log"), _panel(self.log, self.summary))
+        self.docks = [self.left_dock, self.runs_dock, self.vp_dock, self.plots_dock, self.right_dock, self.log_dock]
+        self.default_layout()
         # --- bottom bar ---
         self.bar = PlaybackBar(self.playback)
         self.addToolBar(Qt.BottomToolBarArea, self.bar)
@@ -168,38 +160,57 @@ class MainWindow(QMainWindow):
         self.vp.resetRequested.connect(lambda: self.vp.reset_view())
         self.vp.cutawayChanged.connect(lambda _: self._refresh_scene())
         self.vp.fieldChanged.connect(lambda _: self._refresh_scene())
-        self.resizeDocks([self.left_dock, self.right_dock], [245, 450], Qt.Horizontal)
 
-    def _dock(self, name: str, heading: str | None, widget: QWidget, area) -> QDockWidget:
+    def _dock(self, name: str, title: QWidget, widget: QWidget) -> QDockWidget:
         d = QDockWidget(name, self)
         d.setObjectName(name + "Dock")
         d.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        d.setTitleBarWidget(_heading(heading) if heading else QWidget())
+        d.setTitleBarWidget(title)                         # drag the panel by its title
         d.setWidget(widget)
-        self.addDockWidget(area, d)
+        self.addDockWidget(Qt.LeftDockWidgetArea, d)
         return d
+
+    def default_layout(self) -> None:
+        """Modules / Saved Runs | 3D View / Plots | Parameters / Run Log, in the mockup proportions."""
+        for d in self.docks:
+            d.setFloating(False)
+            self.removeDockWidget(d)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.left_dock)
+        self.splitDockWidget(self.left_dock, self.vp_dock, Qt.Horizontal)
+        self.splitDockWidget(self.vp_dock, self.right_dock, Qt.Horizontal)
+        self.splitDockWidget(self.left_dock, self.runs_dock, Qt.Vertical)
+        self.splitDockWidget(self.vp_dock, self.plots_dock, Qt.Vertical)
+        self.splitDockWidget(self.right_dock, self.log_dock, Qt.Vertical)
+        for d in self.docks:
+            d.show()
+        w = max(self.width(), 1200)
+        self.resizeDocks([self.left_dock, self.vp_dock, self.right_dock], [265, w - 265 - 450, 450], Qt.Horizontal)
+        h = max(self.height() - 40, 600)
+        self.resizeDocks([self.left_dock, self.runs_dock], [int(0.62 * h), int(0.38 * h)], Qt.Vertical)
+        self.resizeDocks([self.vp_dock, self.plots_dock], [int(0.55 * h), int(0.45 * h)], Qt.Vertical)
+        self.resizeDocks([self.right_dock, self.log_dock], [int(0.75 * h), int(0.25 * h)], Qt.Vertical)
 
     def _build_menus(self) -> None:
         mb = self.menuBar()
         f = mb.addMenu("&File")
-        self._act(f, "Open case…", self.open_case, QKeySequence.Open)
-        self._act(f, "Save case…", self.save_case, QKeySequence.Save)
-        self._act(f, "Open result…", self.open_result)
+        self._act(f, "Open case", self.open_case, QKeySequence.Open)
+        self._act(f, "Save case", self.save_case, QKeySequence.Save)
+        self._act(f, "Open result", self.open_result)
         f.addSeparator()
         self._act(f, "Restore last session", self.restore_session)
-        self._act(f, "Data folder…", self.choose_data_folder)
+        self._act(f, "Data folder", self.choose_data_folder)
         self._act(f, "Open data folder", lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.home))))
         f.addSeparator()
         x = f.addMenu(apa("Export code"))
-        self._act(x, "Python script (.py)…", lambda: self.export(".py"))
-        self._act(x, "MATLAB script (.m)…", lambda: self.export(".m"))
+        self._act(x, "Python script (.py)", lambda: self.export(".py"))
+        self._act(x, "MATLAB script (.m)", lambda: self.export(".m"))
         f.addSeparator()
         self._act(f, "Quit", self.close, QKeySequence.Quit)
         e = mb.addMenu("&Edit")
         self._act(e, "Reset parameters to defaults", self.reset_params)
         v = mb.addMenu("&View")
         self._act(v, "Toggle light/dark theme", self.toggle_theme, "Ctrl+T")
-        self._act(v, "Reset window layout", self.reset_layout)
+        self._act(v, "Restore default layout", self.reset_layout, "Ctrl+Shift+R")
         s = mb.addMenu("&Simulation")
         self._act(s, "Run", self.start_run, "Ctrl+R")
         self._act(s, "Cancel", self.cancel_run, "Esc")
@@ -256,7 +267,7 @@ class MainWindow(QMainWindow):
         self.form.changed.connect(self._on_params_changed)
         self.form.hovered.connect(self.hover.setLatex)
         self.scroll.setWidget(self.form)
-        self.params_title.setLatex(f"{apa('Parameters')} — {apa(ctrl.title)}")
+        self.params_title.setLatex(apa(ctrl.title))
         self.vp.plotter.clear()                  # drop the previous model's meshes (their handles are reset below)
         ctrl.reset_scene()
         self.vp.set_fields(ctrl.fields)
@@ -551,17 +562,10 @@ class MainWindow(QMainWindow):
         if isinstance(g, QByteArray):
             self.restoreGeometry(g)
         if isinstance(st, QByteArray):
-            self.restoreState(st)
+            self.restoreState(st, LAYOUT_VERSION)               # False (ignored) for an older dock set
 
     def reset_layout(self) -> None:
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.left_dock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.right_dock)
-        for d in (self.left_dock, self.right_dock):
-            d.setFloating(False)
-            d.show()
-        self.resizeDocks([self.left_dock, self.right_dock], [245, 450], Qt.Horizontal)
-        self.centre.setSizes([550, 450])
-        self.right_split.setSizes([750, 250])
+        self.default_layout()
 
     # ---- data folder and session backup -------------------------------------------------------------
     def set_home(self, path: Path) -> None:
@@ -611,5 +615,5 @@ class MainWindow(QMainWindow):
         if self.use_settings:
             s = self._settings()
             s.setValue("geometry", self.saveGeometry())
-            s.setValue("state", self.saveState())
+            s.setValue("state", self.saveState(LAYOUT_VERSION))
         super().closeEvent(ev)

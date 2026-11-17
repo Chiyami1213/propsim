@@ -148,6 +148,8 @@ def _cap_word(w: str, force: bool) -> str:
         return w
     if core in UNITS or _SPECIAL.search(core) or (lead.endswith("(") and trail.startswith(")") and len(core) <= 4):
         return w                                                   # units are never title-cased: (kg·s⁻¹), (MPa), (s)
+    if lead.endswith(".") and core.isalnum() and len(core) <= 5:
+        return w                                                   # file extensions stay as typed: (.py), (.m), .h5
     for sep in ("-", "/"):                                         # compounds: capitalize every part
         if sep in core:
             return lead + sep.join(_cap_word(x, True) for x in core.split(sep)) + trail
