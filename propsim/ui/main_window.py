@@ -330,8 +330,7 @@ class MainWindow(QMainWindow):
 
     def cancel_run(self) -> None:
         if self.worker is not None:
-            self.worker.cancel()
-            self.worker.wait(5000)
+            self.worker.cancel()               # kills the worker process; ``finished`` clears self.worker
 
     def _worker_finished(self) -> None:
         w, self.worker = self.worker, None
