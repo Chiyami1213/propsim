@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from .base import ModelController
 from .engine_live import EngineLiveModel
+from .ep_models import (HallDischargeModel, HallLiveModel, IonLiveModel, IonOpticsModel, SpiralModel, ThermalLiveModel,
+                        TradesLiveModel)
 from .hybrid_burn import HybridBurnModel
 from .hybrid_live import PortLiveModel, RegressionLiveModel
 from .hybrid_live_ext import FlowLiveModel, FuelLiveModel, StabilityLiveModel
@@ -26,7 +28,10 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
                ("Quasi-1D burn", "run", HybridBurn1DModel), ("N₂O blowdown", "run", N2OBlowdownModel), ("ILFI stability", "run", None)],
     "Solid": [("Grain designer", "live", SolidGrainLiveModel), ("Burn rate & K_n", "live", BurnRateLiveModel),
               ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel)],
-    "Electric": [("Ion optics", "live", None), ("Hall breathing mode", "run", None)],
+    "Electric": [("Mission & power trades", "live", TradesLiveModel), ("Electrothermal thrusters", "live", ThermalLiveModel),
+                 ("Gridded ion thruster", "live", IonLiveModel), ("Hall thruster", "live", HallLiveModel),
+                 ("Ion optics", "run", IonOpticsModel), ("Hall discharge", "run", HallDischargeModel),
+                 ("Low-thrust spiral", "run", SpiralModel)],
     "Vehicle": [("Point-mass ascent", "run", None)],
     "Toy": [("Spring-mass", "run", SpringMassModel)],
 }
