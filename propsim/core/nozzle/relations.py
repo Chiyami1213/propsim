@@ -86,3 +86,16 @@ def exit_state(eps, g):
     r"""Exit Mach and $\frac{p_e}{p_c}$ for expansion ratio ``eps`` (scalar, bracketed root)."""
     Me = mach_from_area(eps, g, True)
     return Me, p_ratio(Me, g)
+
+
+def prandtl_meyer(M, g):
+    r"""Prandtl–Meyer angle (rad): :math:`\nu(M)=\sqrt{\frac{\gamma+1}{\gamma-1}}\arctan\sqrt{\frac{\gamma-1}{\gamma+1}(M^2-1)}-\arctan\sqrt{M^2-1}`
+    (Anderson, *Modern Compressible Flow*, Eq. 4.44)."""
+    M = np.maximum(np.asarray(M, float), 1.0)
+    k = np.sqrt((g + 1.0) / (g - 1.0))
+    return k * np.arctan(np.sqrt((M**2 - 1.0) / k**2)) - np.arctan(np.sqrt(M**2 - 1.0))
+
+
+def divergence_factor(alpha):
+    r"""Conical-nozzle divergence correction :math:`\lambda=\frac{1+\cos\alpha}{2}` (Sutton Eq. 3-34); ``alpha`` in rad."""
+    return 0.5 * (1.0 + np.cos(alpha))

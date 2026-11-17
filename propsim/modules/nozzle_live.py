@@ -126,7 +126,7 @@ class NozzleLiveModel(ModelController):
         self._m = dict(grid=grid, th=th, actor=pl.add_mesh(grid, scalars="field", cmap=cmap, clim=(v.min(), v.max()),
                                                          show_scalar_bar=False, name="nozzle", smooth_shading=True))
         self._built = (vp.cutaway, vp.field_index)
-        vp.reset_view()
+        vp.reset_view(zoom=1.1)
 
     def update_scene(self, vp, p, r, frame) -> None:
         if not self._m or self._built != (vp.cutaway, vp.field_index):

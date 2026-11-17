@@ -4,7 +4,7 @@ from __future__ import annotations
 import math
 
 from PySide6.QtCore import QEvent, Qt, Signal
-from PySide6.QtWidgets import QLabel, QSlider, QVBoxLayout, QWidget, QHBoxLayout
+from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
 
 from ..core.schema import ParamModel
 from .latex import LatexLabel
@@ -62,6 +62,37 @@ class _Row(QWidget):
         self.changed.emit()
 
 
+class _ChoiceRow(QWidget):
+    """Combo box for a discrete choice (propellant pair, equilibrium/frozen, ...). Same interface as ``_Row``."""
+
+    changed = Signal()
+
+    def __init__(self, meta: dict, value: str, parent=None) -> None:
+        super().__init__(parent)
+        self.meta = meta
+        self.label = LatexLabel(rf"${meta['symbol']}$", "text", 10.0)
+        self.slider = QComboBox()                      # named ``slider`` so the form treats all rows alike
+        self.slider.addItems(meta["labels"])
+        v = QVBoxLayout(self)
+        v.setContentsMargins(0, 2, 0, 2)
+        v.setSpacing(2)
+        v.addWidget(self.label)
+        v.addWidget(self.slider)
+        tip = f"{meta['desc']}  [{meta['dims'] or '1'}]"
+        for w in (self, self.label, self.slider):
+            w.setToolTip(tip)
+        self.set_value(value)
+        self.slider.currentIndexChanged.connect(lambda *_: self.changed.emit())
+
+    def set_value(self, x: str) -> None:
+        self.slider.blockSignals(True)
+        self.slider.setCurrentIndex(self.meta["choices"].index(x))
+        self.slider.blockSignals(False)
+
+    def value(self) -> str:
+        return self.meta["choices"][self.slider.currentIndex()]
+
+
 class ParamForm(QWidget):
     """Auto-generated parameter form for a ``ParamModel`` subclass."""
 
@@ -71,7 +102,7 @@ class ParamForm(QWidget):
     def __init__(self, model_cls: type[ParamModel], values: ParamModel | None = None, parent=None) -> None:
         super().__init__(parent)
         self.model_cls = model_cls
-        self.rows: dict[str, _Row] = {}
+        self.rows: dict[str, _Row | _ChoiceRow] = {}
         values = values or model_cls()
         lay = QVBoxLayout(self)
         lay.setContentsMargins(6, 2, 6, 6)
@@ -84,7 +115,7 @@ class ParamForm(QWidget):
                 g.setObjectName("groupTitle")
                 g.setContentsMargins(0, 8, 0, 2)
                 lay.addWidget(g)
-            row = _Row(meta, getattr(values, meta["name"]))
+            row = (_ChoiceRow if meta["kind"] == "choice" else _Row)(meta, getattr(values, meta["name"]))
             row.changed.connect(self.changed)
             for w in (row, row.label, row.slider):
                 w.installEventFilter(self)

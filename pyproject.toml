@@ -20,8 +20,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black"]
-# Phase 2+: rocketcea, cantera, CoolProp, numba, scikit-image, scikit-fmm, trimesh, numpy-stl, pint
+cea = ["rocketcea>=1.2"]              # direct NASA-CEA; without it the shipped CEA tables are used
+dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black", "rocketcea>=1.2"]
 
 [project.scripts]
 propsim = "propsim.app:main"
@@ -30,7 +30,7 @@ propsim = "propsim.app:main"
 include = ["propsim*"]
 
 [tool.setuptools.package-data]
-propsim = ["assets/*"]
+propsim = ["assets/*", "core/thermo/data/*.npz"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

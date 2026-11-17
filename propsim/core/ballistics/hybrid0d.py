@@ -20,7 +20,11 @@ from scipy.integrate import solve_ivp
 
 from ..constants import G0, P_SEA_LEVEL
 from ..nozzle import CF, Gamma, exit_state
-from ..thermo.surrogate import GAMMA, cstar_gox_htpb, tc_gox_htpb
+from ..thermo.cea import chamber_lut
+
+PAIR = "GOX/HTPB"
+OF_FALLBACK = 2.1        # used only while no fuel flows (valve just opened)
+GAMMA_DEFAULT = 1.15
 
 
 @dataclass(frozen=True)
@@ -52,21 +56,21 @@ def mdot_ox_of_t(p: HybridBurnSI, t):
 
 
 def _rates(p: HybridBurnSI, t, R, Pc):
-    """Return (mdot_ox, rdot, mdot_f, OF, c*_eff)."""
+    """Return (mdot_ox, rdot, mdot_f, OF, c*_eff, T_c, gamma); combustion properties from CEA (GOX/HTPB tables)."""
     mox = float(mdot_ox_of_t(p, t))
     R = max(R, 1e-6)
     G = mox / (np.pi * R**2)
     rdot = p.a * G**p.n if R < p.R_out else 0.0       # burnout: web consumed
     mf = p.rho_f * 2 * np.pi * R * p.L * rdot
     OF = mox / mf if mf > 1e-12 else np.nan
-    cs = p.eta_cstar * float(cstar_gox_htpb(OF if np.isfinite(OF) else 2.1))
-    return mox, rdot, mf, OF, cs
+    cs0, Tc, gam, _ = chamber_lut(PAIR)(OF if np.isfinite(OF) else OF_FALLBACK, Pc)
+    return mox, rdot, mf, OF, p.eta_cstar * cs0, Tc, gam
 
 
 def rhs(t: float, y, p: HybridBurnSI):
     R, Pc = y[0], y[1] * 1e6
-    mox, rdot, mf, OF, cs = _rates(p, t, R, Pc)
-    RT = (cs * Gamma(GAMMA)) ** 2
+    mox, rdot, mf, OF, cs, _, gam = _rates(p, t, R, Pc)
+    RT = (cs * Gamma(gam)) ** 2
     Vc = np.pi * R**2 * p.L + p.V_extra
     dPc = RT / Vc * (mox + mf - Pc * p.At / cs)
     return [rdot, dPc / 1e6]
@@ -101,17 +105,16 @@ def integrate(p: HybridBurnSI, n_frames: int = 601, progress: Callable[[float], 
 def derived_channels(p: HybridBurnSI, t, R, Pc) -> dict[str, np.ndarray]:
     """Thrust and performance from the integrated state (one evaluation of the same physics)."""
     n = len(t)
-    mox = np.empty(n); rdot = np.empty(n); mf = np.empty(n); OF = np.empty(n); cs = np.empty(n)
+    mox, rdot, mf, OF, cs, Tc, gam = (np.empty(n) for _ in range(7))
     for i in range(n):
-        mox[i], rdot[i], mf[i], OF[i], cs[i] = _rates(p, t[i], R[i], Pc[i])
-    Me, pe_pc = exit_state(p.eps, GAMMA)
-    cf = np.array([CF(GAMMA, pe_pc, P_SEA_LEVEL / max(pc, 1.0), p.eps) for pc in Pc])
+        mox[i], rdot[i], mf[i], OF[i], cs[i], Tc[i], gam[i] = _rates(p, t[i], R[i], Pc[i])
+    cf = np.array([CF(g, exit_state(p.eps, g)[1], P_SEA_LEVEL / max(pc, 1.0), p.eps) for g, pc in zip(gam, Pc)])
     F = np.maximum(cf * Pc * p.At, 0.0)       # clamp: no negative thrust below ambient (flow-separation regime)
     mdot = mox + mf
     Isp = np.where(mdot > 1e-3 * p.mdot_ox, F / np.maximum(mdot, 1e-12) / G0, np.nan)
     return {
         "R": R * 1e3, "Pc": Pc / 1e6, "F": F / 1e3, "OF": np.where(mox > 1e-3 * p.mdot_ox, OF, np.nan),
-        "mdot_ox": mox, "mdot_f": mf, "rdot": rdot * 1e3, "Isp": Isp, "Tc": tc_gox_htpb(np.nan_to_num(OF, nan=2.1)),
+        "mdot_ox": mox, "mdot_f": mf, "rdot": rdot * 1e3, "Isp": Isp, "Tc": Tc, "gamma": gam,
         "CF": cf, "cstar": cs,
     }
 
@@ -120,6 +123,6 @@ def summary(p: HybridBurnSI, t, ch: dict[str, np.ndarray]) -> dict[str, float]:
     It = float(np.trapezoid(ch["F"] * 1e3, t))              # (N·s)
     mprop = float(np.trapezoid(ch["mdot_ox"] + ch["mdot_f"], t))
     return {"I_t_kNs": It / 1e3, "Isp_avg": It / (mprop * G0) if mprop > 0 else float("nan"),
-            "m_prop": mprop, "Pc_max_MPa": float(np.nanmax(ch["Pc"])), "R_end_mm": float(ch["R"][-1]),
+            "m_prop": mprop, "gamma_mean": float(np.nanmean(ch["gamma"])), "Pc_max_MPa": float(np.nanmax(ch["Pc"])), "R_end_mm": float(ch["R"][-1]),
             "web_burned": float((ch["R"][-1] * 1e-3 - p.R0) / (p.R_out - p.R0)),
             "dp_inj_margin": float((p.p_tank - np.nanmax(ch["Pc"]) * 1e6) / (np.nanmax(ch["Pc"]) * 1e6))}

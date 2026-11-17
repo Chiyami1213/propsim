@@ -163,10 +163,10 @@ class Viewport3D(QWidget):
         else:
             self.plotter.render()
 
-    def reset_view(self, position=None) -> None:
+    def reset_view(self, position=None, zoom: float = 1.5) -> None:
         self.plotter.camera_position = position or "iso"
         self.plotter.reset_camera()
-        self.plotter.camera.zoom(1.5)
+        self.plotter.camera.zoom(zoom)
         self.render()
 
     def snapshot(self, path: str) -> None:

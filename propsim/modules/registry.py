@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 from .base import ModelController
+from .engine_live import EngineLiveModel
 from .hybrid_burn import HybridBurnModel
 from .nozzle_live import NozzleLiveModel
 from .toy import SpringMassModel
 
 # module -> list of (label, mode, controller class or None when planned). Labels are plain text (Qt tree).
 TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
+    "Common": [("Thermochemistry & nozzle", "live", EngineLiveModel)],
     "Liquid": [("Injector & chamber", "live", None), ("Feed network transient", "run", None)],
     "Hybrid": [("Nozzle thrust coefficient", "live", NozzleLiveModel), ("Regression laws", "live", None),
                ("Port flow field", "live", None), ("0-D burn", "run", HybridBurnModel),

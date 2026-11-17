@@ -6,7 +6,7 @@ import pyvista as pv
 
 from ..core.nozzle import contour, mach_along_contour
 from ..core.result import Curve, PlotSpec, Result, TabSpec
-from ..core.ballistics.hybrid0d import GAMMA
+from ..core.ballistics.hybrid0d import GAMMA_DEFAULT
 from ..sims.hybrid_burn import HybridBurn0D, HybridBurnParams
 from ..ui.theme import CMAPS, QUANTITY
 from .base import RUN_COLORS, ModelController
@@ -66,7 +66,7 @@ class HybridBurnModel(ModelController):
         # nozzle coloured by Mach (viridis), joined at x = L
         Rt = si.Dt / 2
         xc, rc = contour(Rt, si.eps, Rc=si.R_out)
-        Mn = mach_along_contour(xc, rc, Rt, GAMMA)
+        Mn = mach_along_contour(xc, rc, Rt, r.meta.get("gamma_mean", GAMMA_DEFAULT) if r is not None else GAMMA_DEFAULT)
         xn = xc - xc[0] + si.L
         noz = rev_grid(xn, rc, th)
         noz["Mach"] = broadcast_scalar(Mn, len(th))
