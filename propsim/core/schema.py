@@ -26,6 +26,12 @@ def C(default: str, *, choices: list[str], symbol: str, desc: str, labels: list[
                                     "choices": list(choices), "labels": list(labels or choices)})
 
 
+def H(default: Any = "") -> Any:
+    """Hidden field: stored with the parameters (and sent to the Run worker) but never shown as a slider or listed in
+    :meth:`ParamModel.fields_meta` (e.g. thrust profiles imported from other runs)."""
+    return Field(default, json_schema_extra={"kind": "hidden"})
+
+
 class ParamModel(BaseModel):
     """Base class for parameter schemas."""
 
@@ -44,6 +50,8 @@ class ParamModel(BaseModel):
         out = []
         for name, f in cls.model_fields.items():
             extra = dict(f.json_schema_extra or {})
+            if extra.get("kind") == "hidden":
+                continue
             extra.setdefault("kind", "slider")
             extra.update(name=name, default=f.default, desc=f.description or "")
             out.append(extra)
