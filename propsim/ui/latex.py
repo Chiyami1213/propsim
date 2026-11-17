@@ -9,22 +9,106 @@ import numpy as np
 from matplotlib import mathtext
 from matplotlib.image import imread
 from matplotlib.font_manager import FontProperties
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QColor, QIcon, QImage, QPixmap, QTransform
+from matplotlib.mathtext import MathTextParser
+from PySide6.QtCore import QPointF, QSize, Qt
+from PySide6.QtGui import (QColor, QFont, QFontMetricsF, QGuiApplication, QIcon, QImage, QPainter, QPixmap,
+                           QTransform)
 from PySide6.QtWidgets import QLabel, QPushButton
 
-from .text import to_math
+from .text import _MATH_SPLIT, to_math
 from .theme import theme
 
 matplotlib.rcParams["mathtext.fontset"] = "cm"
 
 
-@lru_cache(maxsize=4096)
-def latex_pixmap(text: str, color: str, size_pt: float = 10.0, dpr: float = 2.0) -> QPixmap:
-    r"""Render mixed text and mathtext, e.g. ``r"$\dot{m}_{ox}$ (kg·s⁻¹)"``. Colour is part of the cache key.
+_PARSER: MathTextParser | None = None
 
-    Sizes follow Qt's 96-dpi point convention. ``math_to_image`` yields an opaque white background in current Matplotlib, so the glyphs are rendered in
-    black and the luminance is converted to an alpha mask tinted with ``color`` (transparent background)."""
+
+def screen_dpr() -> float:
+    """Device pixel ratio of the primary screen (render at exactly this ratio: no resampling blur)."""
+    app = QGuiApplication.instance()
+    scr = app.primaryScreen() if app is not None else None
+    return float(scr.devicePixelRatio()) if scr is not None else 2.0
+
+
+def ui_family() -> str:
+    app = QGuiApplication.instance()
+    return QGuiApplication.font().family() if app is not None else "Segoe UI"
+
+
+def latex_pixmap(text: str, color: str, size_pt: float = 10.0, dpr: float | None = None) -> QPixmap:
+    r"""Render mixed text and math, e.g. ``r"$\dot{m}_{ox}$ (kg·s⁻¹)"``: plain words in the UI font, ``$...$`` segments
+    through mathtext (Computer Modern), aligned on one baseline and rasterized at the screen's device pixel ratio."""
+    return _compose(text, color, float(size_pt), float(dpr or screen_dpr()), ui_family())
+
+
+def _math_raster(seg: str, size_pt: float, dpi: float):
+    """Coverage image (uint8, 255 = ink), ascent and depth (px) of one ``$...$`` segment."""
+    global _PARSER
+    if _PARSER is None:
+        _PARSER = MathTextParser("agg")
+    r = _PARSER.parse(seg, dpi=dpi, prop=FontProperties(size=size_pt))
+    img = np.asarray(r.image, dtype=np.uint8)
+    return img, float(r.depth), float(r.width)
+
+
+@lru_cache(maxsize=8192)
+def _compose(text: str, color: str, size_pt: float, dpr: float, family: str) -> QPixmap:
+    try:
+        s = to_math(text)
+    except Exception:                                      # never lose a label to a normalisation corner case
+        s = text
+    font = QFont(family)
+    font.setPixelSize(max(1, round(size_pt * 96.0 / 72.0 * dpr)))
+    font.setHintingPreference(QFont.PreferNoHinting)
+    fm = QFontMetricsF(font)
+    pieces = []                                            # (kind, payload, ascent, descent, width)
+    for part in _MATH_SPLIT.split(s or ""):
+        if not part:
+            continue
+        if part.startswith("$") and part.endswith("$") and len(part) >= 2:
+            try:
+                img, depth, w = _math_raster(part, size_pt, 96.0 * dpr)
+                pieces.append(("m", img, img.shape[0] - depth, depth, max(w, img.shape[1])))
+                continue
+            except (ValueError, RuntimeError):
+                part = part.strip("$")
+        pieces.append(("t", part, fm.ascent(), fm.descent(), fm.horizontalAdvance(part)))
+    if not pieces:
+        pieces.append(("t", " ", fm.ascent(), fm.descent(), fm.horizontalAdvance(" ")))
+    asc = max(p[2] for p in pieces)
+    desc = max(p[3] for p in pieces)
+    W = int(np.ceil(sum(p[4] for p in pieces))) + 2
+    H = int(np.ceil(asc + desc)) + 1
+    out = QImage(W, H, QImage.Format_ARGB32_Premultiplied)
+    out.fill(Qt.transparent)
+    c = QColor(color)
+    pa = QPainter(out)
+    pa.setRenderHints(QPainter.Antialiasing | QPainter.TextAntialiasing)
+    pa.setFont(font)
+    pa.setPen(c)
+    x = 1.0
+    base = round(asc)
+    for kind, payload, a, _, w in pieces:
+        if kind == "t":
+            pa.drawText(QPointF(x, base), payload)
+        else:
+            h, wi = payload.shape
+            rgba = np.empty((h, wi, 4), np.uint8)
+            rgba[..., 0], rgba[..., 1], rgba[..., 2] = c.red(), c.green(), c.blue()
+            rgba[..., 3] = payload
+            qi = QImage(rgba.data, wi, h, 4 * wi, QImage.Format_RGBA8888).copy()
+            pa.drawImage(QPointF(round(x), base - round(a)), qi)     # whole pixels: crisp glyph edges
+        x += w
+    pa.end()
+    pm = QPixmap.fromImage(out)
+    pm.setDevicePixelRatio(dpr)
+    return pm
+
+
+@lru_cache(maxsize=256)
+def latex_pixmap_legacy(text: str, color: str, size_pt: float = 10.0, dpr: float = 2.0) -> QPixmap:
+    """Whole-string mathtext rendering (kept for image export paths that want a single font)."""
     buf = io.BytesIO()
     try:                                                   # all math as LaTeX: units, dims, formulas, loose tokens
         mathtext.math_to_image(to_math(text), buf, prop=FontProperties(size=size_pt), dpi=96 * dpr, format="png",
@@ -47,7 +131,8 @@ def latex_pixmap(text: str, color: str, size_pt: float = 10.0, dpr: float = 2.0)
 
 
 def clear_cache() -> None:
-    latex_pixmap.cache_clear()
+    _compose.cache_clear()
+    latex_pixmap_legacy.cache_clear()
 
 
 class LatexLabel(QLabel):

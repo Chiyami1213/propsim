@@ -9,7 +9,7 @@ from ..core.result import Result
 from ..core.schema import C, P, ParamModel
 from .base import Simulation
 
-LAW_LABELS = ["Power law  a·Gⁿ", "Marxman"]
+LAW_LABELS = [r"Power law $\dot r=aG_{ox}^{n}$", "Marxman"]
 
 
 class _MotorFields(ParamModel):

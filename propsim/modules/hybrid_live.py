@@ -222,7 +222,7 @@ class PortLiveParams(ParamModel):
                    group="Port flow")
     mdot_ox: float = P(1.8, symbol=r"\dot{m}_{ox}", desc="oxidizer mass flow", units="kg·s⁻¹", dims="M T⁻¹", lo=0.2,
                        hi=5.0, step=0.01, group="Port flow")
-    law: str = C("power", choices=["power", "marxman"], labels=["Power law  a·Gⁿ", "Marxman"],
+    law: str = C("power", choices=["power", "marxman"], labels=[r"Power law $\dot r=aG_{ox}^{n}$", "Marxman"],
                  symbol=r"\mathrm{regression\ law}", desc="local regression law", group="Port flow")
 
 
