@@ -1,0 +1,19 @@
+turbine_type,U_over_C0,efficiency,uncertainty,quality,source_id,location,formula
+impulse_single_stage,0.1,0.330,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_single_stage,0.2,0.570,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_single_stage,0.3,0.700,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_single_stage,0.4,0.770,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_single_stage,0.47,0.800,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_single_stage,0.55,0.780,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_single_stage,0.6,0.740,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_pressure_compounded_2stage,0.1,0.300,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_pressure_compounded_2stage,0.2,0.620,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_pressure_compounded_2stage,0.3,0.770,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_pressure_compounded_2stage,0.33,0.790,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_pressure_compounded_2stage,0.4,0.770,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_pressure_compounded_2stage,0.42,0.750,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_velocity_compounded_2row,0.1,0.380,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_velocity_compounded_2row,0.2,0.670,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_velocity_compounded_2row,0.25,0.695,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_velocity_compounded_2row,0.3,0.650,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100
+impulse_velocity_compounded_2row,0.35,0.550,0.03,published,HH-SP125,Fig. 6-27 p.198 (digitized; total-to-static),efficiency percent / 100

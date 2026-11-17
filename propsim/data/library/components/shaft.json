@@ -1,0 +1,82 @@
+{
+  "type": "shaft",
+  "category": "turbomachinery",
+  "description": "Rigid shaft joining turbine and pumps: speed from torque balance.",
+  "ports": [
+    {
+      "name": "drive",
+      "kind": "shaft",
+      "direction": "bidir",
+      "medium": "torque"
+    },
+    {
+      "name": "load",
+      "kind": "shaft",
+      "direction": "bidir",
+      "medium": "torque"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "inertia",
+      "unit": "kg m2",
+      "default": {
+        "value": null,
+        "unit": "kg m2",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "meaning": "Polar moment of inertia of rotating assembly (no generic value; gaps.md)"
+    },
+    {
+      "name": "aux_power",
+      "unit": "W",
+      "default": {
+        "value": 372849.935,
+        "unit": "W",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine), auxiliary drive",
+        "formula": "500 bhp x 745.7"
+      },
+      "min": 0.0,
+      "max": null,
+      "meaning": "Auxiliary drive power"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "omega",
+      "unit": "rad/s",
+      "meaning": "Shaft speed"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "speed",
+      "unit": "rad/s",
+      "meaning": "Shaft speed"
+    },
+    {
+      "name": "torque_net",
+      "unit": "N m",
+      "meaning": "Net torque"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "torque balance",
+      "form": "I\\dot\\omega = \\tau_t-\\sum\\tau_p-\\tau_{aux}",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/cycles.py (transient)"
+    }
+  ],
+  "valid_range": "Rigid shaft, no rotordynamics.",
+  "known_limitations": [
+    "Inertia must be supplied."
+  ],
+  "implementation": "propsim/core/feed/cycles.py"
+}

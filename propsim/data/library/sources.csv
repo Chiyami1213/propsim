@@ -5,3 +5,4 @@ CEA-THERMO,"McBride, B. J., Zehe, M. J. and Gordon, S., NASA Glenn Coefficients 
 NIST-WEBBOOK,"Linstrom, P. J. and Mallard, W. G. (eds.), NIST Chemistry WebBook, NIST Standard Reference Database 69, phase-change data pages, retrieved 2026-11-17",10.18434/T4D303,open,NIST SRD; each value cites its primary reference in the location column
 ROCKETPROPS,"Taylor, C., RocketProps 0.1.10 (Python package), propellant property models for storable propellants",https://pypi.org/project/rocketprops/,open,GPL-3.0; optional runtime backend only; no data copied into this library
 PROPSIM-DEF,"PropSim component library definitions (mixture compositions chosen by the library, not measured data)",,open,MIT (this repository)
+PROPSIM-CODE,"PropSim source code (this repository): the existing implementation the equation is taken from; the code cites its own references (MATHKIT.md, not in the repository)",https://github.com/Chiyami1213/propsim,open,MIT (this repository)

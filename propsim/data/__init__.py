@@ -11,17 +11,22 @@ from __future__ import annotations
 
 import csv
 import json
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 import numpy as np
 
 LIBRARY = Path(__file__).resolve().parent / "library"
 FLUIDS = LIBRARY / "fluids"
+COMPONENTS = LIBRARY / "components"
 
 QUALITIES = {"published", "derived", "estimated"}
 # SI unit strings allowed in ``unit`` columns. "1" marks a dimensionless value.
 UNITS = {
+    "N m",
+    "W/m2",
+    "m3/s",
+    "kg",
     "1",
     "K",
     "Pa",
@@ -53,13 +58,13 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(f))
 
 
-@lru_cache(maxsize=None)
+@cache
 def sources() -> dict[str, dict[str, str]]:
     """``source_id`` -> row of ``sources.csv``."""
     return {r["source_id"]: r for r in _read_csv(LIBRARY / "sources.csv")}
 
 
-@lru_cache(maxsize=None)
+@cache
 def fluids() -> dict[str, dict[str, str]]:
     """``fluid_id`` -> row of ``fluids/fluids.csv`` (identity, property backend and table provenance)."""
     return {r["fluid_id"]: r for r in _read_csv(FLUIDS / "fluids.csv")}
@@ -94,7 +99,7 @@ def _numeric_table(path: Path, text_cols: tuple[str, ...] = ()) -> dict[str, np.
     return out
 
 
-@lru_cache(maxsize=None)
+@cache
 def fluid_table(fluid_id: str) -> dict[str, np.ndarray]:
     """Single-phase (T, p) grid of a CoolProp fluid as column arrays; missing cells are NaN."""
     f = fluids()[fluid_id]
@@ -103,7 +108,7 @@ def fluid_table(fluid_id: str) -> dict[str, np.ndarray]:
     return _numeric_table(FLUIDS / f["table_file"], text_cols=("phase",))
 
 
-@lru_cache(maxsize=None)
+@cache
 def sat_table(fluid_id: str) -> dict[str, np.ndarray]:
     """Saturation line of a pure CoolProp fluid as column arrays."""
     f = fluids()[fluid_id]
@@ -122,6 +127,52 @@ def cea_mixtures() -> dict[str, dict[str, str]]:
 
 def cea_validation() -> list[dict[str, str]]:
     return _read_csv(FLUIDS / "cea_validation.csv")
+
+
+@cache
+def components() -> dict[str, dict]:
+    """``type`` -> component record (``components/<type>.json``, schema ``schemas/component.schema.json``)."""
+    out = {}
+    for p in sorted(COMPONENTS.glob("*.json")):
+        rec = json.loads(p.read_text(encoding="utf-8"))
+        out[rec["type"]] = rec
+    return out
+
+
+def component_table(name: str) -> list[dict[str, str]]:
+    """Rows of ``components/tables/<name>.csv``."""
+    return _read_csv(COMPONENTS / "tables" / f"{name}.csv")
+
+
+def _check_component(rec: dict, where: str, problems: list[str]) -> None:
+    src = sources()
+
+    def value(v: dict, tag: str) -> None:
+        if v["unit"] not in UNITS:
+            problems.append(f"{tag}: unit {v['unit']!r} not allowed")
+        if v["value"] is None:
+            return
+        if v["quality"] not in QUALITIES or v["source_id"] not in src or not v["location"]:
+            problems.append(f"{tag}: default value without complete provenance")
+        if v["quality"] in ("derived", "estimated") and not v.get("formula"):
+            problems.append(f"{tag}: {v['quality']} default without formula")
+
+    for prm in rec["parameters"]:
+        tag = f"{where} parameter {prm['name']}"
+        if prm["unit"] != prm["default"]["unit"]:
+            problems.append(f"{tag}: unit differs from its default's unit")
+        value(prm["default"], tag)
+        if prm.get("table") and not (LIBRARY / prm["table"]).exists():
+            problems.append(f"{tag}: table {prm['table']} missing")
+    for item in rec["state_variables"] + rec["outputs_for_plots"]:
+        if item["unit"] not in UNITS:
+            problems.append(f"{where} {item['name']}: unit {item['unit']!r} not allowed")
+    for e in rec["governing_equations"]:
+        if e["source_id"] not in src:
+            problems.append(f"{where} equation {e['name']!r}: unknown source_id {e['source_id']!r}")
+    names = [p["name"] for p in rec["ports"]]
+    if len(set(names)) != len(names):
+        problems.append(f"{where}: duplicate port names")
 
 
 def _check_provenance(
@@ -193,6 +244,13 @@ def validate() -> list[str]:
         if mid not in fl:
             problems.append(f"cea_mixtures.csv {mid}: no fluids.csv entry")
     _check_provenance(cea_validation(), "cea_validation.csv", problems, unit_col=None, value_col=None)
+
+    for t, rec in components().items():
+        _check_component(rec, f"components/{t}.json", problems)
+    for p in sorted((COMPONENTS / "tables").glob("*.csv")):
+        rows = _read_csv(p)
+        unit_col = "unit" if "unit" in rows[0] else None
+        _check_provenance(rows, f"components/tables/{p.name}", problems, unit_col=unit_col, value_col=None)
 
     for p in LIBRARY.rglob("*.json"):
         try:

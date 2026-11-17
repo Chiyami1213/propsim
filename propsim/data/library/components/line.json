@@ -1,0 +1,134 @@
+{
+  "type": "line",
+  "category": "line",
+  "description": "Liquid feed line: inertance plus friction; pressure waves are carried by the volumes at each end.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "length",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.01,
+      "max": 100.0,
+      "user_input": true,
+      "meaning": "Line length"
+    },
+    {
+      "name": "diameter",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.001,
+      "max": 1.0,
+      "user_input": true,
+      "meaning": "Inside diameter"
+    },
+    {
+      "name": "roughness",
+      "unit": "m",
+      "default": {
+        "value": 1.5240000000000001e-05,
+        "unit": "m",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 7-3 p.283 (machined or commercial cold-rolled)",
+        "formula": "0.00005 ft x 0.3048"
+      },
+      "min": 1e-07,
+      "max": 0.001,
+      "meaning": "Absolute wall roughness",
+      "table": "components/tables/surface_roughness.csv"
+    },
+    {
+      "name": "K_fittings",
+      "unit": "1",
+      "default": {
+        "value": 0.0,
+        "unit": "1",
+        "quality": "derived",
+        "source_id": "PROPSIM-DEF",
+        "location": "straight line",
+        "formula": "sum of fitting K values; 0 for a straight line"
+      },
+      "min": 0.0,
+      "max": 50.0,
+      "meaning": "Sum of loss coefficients of bends, tees and area changes in the line",
+      "table": "components/tables/loss_coefficients.csv"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Mass flow"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Mass flow"
+    },
+    {
+      "name": "dp_friction",
+      "unit": "Pa",
+      "meaning": "Friction and fitting loss"
+    },
+    {
+      "name": "velocity",
+      "unit": "m/s",
+      "meaning": "Mean velocity"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "momentum (inertance)",
+      "form": "\\frac{l}{A}\\frac{d\\dot m}{dt} = p_{in}-p_{out}-\\Big(f\\frac{l}{d}+\\sum K\\Big)\\frac{\\dot m|\\dot m|}{2\\rho A^2}",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: module docstring"
+    },
+    {
+      "name": "friction pressure drop (Darcy form)",
+      "form": "\\Delta p = f\\,\\frac{L}{d}\\,\\frac{\\rho v^2}{2}",
+      "source_id": "HH-SP125",
+      "location": "eq. (7-7) p.283 (SI form)",
+      "note": "f from the Moody chart (H&H Fig. 7-20); laminar f = 64/Re by Poiseuille, eq. (7-8) p.283"
+    },
+    {
+      "name": "component loss",
+      "form": "\\Delta p = K\\,\\frac{\\rho v^2}{2}",
+      "source_id": "HH-SP125",
+      "location": "eq. (7-9) p.285 (SI form)"
+    }
+  ],
+  "valid_range": "Incompressible liquid, Mach << 1; turbulent friction for Re > 2300 (H&H uses Re > 1200 as the turbulent limit).",
+  "known_limitations": [
+    "Lumped: one flow state per line, so wave travel inside the line is not resolved; split long lines into segments of length < a*dt.",
+    "Two-phase flow and cavitation in the line are not modelled."
+  ],
+  "implementation": "propsim/core/feed/network.py"
+}

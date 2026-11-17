@@ -1,0 +1,7 @@
+surface,roughness,unit,quality,source_id,location,formula
+drawn_tubing_very_clean,1.524e-06,m,published,HH-SP125,Table 7-3 p.283,5e-06 ft x 0.3048
+machined_smooth_clean,3.048e-06,m,published,HH-SP125,Table 7-3 p.283,1e-05 ft x 0.3048
+machined_or_cold_rolled,1.524e-05,m,published,HH-SP125,Table 7-3 p.283,5e-05 ft x 0.3048
+machined_rough,3.048e-05,m,published,HH-SP125,Table 7-3 p.283,0.0001 ft x 0.3048
+cast_or_forged_smooth,9.144e-05,m,published,HH-SP125,Table 7-3 p.283,0.0003 ft x 0.3048
+cast_forged_welded_commercial,0.0002438,m,published,HH-SP125,Table 7-3 p.283,0.0008 ft x 0.3048

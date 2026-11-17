@@ -28,7 +28,27 @@ design run.
 9. **Liquid isopropanol heat of formation**: the CEA database has only the gas (`IPA_GAS`); a liquid card needs the
    enthalpy of vaporization (NIST lists 45 ± 3 kJ/mol average).
 
+## Components (block B)
+
+1. **Valve opening and closing time laws** and stroke times: user input for now. Candidates: SSME System Engineer
+   Handbook (valve sequences, in the literature archive, scanned), NASA SP-8080 (liquid rocket pressure regulators,
+   relief valves, check valves, burst disks) and SP-8097 (liquid rocket valve components) on NTRS.
+2. **Pressure regulator, burst disc, filter, flexible joint and tee/bend-specific models**: only loss coefficients
+   (Table 7-4) so far; no regulator dynamics record yet (H&H Table 7-6 has a dome-loaded regulator example).
+3. **Cavitating venturi** discharge coefficient and pressure-recovery ratio.
+4. **Inducer head-breakdown law and pump cavitation curves**: Stenning, MIT GTL Report 44 (archive) and NASA
+   SP-8052 (turbopump inducers).
+5. **Nondimensional pump H-Q curve family** versus specific speed: H&H Fig. 6-24 is one pump only; NASA SP-8109.
+6. **Turbines**: partial admission, reaction and radial turbines, choked-flow relation (NASA SP-8110).
+7. **Shaft inertia** of real turbopumps (SSME handbook, SP-8107).
+8. **Injector per-type Cd, atomization and mixing efficiency** (NASA SP-8089); film and transpiration cooling;
+   supercritical coolant corrections (block B follow-up).
+9. **Nozzle**: method-of-characteristics validation cases, dual-bell and loss breakdown (NASA SP-8120).
+10. **Joukowsky surge relation**: implemented in the code, primary citation not yet in `sources.csv`.
+11. **Gas generator**: H&H Table 6-4 (fuel-rich GG products) not transcribed yet; temperature limits come with
+    the materials block.
+
 ## Later blocks
 
-Components, cycles, reference engines, materials, hybrid, electric and the schemas arrive in later PRs; their gaps
+Cycles, reference engines, materials, hybrid, electric and the schemas arrive in later PRs; their gaps
 will be listed here.

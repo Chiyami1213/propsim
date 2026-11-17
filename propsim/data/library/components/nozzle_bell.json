@@ -1,0 +1,101 @@
+{
+  "type": "nozzle_bell",
+  "category": "nozzle",
+  "description": "Bell nozzle: thrust from chamber state, area ratio and ambient pressure.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "gas"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "expansion_ratio",
+      "unit": "1",
+      "default": {
+        "value": 14.0,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine)"
+      },
+      "min": 1.5,
+      "max": 300.0,
+      "meaning": "A_e/A_t"
+    },
+    {
+      "name": "eta_CF",
+      "unit": "1",
+      "default": {
+        "value": 0.98,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine)"
+      },
+      "min": 0.9,
+      "max": 1.0,
+      "meaning": "Thrust coefficient efficiency (divergence, friction, kinetics)"
+    },
+    {
+      "name": "bell_fraction",
+      "unit": "1",
+      "default": {
+        "value": 0.8,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine)",
+        "formula": "80 percent bell"
+      },
+      "min": 0.6,
+      "max": 1.0,
+      "meaning": "Length relative to a 15 deg cone"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "thrust",
+      "unit": "N",
+      "meaning": "Thrust"
+    },
+    {
+      "name": "isp",
+      "unit": "s",
+      "meaning": "Specific impulse"
+    },
+    {
+      "name": "cf",
+      "unit": "1",
+      "meaning": "Thrust coefficient"
+    },
+    {
+      "name": "p_exit",
+      "unit": "Pa",
+      "meaning": "Exit pressure"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "thrust coefficient",
+      "form": "F = \\eta_{C_F} C_F p_c A_t",
+      "source_id": "HH-SP125",
+      "location": "eq. (1-33) p.12"
+    },
+    {
+      "name": "specific impulse",
+      "form": "I_{sp} = F/(\\dot m g_0)",
+      "source_id": "HH-SP125",
+      "location": "Chapter 1"
+    }
+  ],
+  "valid_range": "Attached flow; separation below p_e/p_a of about 0.3-0.4 is not modelled.",
+  "known_limitations": [
+    "No 2-D method-of-characteristics field (block B nozzle MOC validation cases pending).",
+    "No dual-bell or throat erosion."
+  ],
+  "implementation": "propsim/core/nozzle"
+}
