@@ -2,8 +2,6 @@
 
 Interactive 3D rocket-propulsion simulator (liquid, hybrid, solid, electric) for Windows 11 / Python 3.11+.
 
-**Status: Phase 1 (skeleton) complete.** See [docs/PROGRESS.md](docs/PROGRESS.md).
-
 ## Rules the UI follows
 1. **Live mode** (< 50 ms) recomputes while a slider drags. **Run mode** executes in a background thread with
    progress and Cancel, then plays back with a scrubber synchronised to the plots, the 3D scene and the readout.
