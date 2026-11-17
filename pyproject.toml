@@ -17,11 +17,14 @@ dependencies = [
     "pyqtgraph>=0.13",
     "pyvista>=0.43",
     "pyvistaqt>=0.11",
+    "CoolProp>=8.0",                     # N2O saturation tables, regenerative-cooling coolant properties
+    "scikit-image>=0.26",                # marching-cubes burning surface of the 3D solid-grain level set
 ]
 
 [project.optional-dependencies]
 rao = ["pygasflow>=1.4"]               # Rao bell angles from the Huzel & Huang chart (GPL-3.0, not bundled)
-cea = ["rocketcea>=1.2"]              # direct NASA-CEA; without it the shipped CEA tables are used
+cea = ["rocketcea>=1.2"]
+fast = ["numba>=0.68"]                 # compiled level-set kernel; without it a NumPy fallback is used              # direct NASA-CEA; without it the shipped CEA tables are used
 dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black", "rocketcea>=1.2"]
 
 [project.scripts]
