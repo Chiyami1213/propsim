@@ -178,6 +178,29 @@ Saved runs, cases, exports and automatic backups are kept in `%APPDATA%\PropSim`
 Choose another location with **File > Data Folder**, which can also copy existing runs and cases there.
 **File > Restore Last Session** reopens the model and parameters from your previous session.
 
+## Validation
+The test suite (`python -m pytest`, headless: set `QT_QPA_PLATFORM=offscreen`) currently reports **236 passed, 1 expected
+failure** (xfail). By group: `tests/reference` 25 (the MathKit reference script, `mathkit_check.py`, reports 24 PASS),
+`tests/core` 10, `tests/validation` 118, `tests/ui` 83 (Live under 50 ms, text and plot standards, process worker,
+window layout, code export).
+- **Reference values**: the validation tests reproduce the worked-example values of the project's MathKit document
+  (Sections 2, 3 and 5; Bartz heat-transfer values for the liquid module, ideal thrust coefficient, hybrid, solid and
+  electric-propulsion examples).
+- **Thermochemistry**: LOX/HTPB performance against Chiaverini Table 1, the bundled tables against direct NASA CEA for
+  all pairs, and frozen versus equilibrium ordering. One test is a documented expected failure: CEA's built-in HTPB is
+  1.7 % low in c\* and 1.2 % low in I_sp against Table 1 (a different HTPB formula), so the 1 % target is not met.
+- **Analytic and conservation checks**: Prandtl-Meyer and divergence loss for the nozzle, the Joukowsky water-hammer
+  limit and polytropic blowdown for the feed network, pump-turbine power balance for the cycles, chamber mass balance,
+  level-set convergence for the solid grain, and the Hall discharge mass balance.
+- Not validated here: the Hall breathing mode (not reproduced) and ion-optics focusing (checked for trend only).
+
+## How it was built
+I developed PropSim with Claude in VS Code, working from a written specification and the MathKit reference values.
+All physics lives in the pure-Python `propsim/core/` package, which has no Qt dependency, so it is tested on its own
+(`tests/core`, `tests/validation`); the Run models are drivers in `propsim/sims/`, and `propsim/modules/` and
+`propsim/ui/` only connect them to the plots and the 3D view. Each model's parameters are declared once with the schema
+in `propsim/core/schema.py`, which also drives the sliders, hover help and validation.
+
 ## Model notes and limitations
 - Combustion properties come from NASA CEA tables (about 0.14 % from direct CEA over the tabulated range).
 - Without pygasflow, Rao bell angles are placeholders and labelled as such.
