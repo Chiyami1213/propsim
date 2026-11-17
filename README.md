@@ -3,6 +3,67 @@
 Interactive 3D rocket propulsion simulator for Windows: liquid, hybrid, solid and electric propulsion in one desktop
 application, with live parameter studies, time-domain simulations, synchronized 3D views and publication-style plots.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/gallery/01-thermochemistry-and-nozzle.png" alt="Thermochemistry & nozzle: propellant pair, O/F, P_c and area ratio give CEA performance and the nozzle"><br><sub><b>Thermochemistry & nozzle</b> (Common, Live)</sub></td>
+    <td><img src="docs/gallery/02-injector-and-chamber.png" alt="Injector & chamber: injector and chamber sizing"><br><sub><b>Injector & chamber</b> (Liquid, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/03-regenerative-cooling.png" alt="Regenerative cooling: regenerative cooling of the chamber and nozzle"><br><sub><b>Regenerative cooling</b> (Liquid, Live)</sub></td>
+    <td><img src="docs/gallery/04-feed-network-transient.png" alt="Feed network transient: feed-network transient (valve timing, line dynamics)"><br><sub><b>Feed network transient</b> (Liquid, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/05-pump-fed-cycles.png" alt="Pump-fed cycles: pump-fed cycles (gas generator, expander, staged combustion)"><br><sub><b>Pump-fed cycles</b> (Liquid, Run)</sub></td>
+    <td><img src="docs/gallery/06-chugging-and-l-star-stability.png" alt="Chugging & L* stability: chugging and L* stability"><br><sub><b>Chugging & L* stability</b> (Liquid, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/07-nozzle-thrust-coefficient.png" alt="Nozzle thrust coefficient: nozzle area ratio gives the C_F curve, Mach and pressure distributions, and a 3D bell nozzle"><br><sub><b>Nozzle thrust coefficient</b> (Hybrid, Live)</sub></td>
+    <td><img src="docs/gallery/08-regression-laws.png" alt="Regression laws: regression-law explorer"><br><sub><b>Regression laws</b> (Hybrid, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/09-port-and-grain.png" alt="Port & grain: port and multiport grain"><br><sub><b>Port & grain</b> (Hybrid, Live)</sub></td>
+    <td><img src="docs/gallery/10-core-flow-fields.png" alt="Core flow fields: core flow fields (Taylor-Culick and bidirectional-vortex mantle)"><br><sub><b>Core flow fields</b> (Hybrid, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/11-fuel-and-oxidizer.png" alt="Fuel & oxidizer: fuel and oxidizer properties"><br><sub><b>Fuel & oxidizer</b> (Hybrid, Live)</sub></td>
+    <td><img src="docs/gallery/12-instability-and-scaling.png" alt="Instability & scaling: ILFI instability and similarity scaling"><br><sub><b>Instability & scaling</b> (Hybrid, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/13-0-d-burn.png" alt="0-D burn: 0-D burn (HTPB/GOX power law) with 3D grain cutaway playback"><br><sub><b>0-D burn</b> (Hybrid, Run)</sub></td>
+    <td><img src="docs/gallery/14-quasi-1d-burn.png" alt="Quasi-1D burn: quasi-1D burn: axial port evolution, throttling, throat erosion"><br><sub><b>Quasi-1D burn</b> (Hybrid, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/15-n2o-blowdown.png" alt="N₂O blowdown: N2O self-pressurized tank blowdown feeding the hybrid motor"><br><sub><b>N₂O blowdown</b> (Hybrid, Run)</sub></td>
+    <td><img src="docs/gallery/16-grain-designer.png" alt="Grain designer: grain designer (2-D section burnback tables)"><br><sub><b>Grain designer</b> (Solid, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/17-burn-rate-and-k-n.png" alt="Burn rate & K_n: burn-rate and K_n tool"><br><sub><b>Burn rate & K_n</b> (Solid, Live)</sub></td>
+    <td><img src="docs/gallery/18-3d-burnback.png" alt="3D burnback: 3-D level-set burnback"><br><sub><b>3D burnback</b> (Solid, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/19-internal-ballistics.png" alt="Internal ballistics: internal ballistics"><br><sub><b>Internal ballistics</b> (Solid, Run)</sub></td>
+    <td><img src="docs/gallery/20-mission-and-power-trades.png" alt="Mission & power trades: mission and power trades"><br><sub><b>Mission & power trades</b> (Electric, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/21-electrothermal-thrusters.png" alt="Electrothermal thrusters: electrothermal thrusters"><br><sub><b>Electrothermal thrusters</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/22-gridded-ion-thruster.png" alt="Gridded ion thruster: gridded ion thruster"><br><sub><b>Gridded ion thruster</b> (Electric, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/23-hall-thruster.png" alt="Hall thruster: Hall thruster"><br><sub><b>Hall thruster</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/24-ion-optics.png" alt="Ion optics: ion-optics beamlet particle simulation"><br><sub><b>Ion optics</b> (Electric, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/25-hall-discharge.png" alt="Hall discharge: 1-D Hall discharge"><br><sub><b>Hall discharge</b> (Electric, Run)</sub></td>
+    <td><img src="docs/gallery/26-low-thrust-spiral.png" alt="Low-thrust spiral: low-thrust Edelbaum spiral with solar-array degradation"><br><sub><b>Low-thrust spiral</b> (Electric, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/27-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
+    <td></td>
+  </tr>
+</table>
+
 ## Features
 - **Live mode**: physics recomputes in under 50 ms while you drag a slider; plots, 3D scene and readouts follow.
 - **Run mode**: longer simulations run in a separate process with progress and Cancel, then play back with a
@@ -23,6 +84,58 @@ application, with live parameter studies, time-domain simulations, synchronized 
     every plot with Matplotlib.
   - *MATLAB script* (`.m` + `_data.mat`): every plot redrawn natively (grid, LaTeX labels); set `rerun = true`
     to recompute from MATLAB through Python.
+
+## Models
+
+**Common**
+
+- **Thermochemistry & nozzle** (Live): propellant pair, O/F, P_c and area ratio give CEA performance and the nozzle.
+
+**Liquid**
+
+- **Injector & chamber** (Live): injector and chamber sizing.
+- **Regenerative cooling** (Live): regenerative cooling of the chamber and nozzle.
+- **Feed network transient** (Run): feed-network transient (valve timing, line dynamics).
+- **Pump-fed cycles** (Run): pump-fed cycles (gas generator, expander, staged combustion).
+- **Chugging & L* stability** (Run): chugging and L* stability.
+
+**Hybrid**
+
+- **Nozzle thrust coefficient** (Live): nozzle area ratio gives the C_F curve, Mach and pressure distributions, and a 3D bell nozzle.
+- **Regression laws** (Live): regression-law explorer.
+- **Port & grain** (Live): port and multiport grain.
+- **Core flow fields** (Live): core flow fields (Taylor-Culick and bidirectional-vortex mantle).
+- **Fuel & oxidizer** (Live): fuel and oxidizer properties.
+- **Instability & scaling** (Live): ILFI instability and similarity scaling.
+- **0-D burn** (Run): 0-D burn (HTPB/GOX power law) with 3D grain cutaway playback.
+- **Quasi-1D burn** (Run): quasi-1D burn: axial port evolution, throttling, throat erosion.
+- **N₂O blowdown** (Run): N2O self-pressurized tank blowdown feeding the hybrid motor.
+
+**Solid**
+
+- **Grain designer** (Live): grain designer (2-D section burnback tables).
+- **Burn rate & K_n** (Live): burn-rate and K_n tool.
+- **3D burnback** (Run): 3-D level-set burnback.
+- **Internal ballistics** (Run): internal ballistics.
+
+**Electric**
+
+- **Mission & power trades** (Live): mission and power trades.
+- **Electrothermal thrusters** (Live): electrothermal thrusters.
+- **Gridded ion thruster** (Live): gridded ion thruster.
+- **Hall thruster** (Live): Hall thruster.
+- **Ion optics** (Run): ion-optics beamlet particle simulation.
+- **Hall discharge** (Run): 1-D Hall discharge.
+- **Low-thrust spiral** (Run): low-thrust Edelbaum spiral with solar-array degradation.
+
+**Vehicle**
+
+
+**Toy**
+
+- **Spring-mass** (Run): damped spring-mass, a proof of the Run pipeline (not a propulsion model).
+
+Planned and not yet implemented: ILFI stability (Run) and point-mass ascent (Vehicle).
 
 ## System requirements
 
