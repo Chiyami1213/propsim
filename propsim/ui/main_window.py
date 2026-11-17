@@ -6,7 +6,7 @@ import re
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QByteArray, QProcess, QSettings, Qt, QUrl
+from PySide6.QtCore import QByteArray, QProcess, QSettings, Qt, QTimer, QUrl
 from PySide6.QtGui import QAction, QDesktopServices, QKeySequence, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDockWidget, QFileDialog, QFrame, QLabel, QListWidget,
                                QListWidgetItem, QMainWindow, QMessageBox, QScrollArea, QSplitter,
@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         migrated = storage.migrate_legacy(self.home) if home is None else 0
         gc_guard.install(parent=self)                      # cyclic GC only between events, never inside a paint
         self.use_settings = use_settings
+        self._layout_restored = False
         self.resize(1600, 1000)
         self.ctrl: ModelController | None = None
         self.form: ParamForm | None = None
@@ -91,6 +92,7 @@ class MainWindow(QMainWindow):
         self.playback.frameChanged.connect(self._on_frame)
         if use_settings:
             self._restore_layout()
+        self._layout_on_show = not self._layout_restored    # Qt redistributes dock sizes on first show
         self._log(f"data folder: {self.home}")
         if migrated:
             self._log(f"copied {migrated} saved files from the previous data folder (~/.propsim)")
@@ -562,7 +564,13 @@ class MainWindow(QMainWindow):
         if isinstance(g, QByteArray):
             self.restoreGeometry(g)
         if isinstance(st, QByteArray):
-            self.restoreState(st, LAYOUT_VERSION)               # False (ignored) for an older dock set
+            self._layout_restored = self.restoreState(st, LAYOUT_VERSION)   # False for an older dock set
+
+    def showEvent(self, ev) -> None:
+        super().showEvent(ev)
+        if self._layout_on_show:
+            self._layout_on_show = False
+            QTimer.singleShot(0, self.default_layout)
 
     def reset_layout(self) -> None:
         self.default_layout()
