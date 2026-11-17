@@ -1,1 +1,1 @@
-"""Planned for a later phase (see docs/PROGRESS.md)."""
+"""Trajectory physics: atmosphere, aerodynamics and point-mass flight integration."""

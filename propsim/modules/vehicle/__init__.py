@@ -1,1 +1,1 @@
-"""Planned for a later phase (see docs/PROGRESS.md)."""
+"""Vehicle module: flight-performance models (point-mass ascent)."""
