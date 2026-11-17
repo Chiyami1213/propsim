@@ -37,17 +37,48 @@ def sd_segment(u, v, a: float, b: float):
     return np.hypot(u - np.clip(u, a, b), v)
 
 
+def _min_d2_segments(px: np.ndarray, py: np.ndarray, segs) -> np.ndarray:
+    """Squared distance from points to the nearest of the segments ``(a, b)`` (in-place arithmetic, 1-D arrays)."""
+    d2 = np.full(px.shape, np.inf)
+    ex, ey, t = np.empty_like(px), np.empty_like(px), np.empty_like(px)
+    for a, b in segs:
+        abx, aby = b[0] - a[0], b[1] - a[1]
+        inv = 1.0 / max(abx * abx + aby * aby, 1e-300)
+        np.subtract(px, a[0], out=ex)
+        np.subtract(py, a[1], out=ey)
+        np.multiply(ex, abx * inv, out=t)
+        t += ey * (aby * inv)
+        np.clip(t, 0.0, 1.0, out=t)
+        ex -= t * abx
+        ey -= t * aby
+        np.minimum(d2, ex * ex + ey * ey, out=d2)
+    return d2
+
+
 def sd_polygon(X, Y, pts: np.ndarray):
     """Exact signed distance to a closed polygon (negative inside)."""
-    P = np.c_[X.ravel(), Y.ravel()]
-    d2 = np.full(len(P), np.inf)
-    for k in range(len(pts)):
-        a, b = pts[k], pts[(k + 1) % len(pts)]
-        ab = b - a
-        t = np.clip(((P - a) @ ab) / (ab @ ab), 0.0, 1.0)
-        d2 = np.minimum(d2, np.sum((P - (a + t[:, None] * ab)) ** 2, axis=1))
-    inside = Path(pts).contains_points(P)
-    return (np.sqrt(d2) * np.where(inside, -1.0, 1.0)).reshape(X.shape)
+    px, py = np.ravel(X).astype(float), np.ravel(Y).astype(float)
+    d2 = _min_d2_segments(px, py, [(pts[k], pts[(k + 1) % len(pts)]) for k in range(len(pts))])
+    inside = Path(pts).contains_points(np.c_[px, py])
+    return (np.sqrt(d2) * np.where(inside, -1.0, 1.0)).reshape(np.shape(X))
+
+
+def sd_star(X, Y, n: int, r_tip: float, r_valley: float):
+    """Exact signed distance to an ``n``-point star (tips at angles 2 pi k / n): the points are folded into the
+    half-sector [0, pi/n] by the star's rotation and mirror symmetry, so only the four edges around it are needed."""
+    s = 2.0 * np.pi / n
+    th = np.mod(np.arctan2(Y, X), s)
+    th = np.minimum(th, s - th).ravel()
+    r = np.hypot(X, Y).ravel()
+    px, py = r * np.cos(th), r * np.sin(th)
+    v = lambda ang, rad: np.array([rad * np.cos(ang), rad * np.sin(ang)])
+    chain = [v(-0.5 * s, r_valley), v(0.0, r_tip), v(0.5 * s, r_valley), v(s, r_tip), v(1.5 * s, r_valley)]
+    d2 = _min_d2_segments(px, py, list(zip(chain[:-1], chain[1:])))
+    k = np.arange(2 * n)
+    ang = np.pi * k / n
+    rad = np.where(k % 2 == 0, r_tip, r_valley)
+    inside = Path(np.c_[rad * np.cos(ang), rad * np.sin(ang)]).contains_points(np.c_[px, py])
+    return (np.sqrt(d2) * np.where(inside, -1.0, 1.0)).reshape(np.shape(X))
 
 
 def rot(X, Y, ang: float):
@@ -68,10 +99,7 @@ def sdf_field(kind: str, X, Y, R_out: float, R_p: float = 15.0, n: int = 6, w: f
     * ``center4`` / ``center6``: bore plus 4 / 6 satellite bores of radius ``R_p`` on a ring at ``R_out / 2``.
     """
     if kind == "star":
-        k = np.arange(2 * n)
-        ang = np.pi * k / n
-        rad = np.where(k % 2 == 0, r_tip, r_valley) * R_out
-        return sd_polygon(X, Y, np.c_[rad * np.cos(ang), rad * np.sin(ang)])
+        return sd_star(X, Y, n, r_tip * R_out, r_valley * R_out)
     sd = sd_circle(X, Y, R_p)
     if kind == "wagon":
         hl = 0.5 * depth * R_out
