@@ -1,0 +1,21 @@
+species_id,cea_name,elements,molar_mass,dHf,dHf_unit,T_ref,phase,quality,source_id,location
+LOX,O2(L),O 2,0.0319988,-12979,J/mol,90.170,condensed,published,CEA-THERMO,"thermo.inp line 15637 (code g 6/96); Oxygen. McBride,1996 pp85,93."
+GOX,O2,O 2,0.0319988,0,J/mol,298.15,gas,published,CEA-THERMO,"thermo.inp line 7947 (code tpis89); Ref-Elm. Gurvich,1989 pt1 p94 pt2 p9."
+LH2,H2(L),H 2,0.00201588,-9012,J/mol,20.270,condensed,published,CEA-THERMO,"thermo.inp line 15535 (code g 6/96); Hydrogen. McBride,1996 pp84,92."
+GH2,H2,H 2,0.00201588,0,J/mol,298.15,gas,published,CEA-THERMO,"thermo.inp line 5625 (code tpis78); Ref-Elm. Gurvich,1978 pt1 p103 pt2 p31."
+LCH4,CH4(L),C 1 H 4,0.01604246,-89233,J/mol,111.643,condensed,published,CEA-THERMO,"thermo.inp line 15416 (code g 6/96); Methane. McBride,1996 pp85,93."
+GCH4,CH4,C 1 H 4,0.01604246,-74600,J/mol,298.15,gas,published,CEA-THERMO,"thermo.inp line 2499 (code g 8/99); Gurvich,1991 pt1 p44 pt2 p36."
+RP1,RP-1,C 1 H 1.95,0.013976183,-24717.7,J/mol,298.150,condensed,published,CEA-THERMO,thermo.inp line 15643 (code gll/00); Mehta et.al. AIAA 95-2962 1995. Hcomb(high) = 19923.BTU/#
+ETOH,C2H5OH(L),C 2 H 6 O 1,0.04606844,-277510,J/mol,298.15,condensed,published,CEA-THERMO,"thermo.inp line 15442 (code n12/84); Ethanol. TRC(12/87) p5000 (12/84) tc,uc,vc5031-3. React."
+IPA_GAS,"C3H8O,2propanol",C 3 H 8 O 1,0.06009502,-272700,J/mol,298.15,gas,published,CEA-THERMO,"thermo.inp line 3318 (code g 2/00); Hf:TRC(6/87) w5030. Chao,1986."
+N2O4,N2O4(L),N 2 O 4,0.092011,-17549,J/mol,298.150,condensed,published,CEA-THERMO,"thermo.inp line 15634 (code g 6/96); Dinitrogen tetroxide. McBride,1996 pp85,93."
+MMH,CH6N2(L),C 1 H 6 N 2,0.04607174,54200,J/mol,298.150,condensed,published,CEA-THERMO,thermo.inp line 15424 (code n12/93); Monomethyl Hydrazine. TRC(12/93) p9220.
+UDMH,"C2H8N2(L),UDMH",C 2 H 8 N 2,0.06009832,48900,J/mol,298.150,condensed,published,CEA-THERMO,"thermo.inp line 15447 (code g 6/96); Unsymmetrical Dimethyl Hydrazine. McBride,1996 pp85,93."
+N2H4,N2H4(L),N 2 H 4,0.03204516,50380,J/mol,298.15,condensed,published,CEA-THERMO,"thermo.inp line 15629 (code g11/99); Hydrazine.Hf:Gurvich,1989 pt1 p360. Chase,1998(12/65). React."
+H2O2,H2O2(L),H 2 O 2,0.03401468,-187780,J/mol,298.15,condensed,published,CEA-THERMO,"thermo.inp line 15538 (code tpis89); Gurvich, 1989 v1 pt1 p126 pt2 p303. React."
+H2O,H2O(L),H 2 O 1,0.01801528,-285830,J/mol,298.15,condensed,published,CEA-THERMO,"thermo.inp line 12410 (code g 8/01); Liquid. Cox,1989. Haar,1984. Keenan,1984. Stimson,1969."
+N2O,N2O,N 2 O 1,0.0440128,81600,J/mol,298.15,gas,published,CEA-THERMO,"thermo.inp line 7413 (code g 4/99); Gurvich,1989 pt1 p337 pt2 p210."
+GHE,He,He 1,0.004002602,0,J/mol,298.15,gas,published,CEA-THERMO,"thermo.inp line 5829 (code g 5/97); Ref-Elm. Moore,1971. Moore,1970a. Gordon,1999."
+GN2,N2,N 2,0.0280134,0,J/mol,298.15,gas,published,CEA-THERMO,"thermo.inp line 7324 (code tpis78); Ref-Elm. Gurvich,1978 pt1 p280 pt2 p207."
+JP4,JP-4,C 1 H 1.94,0.0139661036,-22723,J/mol,298.150,condensed,published,CEA-THERMO,"thermo.inp line 15546 (code g 6/96); McBride,1996 pp85,93. Hcomb = 18640.BTU/#"
+JP5,JP-5,C 1 H 1.92,0.0139459448,-22183,J/mol,298.150,condensed,published,CEA-THERMO,"thermo.inp line 15549 (code g 6/96); Or ASTMA1(L). McBride,1996 pp85,93. Hcomb = 18600.BTU/#"

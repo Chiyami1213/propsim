@@ -1,0 +1,7 @@
+mixture_id,components,basis,quality,source_id,location,formula
+ETOH95,ETOH:0.95;H2O:0.05,mass,derived,PROPSIM-DEF,mixture definition,blend by mass fraction; CEA input as two fuel cards with wt% 95 and 5
+ETOH75,ETOH:0.75;H2O:0.25,mass,derived,PROPSIM-DEF,mixture definition,blend by mass fraction; CEA input as two fuel cards with wt% 75 and 25
+H2O2_70,H2O2:0.70;H2O:0.30,mass,derived,PROPSIM-DEF,mixture definition,blend by mass fraction; CEA input as two oxidizer cards
+H2O2_90,H2O2:0.90;H2O:0.10,mass,derived,PROPSIM-DEF,mixture definition,blend by mass fraction; CEA input as two oxidizer cards
+H2O2_95,H2O2:0.95;H2O:0.05,mass,derived,PROPSIM-DEF,mixture definition,blend by mass fraction; CEA input as two oxidizer cards
+H2O2_98,H2O2:0.98;H2O:0.02,mass,derived,PROPSIM-DEF,mixture definition,blend by mass fraction; CEA input as two oxidizer cards

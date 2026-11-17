@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://propsim/library/schemas/sourced_value.schema.json",
+  "title": "Sourced value",
+  "description": "One physical value with its provenance. Every number in a library JSON file uses this object. SI units only.",
+  "type": "object",
+  "required": ["value", "unit", "quality", "source_id", "location"],
+  "additionalProperties": false,
+  "properties": {
+    "value": {"type": ["number", "null"], "description": "SI value; null when no source gives it (then listed in gaps.md)"},
+    "unit": {"type": "string", "description": "SI unit string from the library unit list (README.md)"},
+    "quality": {"enum": ["published", "derived", "estimated", null]},
+    "source_id": {"type": ["string", "null"], "description": "Key into sources.csv"},
+    "location": {"type": ["string", "null"], "description": "Page, table or figure in the source"},
+    "uncertainty": {"type": ["number", "null"], "description": "Absolute uncertainty in the same unit, when the source gives one"},
+    "formula": {"type": ["string", "null"], "description": "How a derived value was computed, or the unit conversion applied"}
+  },
+  "allOf": [
+    {"if": {"properties": {"quality": {"const": "derived"}}}, "then": {"required": ["formula"]}},
+    {"if": {"properties": {"quality": {"const": "estimated"}}}, "then": {"required": ["formula"]}}
+  ]
+}

@@ -1,0 +1,119 @@
+fluid_id,property,value,unit,quality,source_id,location,uncertainty,T_cond,p_cond,formula,preferred
+LOX,molar_mass,0.0319988,kg/mol,derived,COOLPROP-8.0.0,"EOS Schmidt-FPE-1985,Stewart-JPCRD-1991",,,,"CoolProp PropsSI('molar_mass','Oxygen')",1
+LOX,T_crit,154.5994,K,derived,COOLPROP-8.0.0,"EOS Schmidt-FPE-1985,Stewart-JPCRD-1991",,,,"CoolProp PropsSI('Tcrit','Oxygen')",1
+LOX,p_crit,5046411,Pa,derived,COOLPROP-8.0.0,"EOS Schmidt-FPE-1985,Stewart-JPCRD-1991",,,,"CoolProp PropsSI('pcrit','Oxygen')",1
+LOX,rho_crit,426.934,kg/m3,derived,COOLPROP-8.0.0,"EOS Schmidt-FPE-1985,Stewart-JPCRD-1991",,,,"CoolProp PropsSI('rhomass_critical','Oxygen')",1
+LOX,T_triple,54.361,K,derived,COOLPROP-8.0.0,"EOS Schmidt-FPE-1985,Stewart-JPCRD-1991",,,,"CoolProp PropsSI('Ttriple','Oxygen')",1
+LOX,T_nbp,90.18781,K,derived,COOLPROP-8.0.0,"EOS Schmidt-FPE-1985,Stewart-JPCRD-1991",,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'Oxygen')",1
+LN2,molar_mass,0.02801348,kg/mol,derived,COOLPROP-8.0.0,EOS Span-JPCRD-2000,,,,"CoolProp PropsSI('molar_mass','Nitrogen')",1
+LN2,T_crit,126.192,K,derived,COOLPROP-8.0.0,EOS Span-JPCRD-2000,,,,"CoolProp PropsSI('Tcrit','Nitrogen')",1
+LN2,p_crit,3395800,Pa,derived,COOLPROP-8.0.0,EOS Span-JPCRD-2000,,,,"CoolProp PropsSI('pcrit','Nitrogen')",1
+LN2,rho_crit,313.3,kg/m3,derived,COOLPROP-8.0.0,EOS Span-JPCRD-2000,,,,"CoolProp PropsSI('rhomass_critical','Nitrogen')",1
+LN2,T_triple,63.151,K,derived,COOLPROP-8.0.0,EOS Span-JPCRD-2000,,,,"CoolProp PropsSI('Ttriple','Nitrogen')",1
+LN2,T_nbp,77.35499,K,derived,COOLPROP-8.0.0,EOS Span-JPCRD-2000,,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'Nitrogen')",1
+LH2,molar_mass,0.00201588,kg/mol,derived,COOLPROP-8.0.0,EOS Leachman-JPCRD-2009,,,,"CoolProp PropsSI('molar_mass','ParaHydrogen')",1
+LH2,T_crit,32.93786,K,derived,COOLPROP-8.0.0,EOS Leachman-JPCRD-2009,,,,"CoolProp PropsSI('Tcrit','ParaHydrogen')",1
+LH2,p_crit,1285776,Pa,derived,COOLPROP-8.0.0,EOS Leachman-JPCRD-2009,,,,"CoolProp PropsSI('pcrit','ParaHydrogen')",1
+LH2,rho_crit,31.31544,kg/m3,derived,COOLPROP-8.0.0,EOS Leachman-JPCRD-2009,,,,"CoolProp PropsSI('rhomass_critical','ParaHydrogen')",1
+LH2,T_triple,13.8033,K,derived,COOLPROP-8.0.0,EOS Leachman-JPCRD-2009,,,,"CoolProp PropsSI('Ttriple','ParaHydrogen')",1
+LH2,T_nbp,20.27125,K,derived,COOLPROP-8.0.0,EOS Leachman-JPCRD-2009,,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'ParaHydrogen')",1
+LCH4,molar_mass,0.0160428,kg/mol,derived,COOLPROP-8.0.0,EOS Setzmann-JPCRD-1991,,,,"CoolProp PropsSI('molar_mass','Methane')",1
+LCH4,T_crit,190.564,K,derived,COOLPROP-8.0.0,EOS Setzmann-JPCRD-1991,,,,"CoolProp PropsSI('Tcrit','Methane')",1
+LCH4,p_crit,4599200,Pa,derived,COOLPROP-8.0.0,EOS Setzmann-JPCRD-1991,,,,"CoolProp PropsSI('pcrit','Methane')",1
+LCH4,rho_crit,162.6602,kg/m3,derived,COOLPROP-8.0.0,EOS Setzmann-JPCRD-1991,,,,"CoolProp PropsSI('rhomass_critical','Methane')",1
+LCH4,T_triple,90.6941,K,derived,COOLPROP-8.0.0,EOS Setzmann-JPCRD-1991,,,,"CoolProp PropsSI('Ttriple','Methane')",1
+LCH4,T_nbp,111.6672,K,derived,COOLPROP-8.0.0,EOS Setzmann-JPCRD-1991,,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'Methane')",1
+RP1_SURR,molar_mass,0.1703348,kg/mol,derived,COOLPROP-8.0.0,EOS Lemmon-EF-2004,,,,"CoolProp PropsSI('molar_mass','n-Dodecane')",1
+RP1_SURR,T_crit,658.1,K,derived,COOLPROP-8.0.0,EOS Lemmon-EF-2004,,,,"CoolProp PropsSI('Tcrit','n-Dodecane')",1
+RP1_SURR,p_crit,1817570,Pa,derived,COOLPROP-8.0.0,EOS Lemmon-EF-2004,,,,"CoolProp PropsSI('pcrit','n-Dodecane')",1
+RP1_SURR,rho_crit,226.6048,kg/m3,derived,COOLPROP-8.0.0,EOS Lemmon-EF-2004,,,,"CoolProp PropsSI('rhomass_critical','n-Dodecane')",1
+RP1_SURR,T_triple,263.6,K,derived,COOLPROP-8.0.0,EOS Lemmon-EF-2004,,,,"CoolProp PropsSI('Ttriple','n-Dodecane')",1
+RP1_SURR,T_nbp,489.4415,K,derived,COOLPROP-8.0.0,EOS Lemmon-EF-2004,,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'n-Dodecane')",1
+ETOH,molar_mass,0.04606844,kg/mol,derived,COOLPROP-8.0.0,EOS Schroeder-JPCRD-2014,,,,"CoolProp PropsSI('molar_mass','Ethanol')",1
+ETOH,T_crit,514.7093,K,derived,COOLPROP-8.0.0,EOS Schroeder-JPCRD-2014,,,,"CoolProp PropsSI('Tcrit','Ethanol')",1
+ETOH,p_crit,6267915,Pa,derived,COOLPROP-8.0.0,EOS Schroeder-JPCRD-2014,,,,"CoolProp PropsSI('pcrit','Ethanol')",1
+ETOH,rho_crit,273.2175,kg/m3,derived,COOLPROP-8.0.0,EOS Schroeder-JPCRD-2014,,,,"CoolProp PropsSI('rhomass_critical','Ethanol')",1
+ETOH,T_triple,159.1,K,derived,COOLPROP-8.0.0,EOS Schroeder-JPCRD-2014,,,,"CoolProp PropsSI('Ttriple','Ethanol')",1
+ETOH,T_nbp,351.5704,K,derived,COOLPROP-8.0.0,EOS Schroeder-JPCRD-2014,,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'Ethanol')",1
+H2O,molar_mass,0.01801527,kg/mol,derived,COOLPROP-8.0.0,EOS Wagner-JPCRD-2002,,,,"CoolProp PropsSI('molar_mass','Water')",1
+H2O,T_crit,647.096,K,derived,COOLPROP-8.0.0,EOS Wagner-JPCRD-2002,,,,"CoolProp PropsSI('Tcrit','Water')",1
+H2O,p_crit,2.2064e+07,Pa,derived,COOLPROP-8.0.0,EOS Wagner-JPCRD-2002,,,,"CoolProp PropsSI('pcrit','Water')",1
+H2O,rho_crit,322,kg/m3,derived,COOLPROP-8.0.0,EOS Wagner-JPCRD-2002,,,,"CoolProp PropsSI('rhomass_critical','Water')",1
+H2O,T_triple,273.16,K,derived,COOLPROP-8.0.0,EOS Wagner-JPCRD-2002,,,,"CoolProp PropsSI('Ttriple','Water')",1
+H2O,T_nbp,373.1243,K,derived,COOLPROP-8.0.0,EOS Wagner-JPCRD-2002,,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'Water')",1
+N2O,molar_mass,0.0440128,kg/mol,derived,COOLPROP-8.0.0,EOS Lemmon-JCED-2006,,,,"CoolProp PropsSI('molar_mass','NitrousOxide')",1
+N2O,T_crit,309.5207,K,derived,COOLPROP-8.0.0,EOS Lemmon-JCED-2006,,,,"CoolProp PropsSI('Tcrit','NitrousOxide')",1
+N2O,p_crit,7244817,Pa,derived,COOLPROP-8.0.0,EOS Lemmon-JCED-2006,,,,"CoolProp PropsSI('pcrit','NitrousOxide')",1
+N2O,rho_crit,452.9315,kg/m3,derived,COOLPROP-8.0.0,EOS Lemmon-JCED-2006,,,,"CoolProp PropsSI('rhomass_critical','NitrousOxide')",1
+N2O,T_triple,182.33,K,derived,COOLPROP-8.0.0,EOS Lemmon-JCED-2006,,,,"CoolProp PropsSI('Ttriple','NitrousOxide')",1
+N2O,T_nbp,184.6839,K,derived,COOLPROP-8.0.0,EOS Lemmon-JCED-2006,,,101325,"CoolProp PropsSI('T','P',101325,'Q',0,'NitrousOxide')",1
+GHE,molar_mass,0.004002602,kg/mol,derived,COOLPROP-8.0.0,EOS OrtizVega-JPCRD-2019,,,,"CoolProp PropsSI('molar_mass','Helium')",1
+GHE,T_crit,5.1953,K,derived,COOLPROP-8.0.0,EOS OrtizVega-JPCRD-2019,,,,"CoolProp PropsSI('Tcrit','Helium')",1
+GHE,p_crit,228322.8,Pa,derived,COOLPROP-8.0.0,EOS OrtizVega-JPCRD-2019,,,,"CoolProp PropsSI('pcrit','Helium')",1
+GHE,rho_crit,69.58493,kg/m3,derived,COOLPROP-8.0.0,EOS OrtizVega-JPCRD-2019,,,,"CoolProp PropsSI('rhomass_critical','Helium')",1
+GHE,T_triple,2.1768,K,derived,COOLPROP-8.0.0,EOS OrtizVega-JPCRD-2019,,,,"CoolProp PropsSI('Ttriple','Helium')",1
+N2H4,molar_mass,0.03205,kg/mol,published,HH-SP125,Table 1-4 p.22,,,,32.05 g/mol /1000,1
+N2H4,T_freeze,274.539,K,published,HH-SP125,Table 1-4 p.22,,,,34.5 degF to K,1
+N2H4,T_nbp,386.15,K,published,HH-SP125,Table 1-4 p.22,,,101325,235.4 degF to K,1
+N2H4,p_vap,19305.3,Pa,published,HH-SP125,Table 1-4 p.22,,344.26,,2.8 psia at 160 degF,1
+N2H4,rho_liq,1010,kg/m3,published,HH-SP125,Table 1-4 p.22,,293.15,,1.01 g/cm3 at 68 degF,1
+H2O2_95,molar_mass,0.03257,kg/mol,published,HH-SP125,Table 1-4 p.22,,,,32.57 g/mol /1000,1
+H2O2_95,T_freeze,267.539,K,published,HH-SP125,Table 1-4 p.22,,,,21.9 degF to K,1
+H2O2_95,T_nbp,419.15,K,published,HH-SP125,Table 1-4 p.22,,,101325,294.8 degF to K,1
+H2O2_95,p_vap,344.738,Pa,published,HH-SP125,Table 1-4 p.22,,298.15,,0.05 psia at 77 degF,1
+H2O2_95,rho_liq,1414,kg/m3,published,HH-SP125,Table 1-4 p.22,,298.15,,1.414 g/cm3 at 77 degF,1
+H2O2_98,molar_mass,0.03342,kg/mol,published,HH-SP125,Table 1-4 p.22,,,,33.42 g/mol /1000,1
+H2O2_98,T_freeze,270.65,K,published,HH-SP125,Table 1-4 p.22,,,,27.5 degF to K,1
+H2O2_98,T_nbp,421.594,K,published,HH-SP125,Table 1-4 p.22,,,101325,299.2 degF to K,1
+H2O2_98,p_vap,296.475,Pa,published,HH-SP125,Table 1-4 p.22,,298.15,,0.043 psia at 77 degF,1
+H2O2_98,rho_liq,1432,kg/m3,published,HH-SP125,Table 1-4 p.22,,298.15,,1.432 g/cm3 at 77 degF,1
+MMH,molar_mass,0.04608,kg/mol,published,HH-SP125,Table 1-4 p.22,,,,46.08 g/mol /1000,1
+MMH,T_freeze,220.372,K,published,HH-SP125,Table 1-4 p.22,,,,-63 degF to K,1
+MMH,T_nbp,359.261,K,published,HH-SP125,Table 1-4 p.22,,,101325,187 degF to K,1
+MMH,p_vap,60673.9,Pa,published,HH-SP125,Table 1-4 p.22,,344.26,,8.8 psia at 160 degF,1
+MMH,rho_liq,878,kg/m3,published,HH-SP125,Table 1-4 p.22,,293.15,,0.878 g/cm3 at 68 degF,1
+N2O4,molar_mass,0.09202,kg/mol,published,HH-SP125,Table 1-4 (cont.) p.23,,,,92.02 g/mol /1000,1
+N2O4,T_freeze,261.483,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,,11 degF to K,1
+N2O4,T_nbp,294.261,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,101325,70 degF to K,1
+N2O4,p_vap,765318,Pa,published,HH-SP125,Table 1-4 (cont.) p.23,,344.26,,111 psia at 160 degF,1
+N2O4,rho_liq,1440,kg/m3,published,HH-SP125,Table 1-4 (cont.) p.23,,293.15,,1.44 g/cm3 at 68 degF,1
+UDMH,molar_mass,0.06008,kg/mol,published,HH-SP125,Table 1-4 (cont.) p.23,,,,60.08 g/mol /1000,1
+UDMH,T_freeze,215.372,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,,-72 degF to K,1
+UDMH,T_nbp,336.483,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,101325,146 degF to K,1
+UDMH,p_vap,121348,Pa,published,HH-SP125,Table 1-4 (cont.) p.23,,344.26,,17.6 psia at 160 degF,1
+UDMH,rho_liq,789,kg/m3,published,HH-SP125,Table 1-4 (cont.) p.23,,293.15,,0.789 g/cm3 at 68 degF,1
+RP1,molar_mass_min,0.165,kg/mol,published,HH-SP125,Table 1-4 (cont.) p.23,,,,165 to 195 g/mol,1
+RP1,molar_mass_max,0.195,kg/mol,published,HH-SP125,Table 1-4 (cont.) p.23,,,,165 to 195 g/mol,1
+RP1,T_freeze_min,219.817,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,,-64 to -47 degF,1
+RP1,T_freeze_max,229.261,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,,-64 to -47 degF,1
+RP1,T_boil_range_min,445.372,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,,342 to 507 degF (distillation range),1
+RP1,T_boil_range_max,537.039,K,published,HH-SP125,Table 1-4 (cont.) p.23,,,,342 to 507 degF (distillation range),1
+RP1,p_vap,2275.27,Pa,published,HH-SP125,Table 1-4 (cont.) p.23,,344.26,,0.33 psia at 160 degF,1
+RP1,rho_liq_min,800,kg/m3,published,HH-SP125,Table 1-4 (cont.) p.23,,293.15,,0.80 g/cm3 at 68 degF,1
+RP1,rho_liq_max,820,kg/m3,published,HH-SP125,Table 1-4 (cont.) p.23,,293.15,,0.82 g/cm3 at 68 degF,1
+LH2,molar_mass,0.002016,kg/mol,published,HH-SP125,Table 1-5 p.24,,,,2.016 g/mol /1000,0
+LH2,T_freeze,13.9278,K,published,HH-SP125,Table 1-5 p.24,,,,-434.6 degF to K,0
+LH2,T_nbp,20.4278,K,published,HH-SP125,Table 1-5 p.24,,,101325,-422.9 degF to K,0
+LH2,p_crit,1.29484e+06,Pa,published,HH-SP125,Table 1-5 p.24,,,,187.8 psia,0
+LH2,T_crit,32.9833,K,published,HH-SP125,Table 1-5 p.24,,,,-400.3 degF to K,0
+LH2,rho_liq,71,kg/m3,published,HH-SP125,Table 1-5 p.24,,20.43,,0.071 g/cm3 at normal boiling point,0
+LOX,molar_mass,0.032,kg/mol,published,HH-SP125,Table 1-5 p.24,,,,32.0 g/mol /1000,0
+LOX,T_freeze,54.2611,K,published,HH-SP125,Table 1-5 p.24,,,,-362 degF to K,0
+LOX,T_nbp,90.15,K,published,HH-SP125,Table 1-5 p.24,,,101325,-297.4 degF to K,0
+LOX,p_crit,5.06765e+06,Pa,published,HH-SP125,Table 1-5 p.24,,,,735 psia,0
+LOX,T_crit,154.261,K,published,HH-SP125,Table 1-5 p.24,,,,-182 degF to K,0
+LOX,rho_liq,1142,kg/m3,published,HH-SP125,Table 1-5 p.24,,90.15,,1.142 g/cm3 at normal boiling point,0
+N2H4,T_nbp,386.65,K,published,NIST-WEBBOOK,"CAS 302-01-2 phase change; Tipton, Stone et al. 1989",0.5,,101325,,0
+N2H4,T_triple,274.69,K,published,NIST-WEBBOOK,"CAS 302-01-2 phase change; Scott, Oliver et al. 1949",0.05,,,,1
+MMH,T_nbp,364,K,published,NIST-WEBBOOK,CAS 60-34-4 phase change; Majer and Svoboda 1985,,,101325,,0
+MMH,T_triple,220.79,K,published,NIST-WEBBOOK,"CAS 60-34-4 phase change; Aston, Finke et al. 1951",0.02,,,,1
+UDMH,T_nbp,336.2,K,published,NIST-WEBBOOK,CAS 57-14-7 phase change; Majer and Svoboda 1985,,,101325,,0
+UDMH,T_triple,215.95,K,published,NIST-WEBBOOK,"CAS 57-14-7 phase change; Aston, Wood et al. 1953",0.02,,,,1
+H2O2_100,T_crit,728,K,published,NIST-WEBBOOK,"CAS 7722-84-1 phase change; Nikitin, Pavlov et al. 1995 (extrapolated from aqueous solutions)",15,,,,1
+H2O2_100,p_crit,2.2e+07,Pa,published,NIST-WEBBOOK,"CAS 7722-84-1 phase change; Nikitin, Pavlov et al. 1995 (extrapolated from aqueous solutions)",20e5,,,220.00 bar,1
+H2O2_100,T_freeze,272.26,K,published,NIST-WEBBOOK,"CAS 7722-84-1 phase change; Cuthbertson, Matheson et al. 1928",0.3,,,,1
+IPA,T_nbp,355.5,K,published,NIST-WEBBOOK,CAS 67-63-0 phase change; average of 102 of 118 values,0.4,,101325,,1
+IPA,T_triple,184.9,K,published,NIST-WEBBOOK,CAS 67-63-0 phase change; average of 6 values,0.6,,,,1
+IPA,T_crit,509,K,published,NIST-WEBBOOK,CAS 67-63-0 phase change; average of 19 of 20 values,2,,,,1
+IPA,p_crit,4.9e+06,Pa,published,NIST-WEBBOOK,CAS 67-63-0 phase change; average of 10 values,5e5,,,49 bar,1
+IPA,rho_crit,271.028,kg/m3,derived,NIST-WEBBOOK,CAS 67-63-0 phase change; Gude and Teja 1995,1.2,,,4.51 mol/L x 60.0950 g/mol (molar mass from CEA thermo.inp),1
