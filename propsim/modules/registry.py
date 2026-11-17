@@ -4,6 +4,9 @@ from __future__ import annotations
 from .base import ModelController
 from .engine_live import EngineLiveModel
 from .hybrid_burn import HybridBurnModel
+from .hybrid_live import PortLiveModel, RegressionLiveModel
+from .hybrid_live_ext import FlowLiveModel, FuelLiveModel, StabilityLiveModel
+from .hybrid_run import HybridBurn1DModel, N2OBlowdownModel
 from .nozzle_live import NozzleLiveModel
 from .toy import SpringMassModel
 
@@ -11,9 +14,11 @@ from .toy import SpringMassModel
 TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
     "Common": [("Thermochemistry & nozzle", "live", EngineLiveModel)],
     "Liquid": [("Injector & chamber", "live", None), ("Feed network transient", "run", None)],
-    "Hybrid": [("Nozzle thrust coefficient", "live", NozzleLiveModel), ("Regression laws", "live", None),
-               ("Port flow field", "live", None), ("0-D burn", "run", HybridBurnModel),
-               ("N₂O blowdown", "run", None), ("ILFI stability", "run", None)],
+    "Hybrid": [("Nozzle thrust coefficient", "live", NozzleLiveModel), ("Regression laws", "live", RegressionLiveModel),
+               ("Port & grain", "live", PortLiveModel),
+               ("Core flow fields", "live", FlowLiveModel), ("Fuel & oxidizer", "live", FuelLiveModel),
+               ("Instability & scaling", "live", StabilityLiveModel), ("0-D burn", "run", HybridBurnModel),
+               ("Quasi-1D burn", "run", HybridBurn1DModel), ("N₂O blowdown", "run", N2OBlowdownModel), ("ILFI stability", "run", None)],
     "Solid": [("Grain designer", "live", None), ("3D burnback", "run", None)],
     "Electric": [("Ion optics", "live", None), ("Hall breathing mode", "run", None)],
     "Vehicle": [("Point-mass ascent", "run", None)],

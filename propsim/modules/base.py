@@ -27,6 +27,12 @@ class ModelController:
         raise NotImplementedError
 
     # --- views --------------------------------------------------------------------------------
+    def reset_scene(self) -> None:
+        """Forget cached mesh handles; called when the viewport is cleared on a model switch."""
+        for name, empty in (("_m", {}), ("_built", None), ("_cut_built", None), ("_field_built", None)):
+            if hasattr(self, name):
+                setattr(self, name, empty)
+
     def build_scene(self, vp, p, r=None) -> None:
         """(Re)build static geometry. Called when the model, cutaway angle, or Live geometry changes."""
 

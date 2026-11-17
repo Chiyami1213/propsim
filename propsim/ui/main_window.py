@@ -23,6 +23,7 @@ from .playback import PlaybackBar, PlaybackModel
 from .plots import PlotTabs
 from .theme import build_qss, theme
 from .viewport3d import Viewport3D
+from . import gc_guard
 from .worker import RunWorker
 
 MODULE_TITLES = {"Hybrid": "Hybrid Rocket", "Liquid": "Liquid Engine", "Solid": "Solid Rocket Motor",
@@ -47,6 +48,7 @@ class MainWindow(QMainWindow):
         self.home = Path(home) if home else default_home()
         self.runs_dir = self.home / "runs"
         self.runs_dir.mkdir(parents=True, exist_ok=True)
+        gc_guard.install(parent=self)                      # cyclic GC only between events, never inside a paint
         self.use_settings = use_settings
         self.resize(1600, 1000)
         self.ctrl: ModelController | None = None
@@ -236,6 +238,8 @@ class MainWindow(QMainWindow):
         self.form.hovered.connect(self.hover.setLatex)
         self.scroll.setWidget(self.form)
         self.params_title.setText(f"PARAMETERS — {ctrl.title}")
+        self.vp.plotter.clear()                  # drop the previous model's meshes (their handles are reset below)
+        ctrl.reset_scene()
         self.vp.set_fields(ctrl.fields)
         self.bar.set_mode(ctrl.mode)
         self.bar.set_range(0)

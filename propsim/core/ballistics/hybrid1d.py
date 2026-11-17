@@ -14,6 +14,7 @@ State :math:`y=[R_1..R_N,\;P_c/10^6,\;R_t,\;\text{supply state}]`.  At each inst
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Callable
 
 import numpy as np
@@ -103,10 +104,17 @@ class N2OSupply:
         return list(tank_initial(self.T0, self.V, self.fill))
 
     def flow(self, t: float, ys, Pc: float) -> tuple[float, list[float], dict]:
-        from ..feed import tank_rates
-        v = float(valve_factor(t, self.tau_open, self.tau_close, self.t_burn))
-        dm, dU, st, md = tank_rates(ys[0], ys[1], self.V, self.Cd, self.A_inj, Pc, self.loss_frac)
-        return v * md, [v * dm, v * dU], {"p_tank": st.p, "T_tank": st.T, "m_liq": st.m_liq, "m_tank": ys[0]}
+        return _n2o_flow(self, float(t), float(ys[0]), float(ys[1]), float(Pc))
+
+
+@lru_cache(maxsize=32)
+def _n2o_flow(sup: "N2OSupply", t: float, m: float, U: float, Pc: float):
+    """Tank + injector evaluation, memoized: LSODA's finite-difference Jacobian re-calls the right-hand side with
+    only a grain-radius state perturbed, i.e. with identical (t, m, U, P_c), so most calls are cache hits."""
+    from ..feed import tank_rates
+    v = float(valve_factor(t, sup.tau_open, sup.tau_close, sup.t_burn))
+    dm, dU, st, md = tank_rates(m, U, sup.V, sup.Cd, sup.A_inj, Pc, sup.loss_frac)
+    return v * md, [v * dm, v * dU], {"p_tank": st.p, "T_tank": st.T, "m_liq": st.m_liq, "m_tank": m}
 
 
 # ------------------------------------------------------------------------------------------- physics

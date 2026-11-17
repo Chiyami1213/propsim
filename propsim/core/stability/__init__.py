@@ -6,8 +6,6 @@ and the low-frequency instability at :math:`f=\frac{0.48}{\tau_{bl2}}`.  The bri
 """
 from __future__ import annotations
 
-import numpy as np
-
 
 def ilfi_tau_bl2(L, Pc, Go, OF, RTav, c: float = 2.05):
     """Boundary-layer delay (s). ``Go`` oxidizer mass flux (kg m^-2 s^-1), ``RTav`` (m^2 s^-2), ``Pc`` (Pa)."""
