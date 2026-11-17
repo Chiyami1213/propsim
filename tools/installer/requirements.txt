@@ -1,0 +1,23 @@
+PropSim - System Requirements
+
+Minimum
+  Operating system : Windows 10 64-bit (version 1809 or later) or Windows 11
+  Processor        : 64-bit x86 (x86-64), 2 cores
+  Memory           : 4 GB RAM
+  Graphics         : OpenGL 3.2 or newer with an up-to-date driver
+                     (practically every integrated or discrete GPU since 2012)
+  Disk space       : 1.5 GB free (about 0.85 GB once installed)
+  Display          : 1366 x 768
+
+Recommended
+  Operating system : Windows 11 64-bit
+  Processor        : 4 or more cores (Run-mode simulations use a separate process)
+  Memory           : 8 GB RAM or more (large 3D grain burnback runs)
+  Graphics         : recent integrated or discrete GPU
+  Display          : 1920 x 1080 or larger
+
+Notes
+  - No Python installation is needed; everything ships with PropSim.
+  - PropSim works fully offline. An internet connection is only used to open
+    the online help page.
+  - Windows on ARM (x64 emulation) is not tested.
