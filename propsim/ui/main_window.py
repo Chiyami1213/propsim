@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import os
+import re
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QByteArray, QProcess, QSettings, Qt
-from PySide6.QtGui import QAction, QKeySequence, QStandardItem, QStandardItemModel
+from PySide6.QtCore import QByteArray, QProcess, QSettings, Qt, QUrl
+from PySide6.QtGui import QAction, QDesktopServices, QKeySequence, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDockWidget, QFileDialog, QFrame, QLabel, QListWidget,
                                QListWidgetItem, QMainWindow, QMessageBox, QScrollArea, QSplitter,
                                QTreeView, QVBoxLayout, QWidget)
@@ -17,7 +18,7 @@ from ..modules import registry
 from ..modules.base import ModelController
 from . import latex
 from .export import save_tab_png
-from .. import __version__
+from .. import HELP_URL, __version__, storage
 from .latex import LatexLabel
 from .latex_widgets import LatexItemDelegate, LatexLog
 from .text import apa
@@ -35,7 +36,8 @@ KEY_ROLE = Qt.UserRole + 1
 
 
 def default_home() -> Path:
-    return Path(os.environ.get("PROPSIM_HOME", Path.home() / ".propsim"))
+    """Data folder: the one chosen in the app (File > Data Folder), else PROPSIM_HOME, else %APPDATA%/PropSim."""
+    return storage.resolve_home(QSettings("PropSim", "PropSim").value("data_dir") or None)
 
 
 def _heading(text: str) -> QLabel:
@@ -48,9 +50,10 @@ def _heading(text: str) -> QLabel:
 class MainWindow(QMainWindow):
     def __init__(self, home: Path | None = None, use_settings: bool = True) -> None:
         super().__init__()
-        self.home = Path(home) if home else default_home()
+        self.home = storage.ensure_layout(Path(home) if home else (default_home() if use_settings else
+                                                                    storage.resolve_home()))
         self.runs_dir = self.home / "runs"
-        self.runs_dir.mkdir(parents=True, exist_ok=True)
+        migrated = storage.migrate_legacy(self.home) if home is None else 0
         gc_guard.install(parent=self)                      # cyclic GC only between events, never inside a paint
         self.use_settings = use_settings
         self.resize(1600, 1000)
@@ -73,6 +76,9 @@ class MainWindow(QMainWindow):
         self.playback.frameChanged.connect(self._on_frame)
         if use_settings:
             self._restore_layout()
+        self._log(f"data folder: {self.home}")
+        if migrated:
+            self._log(f"copied {migrated} saved files from the previous data folder (~/.propsim)")
 
     # =================================================================== construction
     def _build_ui(self) -> None:
@@ -180,6 +186,14 @@ class MainWindow(QMainWindow):
         self._act(f, "Save case…", self.save_case, QKeySequence.Save)
         self._act(f, "Open result…", self.open_result)
         f.addSeparator()
+        self._act(f, "Restore last session", self.restore_session)
+        self._act(f, "Data folder…", self.choose_data_folder)
+        self._act(f, "Open data folder", lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.home))))
+        f.addSeparator()
+        x = f.addMenu(apa("Export code"))
+        self._act(x, "Python script (.py)…", lambda: self.export(".py"))
+        self._act(x, "MATLAB script (.m)…", lambda: self.export(".m"))
+        f.addSeparator()
         self._act(f, "Quit", self.close, QKeySequence.Quit)
         e = mb.addMenu("&Edit")
         self._act(e, "Reset parameters to defaults", self.reset_params)
@@ -192,6 +206,7 @@ class MainWindow(QMainWindow):
         va = mb.addMenu("&Validation")
         self._act(va, "Run reference + core tests", self.run_validation)
         h = mb.addMenu("&Help")
+        self._act(h, "Online help (GitHub)", lambda: QDesktopServices.openUrl(QUrl(HELP_URL)), "F1")
         self._act(h, "About PropSim", lambda: QMessageBox.about(
             self, "About PropSim", f"PropSim {__version__}\nInteractive 3D Rocket Propulsion Simulator"))
 
@@ -221,6 +236,7 @@ class MainWindow(QMainWindow):
 
     def select_model(self, key: str, params: dict | None = None) -> None:
         self.cancel_run()
+        self.backup_session()           # the model being left is the latest session state
         self._switching = True          # playback frames emitted while rebuilding must not touch half-built state
         try:
             self._select_model(key, params)
@@ -360,7 +376,7 @@ class MainWindow(QMainWindow):
         name = self._save_run(res)
         self.summary.setLatex(self.ctrl.summary_line(self.result_params, res))
         self.playback.set_range(res.n, float(res.t[-1]))
-        self.bar.set_range(res.n)
+        self.bar.set_range(res.n, str(res.meta.get("t_unit", "s")))
         self._refresh_tabs()
         self.ctrl.build_scene(self.vp, self.result_params, res)
         self.playback.seek(0)
@@ -427,7 +443,7 @@ class MainWindow(QMainWindow):
         self.active_run = name
         self.summary.setLatex(self.ctrl.summary_line(self.result_params, res))
         self.playback.set_range(res.n, float(res.t[-1]))
-        self.bar.set_range(res.n)
+        self.bar.set_range(res.n, str(res.meta.get("t_unit", "s")))
         self._refresh_tabs()
         self.ctrl.build_scene(self.vp, self.result_params, res)
         self.playback.seek(res.n - 1)
@@ -435,7 +451,7 @@ class MainWindow(QMainWindow):
 
     # =================================================================== files
     def open_case(self, path: str | None = None) -> None:
-        path = path or QFileDialog.getOpenFileName(self, apa("Open case"), str(self.home), "PropSim case (*.psim.json)")[0]
+        path = path or QFileDialog.getOpenFileName(self, apa("Open case"), str(self.home / "cases"), "PropSim case (*.psim.json)")[0]
         if not path:
             return
         model, params = pio.load_case(path)
@@ -445,9 +461,12 @@ class MainWindow(QMainWindow):
     def save_case(self, path: str | None = None) -> None:
         if self.ctrl is None:
             return
-        path = path or QFileDialog.getSaveFileName(self, apa("Save case"), str(self.home / "case.psim.json"),
+        path = path or QFileDialog.getSaveFileName(self, apa("Save case"), str(self.home / "cases" / "case.psim.json"),
                                                    "PropSim case (*.psim.json)")[0]
         if path:
+            bak = storage.backup_file(path, self.home)              # keep the overwritten version
+            if bak:
+                self._log(f"previous version backed up to backups/{bak.name}")
             pio.save_case(path, self.ctrl.key, self.form.values().model_dump())
             self.case_name = Path(path).name
             self._sync_title()
@@ -464,7 +483,7 @@ class MainWindow(QMainWindow):
             self._on_params_changed()
 
     def export(self, kind: str, path: str | None = None) -> None:
-        """PNG (Matplotlib figure of the current tab), CSV, .mat, .h5. ``path`` bypasses the dialog (tests)."""
+        """PNG (Matplotlib figure of the current tab), CSV, .mat, .h5, and code (.py / .m scripts). ``path`` bypasses the dialog (tests)."""
         if self.ctrl is None:
             return
         live = self.ctrl.mode == "live"
@@ -473,11 +492,17 @@ class MainWindow(QMainWindow):
             self._log("nothing to export yet — run the simulation first")
             return
         p = self.form.values() if live else self.result_params
-        ext = {"PNG": ".png", "CSV": ".csv", ".mat": ".mat", ".h5": ".h5"}[kind]
+        ext = {"PNG": ".png", "CSV": ".csv", ".mat": ".mat", ".h5": ".h5", ".py": ".py", ".m": ".m"}[kind]
+        default = re.sub(r"[^A-Za-z0-9]+", "_", self.ctrl.title.lower()).strip("_") if kind in (".py", ".m") else "export"
         if not path:
-            path = QFileDialog.getSaveFileName(self, f"Export {kind}", str(self.home / f"export{ext}"),
+            path = QFileDialog.getSaveFileName(self, f"Export {kind}", str(self.home / "exports" / f"{default}{ext}"),
                                                f"*{ext}")[0]
         if not path:
+            return
+        if kind in (".py", ".m"):
+            from ..export_code import export as export_code
+            files = export_code(self.ctrl.key, p.model_dump(), path, tabs=self.ctrl.tabs(p, r))
+            self._log("exported code " + ", ".join(f.name for f in files))
             return
         data = self.ctrl.export_data(p, r)
         if kind == "PNG":
@@ -538,7 +563,50 @@ class MainWindow(QMainWindow):
         self.centre.setSizes([550, 450])
         self.right_split.setSizes([750, 250])
 
+    # ---- data folder and session backup -------------------------------------------------------------
+    def set_home(self, path: Path) -> None:
+        """Switch the data folder (saved runs are reloaded from the new location)."""
+        self.home = storage.ensure_layout(Path(path))
+        self.runs_dir = self.home / "runs"
+        self.saved, self.active_run = {}, None
+        self._load_saved_runs()
+        self._log(f"data folder: {self.home}")
+
+    def choose_data_folder(self, path: str | None = None, copy: bool | None = None) -> None:
+        path = path or QFileDialog.getExistingDirectory(self, apa("Choose data folder"), str(self.home))
+        if not path or Path(path).resolve() == self.home.resolve():
+            return
+        old = self.home
+        if copy is None:
+            copy = QMessageBox.question(self, apa("Data folder"), "Copy saved runs and cases to the new folder?",
+                                        QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes
+        self.set_home(Path(path))
+        if copy:
+            n = storage.copy_data(old, self.home)
+            self._load_saved_runs()
+            self._log(f"copied {n} files from {old}")
+        if self.use_settings:
+            self._settings().setValue("data_dir", str(self.home))
+
+    def _session_file(self) -> Path:
+        return self.home / "backups" / "last_session.psim.json"
+
+    def backup_session(self) -> None:
+        if self.ctrl is not None and self.form is not None:
+            try:
+                pio.save_case(self._session_file(), self.ctrl.key, self.form.values().model_dump())
+            except Exception:                                           # noqa: BLE001 - a backup never blocks closing
+                pass
+
+    def restore_session(self) -> None:
+        f = self._session_file()
+        if f.is_file():
+            self.open_case(str(f))
+        else:
+            self._log("no session backup yet")
+
     def closeEvent(self, ev) -> None:
+        self.backup_session()
         self.cancel_run()
         if self.use_settings:
             s = self._settings()

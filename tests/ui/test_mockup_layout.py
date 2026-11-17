@@ -9,8 +9,10 @@ from PySide6.QtWidgets import QApplication, QDockWidget
 from propsim.ui.latex import LatexLabel
 from propsim.ui.main_window import MainWindow
 
+from propsim.storage import platform_default
+
 ROOT = Path(__file__).resolve().parents[2]
-SHOT = ROOT / "docs" / "phase1_screenshot_offscreen.png"
+SHOT = platform_default() / "dev" / "phase1_screenshot_offscreen.png"
 
 
 def _wait(win, limit=60):
@@ -62,7 +64,7 @@ def test_regions_exist_and_proportions(win):
     assert win.vp.colorbar.isVisible() and win.vp.caption.latex().startswith(r"$t$ = 6.40")
     for b in (win.vp.b_reset, win.vp.b_cut, win.vp.b_field, win.vp.b_bar, win.vp.b_snap):
         assert b.isVisible()
-    assert set(win.bar.export_btns) == {"PNG", "CSV", ".mat", ".h5"}
+    assert set(win.bar.export_btns) == {"PNG", "CSV", ".mat", ".h5", ".py", ".m"}
     assert win.bar.badge.text() == "Run"
 
 
@@ -74,6 +76,7 @@ def test_math_labels_are_latex(win):
 
 
 def test_screenshot_saved(win):
+    SHOT.parent.mkdir(parents=True, exist_ok=True)
     assert win.grab().save(str(SHOT))
     assert SHOT.stat().st_size > 20_000
 

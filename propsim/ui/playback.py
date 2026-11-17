@@ -130,7 +130,7 @@ class PlaybackBar(QToolBar):
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.addWidget(spacer)
         self.export_btns = {}
-        for name in ("PNG", "CSV", ".mat", ".h5"):
+        for name in ("PNG", "CSV", ".mat", ".h5", ".py", ".m"):
             b = QPushButton(name)
             b.setObjectName("export")
             b.clicked.connect(lambda _=False, n=name: self.exportRequested.emit(n))
@@ -157,9 +157,13 @@ class PlaybackBar(QToolBar):
         self.scrub.blockSignals(True)
         self.scrub.setValue(i)
         self.scrub.blockSignals(False)
-        self.time_lbl.setLatex(rf"$t$ = {self.pb.time:.2f} (s) / {self.pb.duration:.1f}")
+        self.time_lbl.setLatex(rf"$t$ = {self.pb.time:.2f} ({self.unit}) / {self.pb.duration:.1f}")
 
-    def set_range(self, n: int) -> None:
+    unit = "s"
+
+    def set_range(self, n: int, unit: str = "s") -> None:
+        """``unit`` is the display unit of the result's time axis (``Result.meta['t_unit']``, default seconds)."""
+        self.unit = unit
         self.scrub.blockSignals(True)
         self.scrub.setRange(0, max(n - 1, 0))
         self.scrub.blockSignals(False)

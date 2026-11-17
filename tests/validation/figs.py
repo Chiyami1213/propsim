@@ -1,4 +1,4 @@
-"""Comparison figures for the validation suite: gridded, mathtext labels, saved under docs/validation/."""
+"""Comparison figures for the validation suite: gridded, mathtext labels, saved locally under <data folder>/dev/validation (not part of the repository)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,7 +8,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-OUT = Path(__file__).resolve().parents[2] / "docs" / "validation"
+from propsim.storage import platform_default
+
+OUT = platform_default() / "dev" / "validation"
 
 
 def new_fig(ncols: int = 1, w: float = 5.0, h: float = 3.8):
