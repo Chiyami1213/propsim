@@ -79,6 +79,11 @@ application, with live parameter studies, time-domain simulations, synchronized 
   - *Electric*: mission and power trades (Stuhlinger), electrothermal thrusters, gridded ion and Hall thrusters,
     ion-optics particle simulation, Hall discharge, low-thrust Edelbaum spiral with power degradation.
 - **All math in LaTeX**: plot labels, tables, readouts and hover help; every plot has a grid.
+- **Color themes**: Graphite, Ocean, Forest, Plum and Light, chosen in *View > Color Theme* (Ctrl+Shift+T; Ctrl+T
+  steps to the next one) and remembered between sessions. The picker shows each theme's palette and falls back to the
+  theme names alone when the window is too narrow for the palettes.
+
+<p align="center"><img src="docs/gallery/color-themes.png" alt="Color theme picker: Graphite, Ocean, Forest, Plum and Light palettes"></p>
 - **Export**: PNG figures, CSV, MATLAB `.mat`, HDF5, and runnable code:
   - *Python script* (`.py`): rebuilds the model with your parameters through the `propsim` package and redraws
     every plot with Matplotlib.

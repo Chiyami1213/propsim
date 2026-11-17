@@ -15,5 +15,6 @@ New changes go above this line, newest first.
 - Electric: mission and power trades, electrothermal thrusters, gridded ion and Hall thrusters, ion-optics particle
   simulation, Hall discharge, low-thrust Edelbaum spiral.
 - All math in LaTeX; every plot has a grid; dockable panels with a restorable default layout.
+- Five color themes (Graphite, Ocean, Forest, Plum, Light) with a palette picker that collapses to names when narrow.
 - Export to PNG, CSV, MATLAB `.mat`, HDF5, and runnable Python and MATLAB scripts.
 - Windows installer with a system-requirements page and a link to the online help.

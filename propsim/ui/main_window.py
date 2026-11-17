@@ -25,7 +25,7 @@ from .text import apa
 from .params import ParamForm
 from .playback import PlaybackBar, PlaybackModel
 from .plots import PlotTabs
-from .theme import build_qss, theme
+from .theme import THEME_NAMES, build_qss, theme
 from .viewport3d import Viewport3D
 from . import gc_guard
 from .worker import RunWorker
@@ -88,9 +88,11 @@ class MainWindow(QMainWindow):
         self._build_menus()
         self._apply_theme()
         theme.changed.connect(lambda *_: self._apply_theme())
+        theme.changed.connect(self._save_theme)
         self._load_saved_runs()
         self.playback.frameChanged.connect(self._on_frame)
         if use_settings:
+            self._restore_theme()
             self._restore_layout()
         self._layout_on_show = not self._layout_restored    # Qt redistributes dock sizes on first show
         self._log(f"data folder: {self.home}")
@@ -211,7 +213,8 @@ class MainWindow(QMainWindow):
         e = mb.addMenu("&Edit")
         self._act(e, "Reset parameters to defaults", self.reset_params)
         v = mb.addMenu("&View")
-        self._act(v, "Toggle light/dark theme", self.toggle_theme, "Ctrl+T")
+        self._act(v, "Color theme", self.choose_theme, "Ctrl+Shift+T")
+        self._act(v, "Next color theme", self.toggle_theme, "Ctrl+T")
         self._act(v, "Restore default layout", self.reset_layout, "Ctrl+Shift+R")
         s = mb.addMenu("&Simulation")
         self._act(s, "Run", self.start_run, "Ctrl+R")
@@ -239,7 +242,16 @@ class MainWindow(QMainWindow):
             w._render()
 
     def toggle_theme(self) -> None:
-        theme.set("light" if theme.name == "dark" else "dark")
+        """Next color theme in the picker order."""
+        theme.cycle()
+
+    def choose_theme(self) -> None:
+        from .theme_picker import ThemeDialog
+        dlg = ThemeDialog(self)
+        dlg.exec()
+
+    def set_color_theme(self, name: str) -> None:
+        theme.set(name)
 
     # =================================================================== model selection
     def _on_tree(self, cur, _prev=None) -> None:
@@ -557,6 +569,15 @@ class MainWindow(QMainWindow):
     # ---- layout persistence ---------------------------------------------------------------------
     def _settings(self) -> QSettings:
         return QSettings("PropSim", "PropSim")
+
+    def _save_theme(self, name: str) -> None:
+        if self.use_settings:
+            self._settings().setValue("theme", name)
+
+    def _restore_theme(self) -> None:
+        name = self._settings().value("theme")
+        if isinstance(name, str) and name in THEME_NAMES:
+            theme.set(name)
 
     def _restore_layout(self) -> None:
         s = self._settings()

@@ -96,9 +96,12 @@ def test_live_mode_exports_and_theme(win, tmp_path):
     for kind, name in (("CSV", "a.csv"), (".mat", "a.mat"), (".h5", "a.h5"), ("PNG", "a.png")):
         win.export(kind, str(tmp_path / name))
         assert (tmp_path / name).stat().st_size > 0
-    win.toggle_theme()
-    QApplication.processEvents()
-    win.toggle_theme()
+    from propsim.ui.theme import THEME_NAMES
+    for name in THEME_NAMES:                                              # every color theme renders the window
+        win.set_color_theme(name)
+        QApplication.processEvents()
+        assert win.grab().size().width() > 0
+    win.set_color_theme("dark")
 
 
 def test_case_save_load(win, tmp_path):

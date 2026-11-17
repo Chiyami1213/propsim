@@ -9,13 +9,33 @@ TOKENS = {
                  run_btn="#2a6fd6", ok="#5cc97a",
                  # derived (not in the token table): button fill, groove, hover-box, title bar
                  btn="#232833", groove="#343b47", card="#151a22", hover_bg="#1d2633", hover_edge="#2d3a4d",
-                 titlebar="#0f1115", grid_major="#3a414d", faint="#5d6676"),
+                 titlebar="#0f1115", grid_major="#3a414d", faint="#5d6676", accent2="#ff9d3c"),
+    "ocean": dict(bg="#0c1824", panel="#112233", edge="#1f3b57", grid_minor="#182b3d", plot_bg="#0a1520",
+                  viewport_bg="#08121c", text="#e6eff8", dim="#8fa9c2", accent="#38a8ff", select_bg="#1c3f63",
+                  run_btn="#2a7fe0", ok="#4cd0a4", btn="#15293d", groove="#2c4b6c", card="#0f1e2d", hover_bg="#142a3f",
+                  hover_edge="#27465f", titlebar="#09131d", grid_major="#2e4d6c", faint="#58728c", accent2="#2e8bff"),
+    "forest": dict(bg="#0d1813", panel="#13231c", edge="#224236", grid_minor="#182b22", plot_bg="#0b1510",
+                   viewport_bg="#091210", text="#e5f1ea", dim="#8fb0a0", accent="#3ec48a", select_bg="#1f4535",
+                   run_btn="#23885a", ok="#5cc97a", btn="#16281f", groove="#2f5442", card="#101e17", hover_bg="#142a21",
+                   hover_edge="#26463a", titlebar="#09110d", grid_major="#2f5242", faint="#587566", accent2="#2fae78"),
+    "plum": dict(bg="#15111d", panel="#1d1728", edge="#392d4e", grid_minor="#241d32", plot_bg="#120e19",
+                 viewport_bg="#0e0b14", text="#eee9f6", dim="#a496bb", accent="#a97bff", select_bg="#3a2d5e",
+                 run_btn="#8b52e6", ok="#6fcf97", btn="#241c33", groove="#473a63", card="#181223", hover_bg="#271e3a",
+                 hover_edge="#45365f", titlebar="#0f0b16", grid_major="#46395f", faint="#6d6088", accent2="#9b5de5"),
     "light": dict(bg="#f3f5f8", panel="#ffffff", edge="#d6dce5", grid_minor="#e9eef5", plot_bg="#ffffff",
                   viewport_bg="#e9eef5", text="#132033", dim="#5b6779", accent="#1d6cb0", select_bg="#dbe9f8",
                   run_btn="#2a6fd6", ok="#2e8b57",
                   btn="#e6ebf2", groove="#c9d2de", card="#f7f9fc", hover_bg="#eaf1fa", hover_edge="#bcd0e8",
-                  titlebar="#e9edf3", grid_major="#c4ccd8", faint="#9aa5b5"),
+                  titlebar="#e9edf3", grid_major="#c4ccd8", faint="#9aa5b5", accent2="#e6761a"),
 }
+# display names in picker order ("dark" stays the stored key of the original dark theme, shown as Graphite)
+THEME_NAMES = {"dark": "Graphite", "ocean": "Ocean", "forest": "Forest", "plum": "Plum", "light": "Light"}
+
+
+def swatch(name: str) -> tuple[str, str, str, str]:
+    """Four representative colours of a theme: background, selection, accent, secondary accent."""
+    t = TOKENS[name]
+    return t["viewport_bg"], t["select_bg"], t["accent"], t["accent2"]
 # quantity colours (both themes)
 QUANTITY = dict(oxidizer="#ff9d3c", fuel="#5cc97a", hot="#ff5a3c", pressure="#b07cff", thrust="#4ea1ff")
 CMAPS = dict(temperature="inferno", mach="viridis", signed="coolwarm")
@@ -38,7 +58,15 @@ class _Theme(QObject):
             return key
         return QUANTITY.get(key) or self.t[key]
 
+    def cycle(self) -> str:
+        names = list(THEME_NAMES)
+        nxt = names[(names.index(self.name) + 1) % len(names)]
+        self.set(nxt)
+        return nxt
+
     def set(self, name: str) -> None:
+        if name not in TOKENS:
+            raise KeyError(f"unknown theme {name!r}")
         if name != self.name:
             self.name = name
             self.changed.emit(name)
@@ -50,7 +78,7 @@ theme = _Theme()
 def build_qss(t: dict[str, str]) -> str:
     return f"""
 * {{ font-family: "Segoe UI", "Inter", sans-serif; font-size: 10pt; color: {t['text']}; }}
-QMainWindow, QDockWidget, QToolBar {{ background: {t['bg']}; }}
+QMainWindow, QDockWidget, QToolBar, QDialog {{ background: {t['bg']}; }}
 QMainWindow::separator {{ background: {t['bg']}; width: 4px; height: 4px; }}
 QMenuBar {{ background: {t['bg']}; color: {t['dim']}; }}
 QMenuBar::item:selected {{ background: {t['select_bg']}; }}
