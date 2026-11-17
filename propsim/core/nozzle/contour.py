@@ -5,19 +5,42 @@
 3. Bell: quadratic Bezier from N to E=(Ln, Re); control point Q at the intersection of the
    tangents at N (angle theta_n) and E (angle theta_e).  Ln = f (sqrt(eps)-1) Rt / tan(15 deg).
 
-theta_n and theta_e are *placeholder* trends standing in for the Rao chart (whose values are not reproduced here);
-theta_e scales with the bell length fraction.  A method-of-characteristics design is not implemented.
-The planar nu(M_e)/2 estimate was tried for theta_n and rejected (it exceeds 40 deg for eps >= 20).
+theta_n and theta_e come from the Huzel & Huang Fig. 4-16 chart (Rao's thrust-optimized parabola) when the optional
+``pygasflow`` package is installed (it ships a digitization of that chart, GPL-3.0, so it is used at run time and not
+bundled); 5 <= eps <= 50 and 60-100 % length, values outside are clamped to the chart edge.  Without it, *placeholder*
+trends are used (``rao_source()`` tells which).  A method-of-characteristics design is not implemented.
 The point count is fixed so that the 3D mesh can be updated in place.
 """
 from __future__ import annotations
 
+from functools import lru_cache
+
 import numpy as np
 
 
+@lru_cache(maxsize=1)
+def _chart():
+    try:
+        from pygasflow import Rao_Parabola_Angles
+        return Rao_Parabola_Angles()
+    except Exception:
+        return None
+
+
+def rao_source() -> str:
+    """``'Huzel & Huang chart (pygasflow)'`` or ``'placeholder trend'``."""
+    return "Huzel & Huang chart (pygasflow)" if _chart() is not None else "placeholder trend"
+
+
 def rao_angles(eps: float, f: float = 0.8, g: float = 1.2) -> tuple[float, float]:
-    """Bell (theta_n, theta_e) in radians, PLACEHOLDER trends: theta_n 26 -> 36 deg and theta_e 14 -> 7 deg over
-    eps = 4..100 for an 80 % bell; theta_e is scaled by (1-f)/0.2 so that a 100 % bell exits axially."""
+    """Bell (theta_n, theta_e) in radians for area ratio ``eps`` and length fraction ``f`` of a 15 deg cone.
+
+    Chart values when available (see module docstring); otherwise PLACEHOLDER trends: theta_n 26 -> 36 deg and
+    theta_e 14 -> 7 deg over eps = 4..100 for an 80 % bell, theta_e scaled by (1-f)/0.2 (a 100 % bell exits axially)."""
+    chart = _chart()
+    if chart is not None:
+        thn, the = chart.angles_from_Lf_Ar(float(np.clip(100.0 * f, 60.0, 100.0)), float(np.clip(eps, 5.0, 50.0)))
+        return np.radians(float(thn)), np.radians(float(the))
     s = float(np.clip((np.log10(eps) - np.log10(4.0)) / (np.log10(100.0) - np.log10(4.0)), 0.0, 1.0))
     thn = np.radians(26.0 + 10.0 * s)
     the = np.radians(14.0 - 7.0 * s) * float(np.clip((1.0 - f) / 0.2, 0.0, 2.0))

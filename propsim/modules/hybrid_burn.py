@@ -50,7 +50,7 @@ class HybridBurnModel(ModelController):
         m: dict = {}
         case = rev_grid(np.array([0.0, si.L]), np.full(2, si.R_out + 0.006), th)
         pl.add_mesh(case, color="#6b768a", opacity=0.30, name="case", smooth_shading=True)
-        port = rev_grid(xg, np.full_like(xg, si.R0), th)
+        port = rev_grid(xg, self._radii(si, r, None), th)
         port["field"] = broadcast_scalar(np.full_like(xg, 1.0), len(th))
         ch, cmap, _, rng_ = FIELDS[vp.field_index]
         lo, hi = self._range(r, ch, rng_)
@@ -60,7 +60,7 @@ class HybridBurnModel(ModelController):
         m["cuts"] = []
         if vp.cutaway > 0:
             for k, ang in enumerate((0.0, th[-1])):
-                f = cut_face(xg, np.full_like(xg, si.R0), np.full_like(xg, si.R_out), ang)
+                f = cut_face(xg, self._radii(si, r, None), np.full_like(xg, si.R_out), ang)
                 pl.add_mesh(f, color=QUANTITY["fuel"], opacity=0.85, name=f"cut{k}")
                 m["cuts"].append((f, ang))
         # nozzle coloured by Mach (viridis), joined at x = L
@@ -84,7 +84,24 @@ class HybridBurnModel(ModelController):
         m["tr"] = tr
         pl.add_mesh(tr, color=QUANTITY["oxidizer"], point_size=4, render_points_as_spheres=True, name="tracers")
         self._m = m
+        self._extra_build(pl, si, p, th, m)
         vp.reset_view()
+
+    # hooks for the quasi-1D and blowdown models -------------------------------------------------------
+    def _radii(self, si, r, frame) -> np.ndarray:
+        """Port radius (m) at the mesh stations ``self._xg`` (uniform for the 0-D model)."""
+        R = si.R0 if (r is None or frame is None) else r.channels["R"][frame] * 1e-3
+        return np.full_like(self._xg, R)
+
+    def _field_x(self, si, r, frame, ch: str) -> np.ndarray:
+        v = 0.0 if (r is None or frame is None) else float(np.nan_to_num(r.channels[ch][frame]))
+        return np.full_like(self._xg, v)
+
+    def _extra_build(self, pl, si, p, th, m) -> None:
+        """Add model-specific meshes (e.g. the oxidizer tank)."""
+
+    def _extra_update(self, si, p, r, frame, m, th) -> None:
+        """Per-frame update of model-specific meshes."""
 
     def _range(self, r, ch, default):
         if r is not None and ch in r.channels:
@@ -97,7 +114,7 @@ class HybridBurnModel(ModelController):
         """Cumulative oxidizer throughput (normalised) so tracer motion tracks the scrubber."""
         if self._cum_for != id(r):
             dt = np.diff(r.t, prepend=r.t[0])
-            self._cum = np.cumsum(r.channels["mdot_ox"] * dt) / max(p.mdot_ox, 1e-9)
+            self._cum = np.cumsum(r.channels["mdot_ox"] * dt) / max(float(np.nanmax(r.channels["mdot_ox"])), 1e-9)
             self._cum_for = id(r)
         return self._cum
 
@@ -108,25 +125,25 @@ class HybridBurnModel(ModelController):
         m, th, xg = self._m, self._th, self._xg
         ch, cmap, title, rng_ = FIELDS[vp.field_index]
         if r is None or frame is None:
-            R, val, F, phase = si.R0, 0.0, 0.0, 0.0
+            F, phase = 0.0, 0.0
             lo, hi = rng_
         else:
-            R = r.channels["R"][frame] * 1e-3
-            val = float(np.nan_to_num(r.channels[ch][frame]))
             F = r.channels["F"][frame]
             phase = float(self._phase(si, r)[frame])
             lo, hi = self._range(r, ch, rng_)
-        m["port"].points = rev_points(xg, np.full_like(xg, R), th)
-        m["port"]["field"] = broadcast_scalar(np.full_like(xg, val), len(th))
+        Rx = self._radii(si, r, frame)
+        m["port"].points = rev_points(xg, Rx, th)
+        m["port"]["field"] = broadcast_scalar(self._field_x(si, r, frame, ch), len(th))
         for f, ang in m["cuts"]:
-            f.points = cut_face_points(xg, np.full_like(xg, R), np.full_like(xg, si.R_out), ang)
+            f.points = cut_face_points(xg, Rx, np.full_like(xg, si.R_out), ang)
         u = self._tr
         x = ((u[:, 0] + 0.25 * phase) % 1.0) * si.L
-        rr = np.sqrt(u[:, 1]) * 0.9 * R
+        rr = np.sqrt(u[:, 1]) * 0.9 * np.interp(x, xg, Rx)
         ph = u[:, 2] * 2 * np.pi
         m["tr"].points = np.c_[x, rr * np.cos(ph), rr * np.sin(ph)]
         Fmax = np.nanmax(r.channels["F"]) if r is not None else 1.0
         m["plume_actor"].GetProperty().SetOpacity(0.5 if F > 0.05 * Fmax else 0.0)
+        self._extra_update(si, p, r, frame, m, th)
         vp.set_colorbar(cmap, lo, hi, title)
         vp.render()
 

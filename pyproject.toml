@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "propsim"
-version = "0.1.0"
+version = "1.0.0"
 description = "Interactive 3D rocket propulsion simulator (liquid, hybrid, solid, electric)"
 requires-python = ">=3.11"
 dependencies = [
@@ -20,6 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+rao = ["pygasflow>=1.4"]               # Rao bell angles from the Huzel & Huang chart (GPL-3.0, not bundled)
 cea = ["rocketcea>=1.2"]              # direct NASA-CEA; without it the shipped CEA tables are used
 dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black", "rocketcea>=1.2"]
 

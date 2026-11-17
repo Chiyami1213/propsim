@@ -14,6 +14,7 @@ pip install -e ".[dev]"
 python run.py                               # opens cases/hybrid_demo.psim.json (no install needed beyond deps)
 python run.py cases/nozzle_demo.psim.json
 python tools/make_icon.py                   # regenerate propsim/assets/icon.png/.ico
+python tools/build_exe.py                   # Windows build: dist/PropSim/PropSim.exe (needs pyinstaller)
 python -m pytest                            # reference checks, core physics, validation cases, UI acceptance
 ```
 Headless / CI: set `QT_QPA_PLATFORM=offscreen` (the 3D view then renders through an off-screen VTK plotter).
