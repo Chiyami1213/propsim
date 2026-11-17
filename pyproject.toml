@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "propsim"
+version = "0.1.0"
+description = "Interactive 3D rocket propulsion simulator (liquid, hybrid, solid, electric)"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "matplotlib>=3.8",
+    "pydantic>=2.5",
+    "h5py>=3.10",
+    "PySide6>=6.6",
+    "pyqtgraph>=0.13",
+    "pyvista>=0.43",
+    "pyvistaqt>=0.11",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black"]
+# Phase 2+: rocketcea, cantera, CoolProp, numba, scikit-image, scikit-fmm, trimesh, numpy-stl, pint
+
+[project.scripts]
+propsim = "propsim.app:main"
+
+[tool.setuptools.packages.find]
+include = ["propsim*"]
+
+[tool.setuptools.package-data]
+propsim = ["assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 110
+
+[tool.black]
+line-length = 110

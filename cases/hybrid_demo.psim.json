@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "model": "hybrid.burn0d",
+  "params": {
+    "mdot_ox": 1.8,
+    "p_tank": 5.5,
+    "R_p0": 25.0,
+    "web": 35.0,
+    "L_g": 0.75,
+    "rho_f": 920.0,
+    "a": 0.0541,
+    "n": 0.647,
+    "D_t": 32.0,
+    "eps": 6.0,
+    "eta_cstar": 0.95,
+    "t_burn": 10.0
+  }
+}
