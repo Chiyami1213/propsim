@@ -26,6 +26,7 @@ class HybridBurnModel(ModelController):
     module = "Hybrid"
     mode = "run"
     Params = HybridBurnParams
+    FIELDS = FIELDS
     fields = [f[2] for f in FIELDS]
 
     def __init__(self) -> None:
@@ -52,7 +53,7 @@ class HybridBurnModel(ModelController):
         pl.add_mesh(case, color="#6b768a", opacity=0.30, name="case", smooth_shading=True)
         port = rev_grid(xg, self._radii(si, r, None), th)
         port["field"] = broadcast_scalar(np.full_like(xg, 1.0), len(th))
-        ch, cmap, _, rng_ = FIELDS[vp.field_index]
+        ch, cmap, _, rng_ = self.FIELDS[vp.field_index]
         lo, hi = self._range(r, ch, rng_)
         pl.add_mesh(port, scalars="field", cmap=cmap, clim=(lo, hi), show_scalar_bar=False, name="port",
                     smooth_shading=True)
@@ -123,7 +124,7 @@ class HybridBurnModel(ModelController):
             self.build_scene(vp, p, r)
         si = p.to_si()
         m, th, xg = self._m, self._th, self._xg
-        ch, cmap, title, rng_ = FIELDS[vp.field_index]
+        ch, cmap, title, rng_ = self.FIELDS[vp.field_index]
         if r is None or frame is None:
             F, phase = 0.0, 0.0
             lo, hi = rng_

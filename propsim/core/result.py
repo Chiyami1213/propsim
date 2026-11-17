@@ -14,6 +14,7 @@ class Result:
     channels: dict[str, np.ndarray]
     meta: dict = field(default_factory=dict)      # scalars / strings (summary, params, model key)
     log: list[str] = field(default_factory=list)
+    arrays: dict[str, np.ndarray] = field(default_factory=dict)      # bulk data (e.g. 3-D snapshots), not per-frame channels
 
     @property
     def n(self) -> int:

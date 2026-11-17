@@ -36,13 +36,17 @@ def save_result_h5(path: str | Path, res: Result, model: str, params: dict) -> N
         g = f.create_group("channels")
         for k, v in res.channels.items():
             g.create_dataset(k, data=v, compression="gzip")
+        a = f.create_group("arrays")
+        for k, v in res.arrays.items():
+            a.create_dataset(k, data=v, compression="gzip")
 
 
 def load_result_h5(path: str | Path) -> tuple[Result, str, dict]:
     with h5py.File(path, "r") as f:
         t = f["t"][()]
         ch = {k: f["channels"][k][()] for k in f["channels"]}
-        res = Result(t, ch, json.loads(f.attrs["meta"]), json.loads(f.attrs["log"]))
+        arrays = {k: f["arrays"][k][()] for k in f["arrays"]} if "arrays" in f else {}
+        res = Result(t, ch, json.loads(f.attrs["meta"]), json.loads(f.attrs["log"]), arrays)
         return res, str(f.attrs["model"]), json.loads(f.attrs["params"])
 
 

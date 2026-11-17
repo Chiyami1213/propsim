@@ -6,6 +6,7 @@ from .engine_live import EngineLiveModel
 from .hybrid_burn import HybridBurnModel
 from .hybrid_live import PortLiveModel, RegressionLiveModel
 from .hybrid_live_ext import FlowLiveModel, FuelLiveModel, StabilityLiveModel
+from .solid_models import (Burnback3DModel, BurnRateLiveModel, SolidBallisticsModel, SolidGrainLiveModel)
 from .hybrid_run import HybridBurn1DModel, N2OBlowdownModel
 from .nozzle_live import NozzleLiveModel
 from .toy import SpringMassModel
@@ -19,7 +20,8 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
                ("Core flow fields", "live", FlowLiveModel), ("Fuel & oxidizer", "live", FuelLiveModel),
                ("Instability & scaling", "live", StabilityLiveModel), ("0-D burn", "run", HybridBurnModel),
                ("Quasi-1D burn", "run", HybridBurn1DModel), ("N₂O blowdown", "run", N2OBlowdownModel), ("ILFI stability", "run", None)],
-    "Solid": [("Grain designer", "live", None), ("3D burnback", "run", None)],
+    "Solid": [("Grain designer", "live", SolidGrainLiveModel), ("Burn rate & K_n", "live", BurnRateLiveModel),
+              ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel)],
     "Electric": [("Ion optics", "live", None), ("Hall breathing mode", "run", None)],
     "Vehicle": [("Point-mass ascent", "run", None)],
     "Toy": [("Spring-mass", "run", SpringMassModel)],

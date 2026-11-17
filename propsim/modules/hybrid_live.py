@@ -337,20 +337,27 @@ class PortLiveModel(ModelController):
 
     def update_scene(self, vp, p, r, frame) -> None:
         b = r["b"]
-        n, h = NGRID, b["h"] * 1e-3
-        thick = 0.5 * p.R_out * 1e-3                              # display thickness: a slice, not the full grain length
-        g = pv.ImageData(dimensions=(n + 1, n + 1, 2), spacing=(h, h, thick), origin=(-p.R_out * 1e-3,) * 2 + (0.0,))
-        d = b["dist"]
-        keep = b["inside"] & (d > r["d_now"])
-        # cell data in the VTK order (x fastest, then y, then z): the raster is [row=y][col=x]; two z-layers share it
-        field = np.full((n, n), -1.0)
-        field[keep] = d[keep] / max(b["web_max"], 1e-9)
-        g.cell_data["w"] = field.ravel()                        # NGRID x NGRID cells between the (NGRID+1) points
-        grain = g.threshold(0.0, scalars="w")
-        vp.plotter.add_mesh(grain, scalars="w", cmap=CMAPS.get("temperature", "plasma"), clim=(0.0, 1.0),
-                            show_scalar_bar=False, name="grain")
-        if self._built is None:
-            vp.reset_view(position="iso", zoom=1.0)
+        first = self._built is None
+        draw_section_slab(vp, b["dist"], b["inside"], b["h"], b["web_max"], r["d_now"], p.R_out)
+        if first:
             self._built = True
-        vp.set_colorbar(CMAPS.get("temperature", "plasma"), 0.0, 1.0, r"$\frac{d}{w_{max}}$ (–)")
-        vp.render()
+
+
+def draw_section_slab(vp, dist: np.ndarray, inside: np.ndarray, h: float, web_max: float, d_now: float,
+                      R_out: float, cmap: str | None = None) -> None:
+    """Extruded grain slice (thin slab) with the burned-out port removed, coloured by burn distance / web."""
+    cmap = cmap or CMAPS.get("temperature", "plasma")
+    n = dist.shape[0]
+    hm = h * 1e-3
+    thick = 0.5 * R_out * 1e-3                                  # display thickness: a slice, not the full grain length
+    g = pv.ImageData(dimensions=(n + 1, n + 1, 2), spacing=(hm, hm, thick), origin=(-R_out * 1e-3,) * 2 + (0.0,))
+    keep = inside & (dist > d_now)
+    field = np.full((n, n), -1.0)
+    field[keep] = dist[keep] / max(web_max, 1e-9)
+    g.cell_data["w"] = field.ravel()                            # cell order: x fastest, then y
+    vp.plotter.add_mesh(g.threshold(0.0, scalars="w"), scalars="w", cmap=cmap, clim=(0.0, 1.0),
+                        show_scalar_bar=False, name="grain")
+    vp.reset_view(position="iso", zoom=1.0) if not getattr(vp, "_slab_view_set", False) else None
+    vp._slab_view_set = True
+    vp.set_colorbar(cmap, 0.0, 1.0, r"$\frac{d}{w_{max}}$ (–)")
+    vp.render()
