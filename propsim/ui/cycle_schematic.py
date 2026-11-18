@@ -90,8 +90,8 @@ def _flows(kind: str, regen: bool, g: dict) -> tuple[list, list, list]:
         flows += [([(20, 34), (20, 125)] + up + [(33.1, 76), (33.1, 27), (44, 27)], FUEL),
                   ([(80, 34), (80, 68), (56, 68), (56, 77.5)], OX), ([(50, 34), (50, 62), (50, 77.5)], GAS)]
         valves += [(20, 48), (80, 48)]
-        labels += [("Heated fuel", 47, 48, "r")]
-    labels += [("Control" + chr(10) + "valves", 83, 42 if kind == "expander" else 60, "l")]
+        labels += [("Heated fuel", 53, 56, "l")]
+    labels += [("Control" + chr(10) + "valves", 86 if kind == "expander" else 83, 48 if kind == "expander" else 60, "l")]
     return flows, valves, labels
 
 
@@ -258,7 +258,8 @@ class Schematic:
         for text, x, y, al in labels:
             p.setPen(ink)
             w = 40.0
-            rect = QRectF(x - (w / 2 if al == "c" else (0 if al == "l" else w)), y - 2.5, w, 5)
+            h = 5.0 * (text.count(chr(10)) + 1)                    # a two-line label needs a taller box
+            rect = QRectF(x - (w / 2 if al == "c" else (0 if al == "l" else w)), y - h / 2, w, h)
             p.drawText(rect, {"c": Qt.AlignCenter, "l": Qt.AlignLeft, "r": Qt.AlignRight}[al] | Qt.AlignVCenter, text)
         f.setPixelSize(5)
         p.setFont(f)
