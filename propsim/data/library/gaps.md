@@ -83,6 +83,17 @@ design run.
    against the 0.15 to 0.2 rule of thumb), nozzle C_F efficiency up to 1.05 (A-2 to A-4 list 1.01 to 1.02),
    turbine inlet temperature from 100 K and pressure ratio from 1.05 (expander turbines).
 
+## Materials (block E)
+
+1. **Above 300 K**: the NIST fits stop at 300 K. Chamber and turbine materials need k, cp, E, strength and expansion
+   to 1000 K and beyond: Inconel 718 and X-750, GRCop-84 (NASA reports on NTRS), CuCrZr, OFHC copper, C-103
+   niobium, 316/304 at temperature. Candidate public source: MIL-HDBK-5J (public domain, figures need digitizing).
+2. **Strength** (yield, ultimate, versus temperature) for every material; only two Inconel X yield points so far.
+3. **Density, melting point and service temperature** are not in the NIST pages; to come from the same sources.
+4. **Ablatives and graphite** (carbon-phenolic, silica-phenolic, carbon-carbon): density, conductivity and
+   char/erosion data from NASA SP-8xxx monographs.
+5. **Missing NIST properties**: Inconel 718 and Ti-6Al-4V specific heat and modulus, copper modulus.
+
 ## Later blocks
 
-Materials, hybrid and electric arrive in later PRs; their gaps will be listed here.
+Hybrid and electric arrive in later PRs; their gaps will be listed here.

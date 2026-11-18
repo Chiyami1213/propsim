@@ -19,6 +19,9 @@ New changes go above this line, newest first.
   type, and three example graphs (gas-generator kerolox from the Huzel & Huang A-1, pressure-fed kerolox, expander
   hydrolox) with every value published, derived or flagged estimated; graph wiring and units checked by
   `propsim.data.validate`.
+- Component library, block E part 1 (materials): NIST cryogenic property fits (conductivity, specific heat,
+  Young's modulus, thermal expansion, 4 to 300 K) for 6061-T6, OFHC copper, Inconel 718, 304, 316 and Ti-6Al-4V,
+  Huzel & Huang Inconel X points at chamber-wall temperatures, evaluated by `propsim.data.matprops`.
 
 ## 1.0.0
 

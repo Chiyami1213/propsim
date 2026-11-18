@@ -249,3 +249,26 @@ def test_gg_kerolox_uses_published_a1_values():
     assert nodes["ox_pump"]["params"]["D_tip"]["quality"] == "published"
     targets = {(t["node"], t["output"]): t["value"]["value"] for t in g["validation_targets"]}
     assert targets["nozzle", "thrust"] == pytest.approx(747000 * 4.4482216, rel=1e-6)
+
+
+def test_material_fits_evaluate_in_si():
+    from propsim.data.matprops import material_property
+
+    # Plausibility at room temperature (not a second source): conductivities, modulus, copper expansion
+    assert material_property("SS304", "k", 300.0) == pytest.approx(15.3, rel=0.02)
+    assert material_property("CU_OFHC", "k", 300.0, segment="RRR100") == pytest.approx(396.0, rel=0.02)
+    assert material_property("SS304", "E", 293.0) == pytest.approx(199.5e9, rel=0.01)
+    assert material_property("CU_OFHC", "alpha", 300.0) == pytest.approx(16.6e-6, rel=0.02)
+    # thermal strain is zero at the 293 K reference and the floor below T_low
+    assert abs(material_property("TI6AL4V", "thermal_strain", 293.0)) < 2e-6
+    assert material_property("SS304", "thermal_strain", 10.0) == pytest.approx(-300.04e-5)
+    with pytest.raises(KeyError):
+        material_property("CU_OFHC", "k", 100.0)  # copper conductivity needs an RRR segment
+    with pytest.raises(ValueError):
+        material_property("IN718", "k", 900.0)  # NIST fits stop at 300 K (gaps.md)
+
+
+def test_inconel_x_points_match_the_graph_wall():
+    k = [r for r in data.material_points("INCONEL_X") if r["property"] == "k"]
+    wall = {n["id"]: n for n in data.graphs()["gg_kerolox"]["nodes"]}["regen_jacket"]["params"]["k_wall"]
+    assert any(float(r["value"]) == pytest.approx(wall["value"], rel=1e-4) for r in k)

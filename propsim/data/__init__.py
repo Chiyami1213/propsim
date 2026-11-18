@@ -24,6 +24,17 @@ CYCLES = LIBRARY / "cycles"
 CONDITIONS = {"sl", "vac", "n/a", "unstated"}
 EXAMPLES = LIBRARY / "examples"
 DASHBOARDS = LIBRARY / "dashboards"
+MATERIALS = LIBRARY / "materials"
+FIT_FORMS = {"log10_poly", "poly_floor", "cu_rational"}
+MATERIAL_UNITS = {
+    "k": "W/(m K)",
+    "cp": "J/(kg K)",
+    "E": "Pa",
+    "thermal_strain": "1",
+    "alpha": "1/K",
+    "poisson": "1",
+    "yield_strength": "Pa",
+}
 # valve timing parameters may come from the graph sequence instead of the node
 SEQUENCED = {"t_open", "ramp_open", "t_close", "ramp_close"}
 
@@ -55,6 +66,7 @@ UNITS = {
     "W",
     "rad/s",
     "kg m2",
+    "1/K",
 }
 TABLE_COLUMNS = ["T", "p", "phase", "rho", "mu", "cp", "cv", "k", "a_sound", "h", "s"]
 SAT_COLUMNS = ["T", "p_sat", "rho_l", "rho_v", "h_l", "h_v", "cp_l", "mu_l", "k_l", "sigma"]
@@ -202,6 +214,45 @@ def graphs() -> dict[str, dict]:
 def default_panels() -> dict[str, list[dict]]:
     """Component type -> standard panels (``dashboards/default_panels.json``); ``$node`` is a placeholder."""
     return json.loads((DASHBOARDS / "default_panels.json").read_text(encoding="utf-8"))["panels_by_type"]
+
+
+@cache
+def materials() -> dict[str, dict[str, str]]:
+    """``material_id`` -> row of ``materials/materials.csv``."""
+    return {r["material_id"]: r for r in _read_csv(MATERIALS / "materials.csv")}
+
+
+@cache
+def material_fits() -> list[dict[str, str]]:
+    """Rows of ``materials/property_fits.csv``; evaluate with ``propsim.data.matprops.material_property``."""
+    return _read_csv(MATERIALS / "property_fits.csv")
+
+
+def material_points(material_id: str | None = None) -> list[dict[str, str]]:
+    """Rows of ``materials/material_points.csv`` (single published values with a temperature range)."""
+    return [
+        r for r in _read_csv(MATERIALS / "material_points.csv") if material_id in (None, r["material_id"])
+    ]
+
+
+def _check_materials(problems: list[str]) -> None:
+    mats = materials()
+    fits = material_fits()
+    _check_provenance(fits, "materials/property_fits.csv", problems, value_col=None)
+    pts = material_points()
+    _check_provenance(pts, "materials/material_points.csv", problems)
+    for name, rows in (("property_fits.csv", fits), ("material_points.csv", pts)):
+        for i, r in enumerate(rows, start=2):
+            tag = f"materials/{name}:{i}"
+            if r["material_id"] not in mats:
+                problems.append(f"{tag}: unknown material {r['material_id']!r}")
+            if MATERIAL_UNITS.get(r["property"]) != r["unit"]:
+                problems.append(f"{tag}: property {r['property']!r} with unit {r['unit']!r}")
+            if float(r["T_min"]) > float(r["T_max"]):
+                problems.append(f"{tag}: T_min > T_max")
+    for i, r in enumerate(fits, start=2):
+        if r["form"] not in FIT_FORMS:
+            problems.append(f"materials/property_fits.csv:{i}: unknown form {r['form']!r}")
 
 
 def _check_sv(v: dict, unit: str | None, tag: str, problems: list[str]) -> None:
@@ -507,6 +558,7 @@ def validate() -> list[str]:
     for g in graphs().values():
         _check_graph(g, problems)
     _check_panels(problems)
+    _check_materials(problems)
 
     for p in LIBRARY.rglob("*.json"):
         try:

@@ -15,6 +15,8 @@ Checks (brief rule 5, the parts that apply to the blocks delivered so far):
    (``propsim.data.closure``).
 6. Turbine drive gas (Huzel & Huang Table 6-4): R against c_p (gamma - 1) / gamma.
 7. Example graphs: count of published, derived and estimated values per graph.
+8. Material fits: continuity at segment joins and at T_low, zero thermal strain at 293 K
+   (transcription check).
 """
 
 from __future__ import annotations
@@ -28,7 +30,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from propsim import data  # noqa: E402
-from propsim.data import closure  # noqa: E402
+from propsim.data import closure, matprops  # noqa: E402
 from propsim.core.thermo.cea import Thermo  # noqa: E402
 
 OUT = data.LIBRARY / "checks.md"
@@ -218,6 +220,51 @@ def graph_section() -> list[str]:
     return lines + [""]
 
 
+def material_section() -> tuple[list[str], int]:
+    """Transcription checks: a wrong coefficient breaks continuity or the 293 K zero of thermal strain."""
+    lines = [
+        "## 8. Material fits: transcription checks",
+        "",
+        "| material | property | check | value | flag |",
+        "|---|---|---|---|---|",
+    ]
+    n_flag = 0
+    fits = data.material_fits()
+
+    def row(m: str, p: str, what: str, val: float, ok: bool) -> None:
+        nonlocal n_flag
+        n_flag += not ok
+        lines.append(f"| {m} | {p} | {what} | {val:+.3g} | {'ok' if ok else '**check**'} |")
+
+    for r in fits:
+        if r["property"] == "thermal_strain":
+            v = matprops._eval(r, 293.0)
+            row(r["material_id"], "thermal_strain", "value at 293 K", v, abs(v) < 2e-6)
+        if r["T_low"]:
+            T = float(r["T_low"])
+            jump = matprops._eval(r, T + 1e-9) / float(r["scale"]) - float(r["y_low"])
+            row(
+                r["material_id"],
+                r["property"],
+                f"jump at T_low = {T:g} K (printed units)",
+                jump,
+                abs(jump) < 0.2,
+            )
+    for r in fits:
+        if r["segment"] == "low":
+            hi = next(
+                x
+                for x in fits
+                if x["material_id"] == r["material_id"]
+                and x["property"] == r["property"]
+                and x["segment"] == "high"
+            )
+            T = float(r["T_max"])
+            d = matprops._eval(r, T) / matprops._eval(hi, T) - 1
+            row(r["material_id"], r["property"], f"low/high fits at {T:g} K", d, abs(d) < 0.01)
+    return lines + [""], n_flag
+
+
 def main() -> int:
     problems = data.validate()
     integrity = (
@@ -233,6 +280,7 @@ def main() -> int:
     sca, n_sca = scalar_section()
     eng, n_eng = engine_section()
     tg, n_tg = turbine_gas_section()
+    mat, n_mat = material_section()
     head = [
         "# Library checks",
         "",
@@ -240,16 +288,17 @@ def main() -> int:
         "",
         f"Summary: {len(problems)} integrity problems, {n_cea} theoretical-performance cases outside "
         f"{TOL_CEA:g} %, {n_sca} multi-source scalars spreading more than {TOL_SCALAR:g} %, {n_eng} engine "
-        f"closure checks outside tolerance, {n_tg} turbine-gas rows flagged.",
+        f"closure checks outside tolerance, {n_tg} turbine-gas rows flagged, {n_mat} material-fit checks "
+        "flagged.",
         "",
     ]
     OUT.write_text(
-        "\n".join(head + integrity + cea + sca + table_section() + eng + tg + graph_section()),
+        "\n".join(head + integrity + cea + sca + table_section() + eng + tg + graph_section() + mat),
         encoding="utf-8",
     )
     print(
         f"wrote {OUT}: {len(problems)} integrity problems, {n_cea} CEA flags, {n_sca} scalar flags, "
-        f"{n_eng} engine flags, {n_tg} turbine-gas flags"
+        f"{n_eng} engine flags, {n_tg} turbine-gas flags, {n_mat} material flags"
     )
     return 1 if problems else 0
 
