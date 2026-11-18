@@ -464,7 +464,8 @@ class Chamber(Model):
     def outputs(self, x, ev):
         g = self.gas(ev, x)
         return dict(p_c=g["p0"], p_injector_end=g["p0"] * self.injector_end_ratio(g["gamma"]), mixture_ratio=g["mr"], mixture_ratio_overall=g["mr_overall"], T_c=g["Tc"],
-                    cstar=g["cstar"], gamma=g["gamma"], mdot=x[0] + x[1], film_flow=g["m_film"])
+                    cstar=g["cstar"], gamma=g["gamma"], mdot=x[0] + x[1], film_flow=g["m_film"],
+                    cooling=self.opt.get("cooling", "regenerative"))
 
     def guess(self, g):
         return [g.flow(self.id, "ox"), g.flow(self.id, "fuel")]
@@ -505,7 +506,52 @@ class Nozzle(Model):
                     cstar=g["cstar"], isp_vac=(cf_vac * self.par("eta_CF")) * pc * g["At"] / (m_tot * G0))
 
     def outputs(self, x, ev):
-        return self.performance(x, ev)
+        o = self.performance(x, ev)
+        o.update(self.wall(ev))
+        return o
+
+    def wall(self, ev) -> dict:
+        """Wall state of an uncooled extension: radiation-equilibrium temperature (radiative), or the adiabatic
+        wall temperature and cold-wall heat flux an ablative or heat-sink liner must take, from the split area
+        ratio to the exit.  Regenerative walls report through their jackets."""
+        cooling = self.opt.get("cooling", "regenerative")
+        if cooling == "regenerative":
+            return {}
+        from ..heat import adiabatic_wall_T, bartz_hg, gas_transport, sigma
+        from ..nozzle import mach_from_area
+        ch = ev.model(self.net.upstream_chamber(self.id))
+        g = ch.gas(ev)
+        Tc, gam = g["Tc"], g["gamma"]
+        cpg, mug, Pr = gas_transport(Tc, g["Mw"], gam)
+        Dt = float(np.sqrt(4.0 * g["At"] / np.pi))
+        eps = self.par("expansion_ratio")
+        a0 = min(float(self.opt.get("split_area_ratio", 5.0)), eps)
+        ar = np.geomspace(max(a0, 1.0001), eps, 12)
+        em = float(self.opt.get("emissivity", 0.8))
+        SB = 5.670374419e-8
+        T_max, q_max, Taw_max = 0.0, 0.0, 0.0
+        for a in ar:
+            M = float(mach_from_area(a, gam, True))
+            Taw = float(adiabatic_wall_T(Tc, gam, M, Pr))
+            if cooling == "radiative":
+                Tw = 0.5 * Taw
+                for _ in range(30):                        # h_g (T_aw - T_w) = eps sigma T_w^4
+                    h = float(bartz_hg(Dt, mug, cpg, Pr, g["p0"], g["cstar"], 0.382 * Dt, a,
+                                       float(sigma(Tw / Tc, gam, M))))
+                    f = h * (Taw - Tw) - em * SB * Tw**4
+                    Tw = float(np.clip(Tw + f / (h + 4 * em * SB * Tw**3), 200.0, Taw))
+                T_max = max(T_max, Tw)
+            else:
+                h = float(bartz_hg(Dt, mug, cpg, Pr, g["p0"], g["cstar"], 0.382 * Dt, a,
+                                   float(sigma(300.0 / Tc, gam, M))))
+                q_max = max(q_max, h * (Taw - 300.0))
+            Taw_max = max(Taw_max, Taw)
+        o = dict(cooling=cooling, T_aw_extension=Taw_max)
+        if cooling == "radiative":
+            o["T_wall_radiative"] = T_max
+        else:
+            o["q_cold_wall"] = q_max
+        return o
 
     def guess(self, g):
         return [g.flow(self.id, "total")]
