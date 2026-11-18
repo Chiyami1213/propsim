@@ -20,6 +20,8 @@ New changes go above this line, newest first.
   hydrolox) with every value published, derived or flagged estimated; graph wiring and units checked by
   `propsim.data.validate`.
 
+- Solid: quasi-steady CP motor (SI and US customary units) with optional end-face burning, constant-rate and
+  pressure-dependent throat erosion, and one-parameter sweeps drawn on all plots.
 - Vehicle stages can be filled from the library's reference engines (RS-25, J-2 and the RL10 variants) with one
   choice; values the library does not have stay empty or are labelled as assumed or derived.
 

@@ -10,6 +10,7 @@ from .hybrid_live import PortLiveModel, RegressionLiveModel
 from .hybrid_live_ext import FlowLiveModel, FuelLiveModel, StabilityLiveModel
 from .liquid_models import (ChuggingModel, CycleModel, FeedTransientModel, InjectorLiveModel,
                             RegenLiveModel)
+from .cp_models import CPMotorModel, CPMotorUSModel
 from .solid_models import (Burnback3DModel, BurnRateLiveModel, SolidBallisticsModel, SolidGrainLiveModel)
 from .hybrid_run import HybridBurn1DModel, N2OBlowdownModel
 from .nozzle_live import NozzleLiveModel
@@ -28,7 +29,8 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
                ("Instability & scaling", "live", StabilityLiveModel), ("0-D burn", "run", HybridBurnModel),
                ("Quasi-1D burn", "run", HybridBurn1DModel), ("N₂O blowdown", "run", N2OBlowdownModel), ("ILFI stability", "run", None)],
     "Solid": [("Grain designer", "live", SolidGrainLiveModel), ("Burn rate & K_n", "live", BurnRateLiveModel),
-              ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel)],
+              ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel),
+              ("CP motor (quasi-steady)", "run", CPMotorModel), ("CP motor (US units)", "run", CPMotorUSModel)],
     "Electric": [("Mission & power trades", "live", TradesLiveModel), ("Electrothermal thrusters", "live", ThermalLiveModel),
                  ("Gridded ion thruster", "live", IonLiveModel), ("Hall thruster", "live", HallLiveModel),
                  ("Ion optics", "run", IonOpticsModel), ("Hall discharge", "run", HallDischargeModel),

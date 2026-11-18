@@ -40,6 +40,14 @@ columns `t,F,mdot` (SI units) into the `profiles` folder of the data folder.
 Set *Drag* to *Table* and put a file `drag.csv` with the columns `mach,cd` (Mach strictly increasing) in the `profiles`
 folder. *File, Open Data Folder* opens it.
 
+### Quasi-steady solid motor, sweeps and US units
+*Solid, CP Motor (Quasi-Steady)* (SI) and *Solid, CP Motor (US Units)* (in, psi, lbf, lbm) march a hollow-cylinder
+grain through its web with the equilibrium chamber pressure at every step. Choose *Both end faces burn* to include the
+end faces, and pick a throat-erosion treatment (constant area, constant rate, or a rate that scales with
+$(p_c/p_{ref})^{0.8}$); without a sweep the plots overlay all three treatments. *Sweep* draws three values of one length
+(the nominal value plus or minus the span) on every plot. There is no ignition transient or tail-off: use *Internal
+Ballistics* for those.
+
 ### Compare designs
 Run a model, change a parameter, Run again, then tick *Compare Overlay*: the *Compare* tab overlays the saved runs.
 

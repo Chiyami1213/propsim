@@ -14,7 +14,8 @@ application, with live parameter studies, time-domain simulations, synchronized 
   - *Hybrid*: regression laws, port and grain, core flow fields, fuel and oxidizer, instability and scaling,
     0-D and quasi-1D burns, N₂O self-pressurized blowdown.
   - *Solid*: grain designer (star, wagon wheel, finocyl and more), burn rate and K_n, 3D level-set burnback,
-    internal ballistics with erosive burning.
+    internal ballistics with erosive burning, and a quasi-steady CP motor (end-face burning, three throat-erosion
+    treatments, parameter sweeps, SI or US customary units).
   - *Electric*: mission and power trades (Stuhlinger), electrothermal thrusters, gridded ion and Hall thrusters,
     ion-optics particle simulation, Hall discharge, low-thrust Edelbaum spiral with power degradation.
   - *Vehicle*: staging and atmosphere budget, and a 2-D point-mass ascent over a spherical Earth (U.S. Standard
@@ -71,6 +72,8 @@ application, with live parameter studies, time-domain simulations, synchronized 
 - **Burn rate & K_n** (Live): burn-rate and K_n tool.
 - **3D burnback** (Run): 3-D level-set burnback.
 - **Internal ballistics** (Run): internal ballistics.
+- **CP motor (quasi-steady)** (Run): quasi-steady cylindrical-perforated motor marched in web: end-face burning, three throat-erosion treatments and parameter sweeps.
+- **CP motor (US units)** (Run): the same CP motor with inputs and plots in US customary units (in, psi, lbf, lbm).
 
 **Electric**
 
@@ -231,26 +234,30 @@ Questions and bug reports: [GitHub Issues](https://github.com/Chiyami1213/propsi
   </tr>
   <tr>
     <td><img src="docs/gallery/19-internal-ballistics.png" alt="Internal ballistics: internal ballistics"><br><sub><b>Internal ballistics</b> (Solid, Run)</sub></td>
-    <td><img src="docs/gallery/20-mission-and-power-trades.png" alt="Mission & power trades: mission and power trades"><br><sub><b>Mission & power trades</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/20-cp-motor-quasi-steady.png" alt="CP motor (quasi-steady): quasi-steady cylindrical-perforated motor marched in web: end-face burning, three throat-erosion treatments and parameter sweeps"><br><sub><b>CP motor (quasi-steady)</b> (Solid, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/21-electrothermal-thrusters.png" alt="Electrothermal thrusters: electrothermal thrusters"><br><sub><b>Electrothermal thrusters</b> (Electric, Live)</sub></td>
-    <td><img src="docs/gallery/22-gridded-ion-thruster.png" alt="Gridded ion thruster: gridded ion thruster"><br><sub><b>Gridded ion thruster</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/21-cp-motor-us-units.png" alt="CP motor (US units): the same CP motor with inputs and plots in US customary units (in, psi, lbf, lbm)"><br><sub><b>CP motor (US units)</b> (Solid, Run)</sub></td>
+    <td><img src="docs/gallery/22-mission-and-power-trades.png" alt="Mission & power trades: mission and power trades"><br><sub><b>Mission & power trades</b> (Electric, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/23-hall-thruster.png" alt="Hall thruster: Hall thruster"><br><sub><b>Hall thruster</b> (Electric, Live)</sub></td>
-    <td><img src="docs/gallery/24-ion-optics.png" alt="Ion optics: ion-optics beamlet particle simulation"><br><sub><b>Ion optics</b> (Electric, Run)</sub></td>
+    <td><img src="docs/gallery/23-electrothermal-thrusters.png" alt="Electrothermal thrusters: electrothermal thrusters"><br><sub><b>Electrothermal thrusters</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/24-gridded-ion-thruster.png" alt="Gridded ion thruster: gridded ion thruster"><br><sub><b>Gridded ion thruster</b> (Electric, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/25-hall-discharge.png" alt="Hall discharge: 1-D Hall discharge"><br><sub><b>Hall discharge</b> (Electric, Run)</sub></td>
-    <td><img src="docs/gallery/26-low-thrust-spiral.png" alt="Low-thrust spiral: low-thrust Edelbaum spiral with solar-array degradation"><br><sub><b>Low-thrust spiral</b> (Electric, Run)</sub></td>
+    <td><img src="docs/gallery/25-hall-thruster.png" alt="Hall thruster: Hall thruster"><br><sub><b>Hall thruster</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/26-ion-optics.png" alt="Ion optics: ion-optics beamlet particle simulation"><br><sub><b>Ion optics</b> (Electric, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/27-vehicle-and-staging.png" alt="Vehicle & staging: staging budget (ideal velocity, mass, thrust-to-weight), atmosphere, drag and wind, with a stack sketch"><br><sub><b>Vehicle & staging</b> (Vehicle, Live)</sub></td>
-    <td><img src="docs/gallery/28-point-mass-ascent.png" alt="Point-mass ascent: 2-D point-mass ascent over a spherical Earth with staging, wind, drag and imported thrust profiles"><br><sub><b>Point-mass ascent</b> (Vehicle, Run)</sub></td>
+    <td><img src="docs/gallery/27-hall-discharge.png" alt="Hall discharge: 1-D Hall discharge"><br><sub><b>Hall discharge</b> (Electric, Run)</sub></td>
+    <td><img src="docs/gallery/28-low-thrust-spiral.png" alt="Low-thrust spiral: low-thrust Edelbaum spiral with solar-array degradation"><br><sub><b>Low-thrust spiral</b> (Electric, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/29-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
+    <td><img src="docs/gallery/29-vehicle-and-staging.png" alt="Vehicle & staging: staging budget (ideal velocity, mass, thrust-to-weight), atmosphere, drag and wind, with a stack sketch"><br><sub><b>Vehicle & staging</b> (Vehicle, Live)</sub></td>
+    <td><img src="docs/gallery/30-point-mass-ascent.png" alt="Point-mass ascent: 2-D point-mass ascent over a spherical Earth with staging, wind, drag and imported thrust profiles"><br><sub><b>Point-mass ascent</b> (Vehicle, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/31-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
     <td></td>
   </tr>
 </table>
