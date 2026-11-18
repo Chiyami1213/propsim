@@ -4,6 +4,11 @@ New changes go above this line, newest first.
 
 ## Unreleased
 
+- Hybrid motors (quasi-1D burn and N2O blowdown): the port can be *Custom* (the same shape editor as the solid grain,
+  with inhibited shapes), and a *fuel grain stack* gives each grain its own length, port, fuel density, regression law
+  (power or Marxman) and chemistry: the motor's CEA pair, another CEA pair, or your own table of c*, Tc and gamma
+  versus O/F. Several fuels are mixed by fuel mass flow (frozen composition). A custom circular port reproduces the
+  circular-port solver within 0.1 %. The 3D view draws the equivalent circular port.
 - Nuclear thermal propulsion, a new module with six models following Emrich, *Principles of Nuclear Rocket
   Propulsion* (2nd ed.): NTR performance against LOX / LH₂ with reactor power and core size; one-group reactor
   criticality (bare or reflected sphere, cylinder, slab); fuel-element thermal hydraulics (chopped-cosine power, peak
@@ -26,7 +31,7 @@ New changes go above this line, newest first.
   values and burning or inhibited end faces, and an option lets the outer surface burn too. Different propellants in
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
-  3-D burnback accepts custom sections. Hybrid motors are not covered yet.
+  3-D burnback accepts custom sections.
 - F2 saves a screenshot of the window to the data folder (`screenshots`); F11 toggles full screen; a Legend button in the 3D view shows a colour key for the solid-colour blocks (bottom right);
   the Spring-mass toy draws a real helical spring; the combo box arrow is a plain chevron; the Next Color Theme command
   (Ctrl+T) is removed, themes are picked in View, Color Theme.

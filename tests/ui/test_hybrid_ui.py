@@ -93,3 +93,38 @@ def test_run_models_through_the_worker(win, key, seek):
     assert win.summary.latex()
     if key == "hybrid.n2o":
         assert {"tank", "tank_liquid"} <= set(win.vp.plotter.renderer.actors)
+
+
+def test_custom_port_and_fuel_stack_editor(win):
+    """Custom port and fuel-grain stack reach the quasi-1D hybrid model through the form."""
+    import json
+
+    from PySide6.QtWidgets import QDialogButtonBox
+
+    from propsim.core.grain import stack as gs
+    from propsim.ui import grain_editor as ge
+
+    win.select_model("hybrid.burn1d")
+    form = win.form
+    form.rows["kind"].slider.setCurrentIndex(form.rows["kind"].meta["choices"].index("custom"))
+    ctx = {k: r.value() for k, r in form.rows.items()}
+    sec = ge.SectionEditor("", ctx)
+    assert sec.R_out == pytest.approx(ctx["R_p0"] + ctx["web"])         # hybrid: outer radius = port radius + web
+    sec.table.item(0, 3).setText("r=20")
+    form.rows["section_json"].set_value(sec.text())
+    st = ge.HybridStackEditor("", ctx)
+    assert st.table.isColumnHidden(1) and st.table.isColumnHidden(2)     # no end faces for hybrid grains
+    st._add(gs.GrainDef(0.3))
+    st.table.item(1, 4).setText("rho_f=900; a=0.1171; n=0.62; law=power")
+    st.refresh()
+    assert st.buttons.button(QDialogButtonBox.Ok).isEnabled()
+    st.table.item(1, 4).setText("zz=1")
+    st.refresh()
+    assert not st.buttons.button(QDialogButtonBox.Ok).isEnabled()
+    st.table.item(1, 4).setText("rho_f=900; a=0.1171; n=0.62; law=power")
+    text = st.text()
+    form.rows["stack_json"].set_value(text)
+    QApplication.processEvents()
+    m = form.values().to_si()
+    assert len(m.grains) == 2 and m.grains[1].rho_f == 900.0 and m.grains[1].law == "power"
+    assert json.loads(text)[1]["prop"]["law"] == "power"
