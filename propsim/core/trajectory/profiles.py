@@ -73,6 +73,18 @@ def load(path: str | Path) -> dict:
     return prof
 
 
+def load_drag(path: str | Path) -> dict:
+    """Drag table from a CSV with columns ``mach,cd`` (Mach strictly increasing)."""
+    d = np.genfromtxt(path, delimiter=",", names=True, dtype=float)
+    names = d.dtype.names or ()
+    if "mach" not in names or "cd" not in names:
+        raise ValueError("drag.csv needs the columns: mach,cd")
+    m, c = np.atleast_1d(d["mach"]), np.atleast_1d(d["cd"])
+    if len(m) < 2 or np.any(np.diff(m) <= 0) or np.any(c < 0):
+        raise ValueError("drag.csv: at least two rows, Mach strictly increasing, Cd not negative")
+    return dict(mach=m.tolist(), cd=c.tolist())
+
+
 def find(profiles_dir: str | Path, stage: int) -> Path | None:
     for ext in (".json", ".csv"):
         p = Path(profiles_dir) / f"stage{stage}{ext}"

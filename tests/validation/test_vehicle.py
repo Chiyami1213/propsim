@@ -154,3 +154,21 @@ def test_thrust_profile_exchange(tmp_path):
     veh = fl.Vehicle((stage,), 2.0)
     f = fl.simulate(veh, fl.Guidance(elevation=np.radians(88.0), rail=3.0), fl.Aero(), fl.Wind(), t_max=120.0)
     assert dict(f.events)["Stage 1 burnout"] == pytest.approx(prof["t"][-1], abs=0.02)
+
+
+def test_custom_drag_table(tmp_path):
+    import threading
+    from propsim.sims.vehicle_run import AscentParams, PointMassAscent
+    f = tmp_path / "drag.csv"
+    f.write_text("mach,cd\n0,0.25\n0.8,0.3\n1.1,0.6\n2,0.4\n5,0.25\n", encoding="utf-8")
+    d = profiles.load_drag(f)
+    assert d["mach"] == [0, 0.8, 1.1, 2, 5] and d["cd"][2] == 0.6
+    p = AscentParams(drag="table", drag_table=__import__("json").dumps(d))
+    assert p.aero().cd_of(1.1) == pytest.approx(0.6) and p.aero().cd_of(1.45) == pytest.approx(0.6 + (0.4 - 0.6) * 0.35 / 0.9)
+    r = PointMassAscent().run(p, lambda x: None, threading.Event())
+    assert r.meta["orbit"]
+    with pytest.raises(ValueError, match="none was loaded"):
+        AscentParams(drag="table").aero()
+    f.write_text("mach,cd\n1,0.3\n0.5,0.3\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="strictly increasing"):
+        profiles.load_drag(f)

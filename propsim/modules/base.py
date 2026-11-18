@@ -26,6 +26,10 @@ class ModelController:
     def evaluate(self, p) -> dict:
         raise NotImplementedError
 
+    def prepare_params(self, p, home) -> None:
+        """Last step before a Run: models that need data from the data folder (e.g. imported thrust profiles) fill it
+        into ``p``; raise ``ValueError`` with a helpful message when it is missing."""
+
     # --- views --------------------------------------------------------------------------------
     def reset_scene(self) -> None:
         """Forget cached mesh handles; called when the viewport is cleared on a model switch."""

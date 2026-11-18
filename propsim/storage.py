@@ -8,6 +8,7 @@ variable, then the default.  Layout::
     <home>/cases/     saved cases (*.psim.json)
     <home>/exports/   PNG / CSV / .mat / .h5 / code exports
     <home>/backups/   automatic backups: overwritten cases and the last session
+    <home>/profiles/  thrust profiles sent to the vehicle model (stage1.json ...)
 """
 from __future__ import annotations
 
@@ -17,7 +18,7 @@ import time
 from pathlib import Path
 
 APP = "PropSim"
-SUBDIRS = ("runs", "cases", "exports", "backups")
+SUBDIRS = ("runs", "cases", "exports", "backups", "profiles")
 KEEP_BACKUPS = 20
 
 

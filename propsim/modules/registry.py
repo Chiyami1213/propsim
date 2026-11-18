@@ -14,6 +14,7 @@ from .solid_models import (Burnback3DModel, BurnRateLiveModel, SolidBallisticsMo
 from .hybrid_run import HybridBurn1DModel, N2OBlowdownModel
 from .nozzle_live import NozzleLiveModel
 from .toy import SpringMassModel
+from .vehicle_models import AscentModel, VehicleLiveModel
 
 # module -> list of (label, mode, controller class or None when planned). Labels are plain text (Qt tree).
 TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
@@ -32,7 +33,7 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
                  ("Gridded ion thruster", "live", IonLiveModel), ("Hall thruster", "live", HallLiveModel),
                  ("Ion optics", "run", IonOpticsModel), ("Hall discharge", "run", HallDischargeModel),
                  ("Low-thrust spiral", "run", SpiralModel)],
-    "Vehicle": [("Point-mass ascent", "run", None)],
+    "Vehicle": [("Vehicle & staging", "live", VehicleLiveModel), ("Point-mass ascent", "run", AscentModel)],
     "Toy": [("Spring-mass", "run", SpringMassModel)],
 }
 

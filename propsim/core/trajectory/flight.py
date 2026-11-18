@@ -244,10 +244,11 @@ def simulate(veh: Vehicle, guid: Guidance, aero: Aero, wind: Wind, t_max: float 
     if initial is None:
         gam0 = guid.elevation
         m0 = stack_mass(veh, 0)
-        F0, _ = thrust(stages[0], 0.0, atm(0.0)[1] if atmosphere_on else 0.0)
-        if F0 / (m0 * G0) <= 1.0:
-            raise ValueError(f"thrust-to-weight at lift-off is {F0 / (m0 * G0):.2f}: the vehicle cannot leave the pad")
-        events.append(("Liftoff", 0.0))
+        p_sl = atm(0.0)[1] if atmosphere_on else 0.0
+        F_peak = (float(np.max(stages[0].profile[1])) if stages[0].profile is not None
+                  else thrust(stages[0], 0.0, p_sl)[0])
+        if F_peak / (m0 * G0) <= 1.0:
+            raise ValueError(f"peak thrust-to-weight at lift-off is {F_peak / (m0 * G0):.2f}: the vehicle cannot leave the pad")
         if guid.rail > 0.0:
             def rhs_rail(tt, y):
                 s, V, m, mp = y
@@ -260,19 +261,26 @@ def simulate(veh: Vehicle, guid: Guidance, aero: Aero, wind: Wind, t_max: float 
                 Dt = -D * (ux * np.cos(gam0) + uz * np.sin(gam0)) / U if U > 0 else 0.0
                 F, mdot = stage_thrust(0, tt, h)
                 g = MU / (R_E + h) ** 2
-                return [V, (F + Dt) / m - g * np.sin(gam0), -mdot, -mdot]
+                acc = (F + Dt) / m - g * np.sin(gam0)
+                if V <= 0.0 and acc < 0.0:                         # held down on the pad until the thrust exceeds the weight
+                    acc = 0.0
+                return [V, acc, -mdot, -mdot]
             end_rail = lambda tt, y: y[0] - guid.rail
             end_rail.terminal, end_rail.direction = True, 1
             sol = solve_ivp(rhs_rail, (0.0, t_max), [0.0, 0.0, m0, stages[0].m_prop], events=end_rail, rtol=1e-9,
                             atol=[1e-6, 1e-6, 1e-6, 1e-6], dense_output=True)
             segs.append(dict(kind="rail", t0=0.0, t1=float(sol.t[-1]), sol=sol, k=0, burn=True, t_ign=0.0, kd=0))
             t = float(sol.t[-1])
+            ts = np.linspace(0.0, t, 2001)
+            moving = np.where(sol.sol(ts)[1] > 1e-3)[0]
+            events.append(("Liftoff", float(ts[moving[0]]) if moving.size else 0.0))
             if not sol.t_events[0].size:
                 raise ValueError("the vehicle does not clear the launch rail")
             s_, V_, m_, mp_ = sol.y[:, -1]
             y = np.array([R_E + s_ * np.sin(gam0), s_ * np.cos(gam0) / R_E, V_ * np.sin(gam0), V_ * np.cos(gam0), m_, mp_])
             events.append(("Rail exit", t))
         else:
+            events.append(("Liftoff", 0.0))
             y = np.array([R_E, 0.0, 0.0, 1e-3 * np.cos(gam0), m0, stages[0].m_prop])
             y[2] = 1e-3 * np.sin(gam0)
     else:
