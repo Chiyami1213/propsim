@@ -678,6 +678,80 @@
    }
   },
   {
+   "id": "fpb_fuel_injector",
+   "type": "injector",
+   "label": "fuel preburner fuel injector",
+   "params": {
+    "A_total": {
+     "value": 0.00248558,
+     "unit": "m2",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A = mdot_f / (Cd sqrt(2 rho dp)) with the TP-3700 preburner hydrogen flow 78.18 lb/s, Cd 0.75, upstream pressure 1.15 x the higher preburner pressure (15 % stiffness, H&H p.128) and hydrogen at 240 K, 40 MPa (30.94 kg/m3, CoolProp table); injector areas are not in a public NASA source"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.164253,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "drop over preburner pressure for the area above"
+    }
+   },
+   "ui": {
+    "x": 520,
+    "y": 470
+   },
+   "options": {
+    "type": "coaxial"
+   }
+  },
+  {
+   "id": "opb_fuel_injector",
+   "type": "injector",
+   "label": "oxidizer preburner fuel injector",
+   "params": {
+    "A_total": {
+     "value": 0.00116058,
+     "unit": "m2",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A = mdot_f / (Cd sqrt(2 rho dp)) with the TP-3700 preburner hydrogen flow 35.10 lb/s, Cd 0.75, upstream pressure 1.15 x the higher preburner pressure (15 % stiffness, H&H p.128) and hydrogen at 240 K, 40 MPa (30.94 kg/m3, CoolProp table); injector areas are not in a public NASA source"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.15,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "drop over preburner pressure for the area above"
+    }
+   },
+   "ui": {
+    "x": 520,
+    "y": 270
+   },
+   "options": {
+    "type": "coaxial"
+   }
+  },
+  {
    "id": "mov",
    "type": "valve_ball",
    "label": "main oxidizer valve",
@@ -823,6 +897,10 @@
    "ui": {
     "x": 750,
     "y": 600
+   },
+   "options": {
+    "section": "chamber",
+    "split_area_ratio": "5"
    }
   },
   {
@@ -865,6 +943,10 @@
    "ui": {
     "x": 600,
     "y": 600
+   },
+   "options": {
+    "section": "nozzle",
+    "split_area_ratio": "5"
    }
   },
   {
@@ -1301,10 +1383,36 @@
    "medium": "LH2"
   },
   {
-   "id": "nozzle_jacket.coolant_out->fpb.fuel_in",
+   "id": "nozzle_jacket.coolant_out->fpb_fuel_injector.inlet",
    "from": {
     "node": "nozzle_jacket",
     "port": "coolant_out"
+   },
+   "to": {
+    "node": "fpb_fuel_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "nozzle_jacket.coolant_out->opb_fuel_injector.inlet",
+   "from": {
+    "node": "nozzle_jacket",
+    "port": "coolant_out"
+   },
+   "to": {
+    "node": "opb_fuel_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "fpb_fuel_injector.outlet->fpb.fuel_in",
+   "from": {
+    "node": "fpb_fuel_injector",
+    "port": "outlet"
    },
    "to": {
     "node": "fpb",
@@ -1314,10 +1422,10 @@
    "medium": "LH2"
   },
   {
-   "id": "nozzle_jacket.coolant_out->opb.fuel_in",
+   "id": "opb_fuel_injector.outlet->opb.fuel_in",
    "from": {
-    "node": "nozzle_jacket",
-    "port": "coolant_out"
+    "node": "opb_fuel_injector",
+    "port": "outlet"
    },
    "to": {
     "node": "opb",

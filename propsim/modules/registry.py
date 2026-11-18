@@ -19,12 +19,20 @@ from .nuclear_models import (CriticalityModel, CyclesModel, FuelElementModel, Ki
 from .toy import SpringMassModel
 from .vehicle_models import AscentModel, VehicleLiveModel
 
-# module -> list of (label, mode, controller class or None when planned). Labels are plain text (Qt tree).
+
+class CycleSandboxTool:
+    """Tree entry that opens the engine cycle sandbox window (``propsim.ui.cycle_sandbox``), not a model."""
+
+    key = "liquid.sandbox"
+
+
+# module -> list of (label, mode, controller class or None when planned). Labels are plain text (Qt tree). Mode
+# "tool" entries open their own window instead of loading a model.
 TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
     "Common": [("Thermochemistry & nozzle", "live", EngineLiveModel)],
     "Liquid": [("Injector & chamber", "live", InjectorLiveModel), ("Regenerative cooling", "live", RegenLiveModel),
                ("Feed network transient", "run", FeedTransientModel), ("Pump-fed cycles", "run", CycleModel),
-               ("Chugging & L* stability", "run", ChuggingModel)],
+               ("Chugging & L* stability", "run", ChuggingModel), ("Cycle sandbox", "tool", CycleSandboxTool)],
     "Hybrid": [("Nozzle thrust coefficient", "live", NozzleLiveModel), ("Regression laws", "live", RegressionLiveModel),
                ("Port & grain", "live", PortLiveModel),
                ("Core flow fields", "live", FlowLiveModel), ("Fuel & oxidizer", "live", FuelLiveModel),

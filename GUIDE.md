@@ -48,6 +48,24 @@ $(p_c/p_{ref})^{0.8}$); without a sweep the plots overlay all three treatments. 
 (the nominal value plus or minus the span) on every plot. There is no ignition transient or tail-off: use *Internal
 Ballistics* for those.
 
+### Build your own liquid engine cycle
+*Liquid, Cycle sandbox* (or **Simulation, Engine cycle sandbox**, Ctrl+E) opens a flow-diagram editor. Pick parts from
+the component library on the left (tanks, lines, valves, pumps, inducers, turbines, gas generators, injectors,
+chambers, cooling jackets, nozzles, shafts) by double-clicking or dragging, then drag from one port to another to
+connect them. Fluid ports join outlet to inlet; shaft ports join a turbine to its pumps. Choose the oxidizer and fuel in
+the toolbar; tanks take the propellant of their side. The inspector on the right edits the selected part's parameters
+(each shows its library source; an edited value is marked *USER*) and options such as the nozzle and chamber cooling
+(regenerative, radiative, ablative, uncooled) or the turbine model. Right-click a part to send its exhaust overboard.
+
+**Solve** (Ctrl+R) finds the steady operating point: every station's pressure, temperature, phase and flow, each
+part's state (pump head, power and NPSH margin, turbine work, jacket heat load and wall temperature, chamber pressure,
+thrust and Isp) and shaft speeds. Colour the diagram by pressure, temperature or flow. In *Design Targets* you can ask
+for an output (for example chamber pressure and mixture ratio) and free a parameter (for example a valve position) to
+size it, as an engine controller would. The templates include the Huzel & Huang pressure-fed, gas-generator and
+expander engines and an RS-25 style staged-combustion cycle. Save and open diagrams as `.json` files.
+
+The sandbox is steady state only; start-up and shutdown transients are not modelled.
+
 ### Compare designs
 Run a model, change a parameter, Run again, then tick *Compare Overlay*: the *Compare* tab overlays the saved runs.
 
@@ -97,6 +115,7 @@ Double-click a parameter slider to put it back to its default value.
 |---|---|
 | Ctrl+R / Esc | Run / Cancel |
 | Ctrl+O, Ctrl+S | Open case, Save case |
+| Ctrl+E | Engine cycle sandbox |
 | Ctrl+Shift+T | Color theme picker |
 | F12 | Restore default panel layout |
 | F11 | Full screen on and off |

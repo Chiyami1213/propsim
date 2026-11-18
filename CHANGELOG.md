@@ -14,6 +14,12 @@ New changes go above this line, newest first.
   `propsim/core/nuclear`; `tests/validation/test_nuclear.py` reproduces the book's worked examples (Isp at area ratio
   200, critical sphere, fuel cell peak temperature, expander pump pressure, inhour period, shutdown cooling, NERVA-type
   stability margin, xenon peak after shutdown).
+- Liquid engines: an engine cycle sandbox (*Liquid, Cycle sandbox*, Ctrl+E). Build any cycle on a flow diagram from
+  the component library, choose propellants, parts and cooling (regenerative jacket, radiative, ablative, uncooled),
+  and solve the steady operating point with real-fluid properties (CoolProp): station pressures, temperatures,
+  phases and flows, pump, turbine, jacket, gas generator, chamber and nozzle states, shaft speeds and warnings (NPSH,
+  injector stiffness, turbine inlet temperature). Design targets size free parameters such as valve positions. The
+  RS-25 style staged-combustion template solves at 20.48 MPa and O/F 6.0. Steady state only.
 - Solid motors: build your own grain. The section kind *Custom* takes a list of shapes (circle, rectangle, radial slot,
   polygon, star, with polar repeats) and any shape can be marked inhibited, so its surface is coated and does not
   regress. A new *grain stack* describes a motor as several grains, each with its own length, section, propellant
