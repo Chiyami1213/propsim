@@ -14,6 +14,8 @@ from .cp_models import CPMotorModel, CPMotorUSModel
 from .solid_models import (Burnback3DModel, BurnRateLiveModel, SolidBallisticsModel, SolidGrainLiveModel)
 from .hybrid_run import HybridBurn1DModel, N2OBlowdownModel
 from .nozzle_live import NozzleLiveModel
+from .nuclear_models import (CriticalityModel, CyclesModel, FuelElementModel, KineticsModel, NTRPerformanceModel,
+                             PoisonsModel)
 from .toy import SpringMassModel
 from .vehicle_models import AscentModel, VehicleLiveModel
 
@@ -43,6 +45,9 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
                  ("Gridded ion thruster", "live", IonLiveModel), ("Hall thruster", "live", HallLiveModel),
                  ("Ion optics", "run", IonOpticsModel), ("Hall discharge", "run", HallDischargeModel),
                  ("Low-thrust spiral", "run", SpiralModel)],
+    "Nuclear": [("NTR performance", "live", NTRPerformanceModel), ("Reactor criticality", "live", CriticalityModel),
+                ("Fuel element thermal hydraulics", "live", FuelElementModel), ("NTR engine cycles", "live", CyclesModel),
+                ("Xenon & samarium", "live", PoisonsModel), ("Reactor kinetics & startup", "run", KineticsModel)],
     "Vehicle": [("Vehicle & staging", "live", VehicleLiveModel), ("Point-mass ascent", "run", AscentModel)],
     "Toy": [("Spring-mass", "run", SpringMassModel)],
 }

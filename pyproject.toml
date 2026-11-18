@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "propsim"
 version = "1.0.0"
-description = "Interactive 3D rocket propulsion simulator (liquid, hybrid, solid, electric)"
+description = "Interactive 3D rocket propulsion simulator (liquid, hybrid, solid, electric, nuclear thermal)"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = [

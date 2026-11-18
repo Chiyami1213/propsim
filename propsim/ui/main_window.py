@@ -32,7 +32,7 @@ from . import gc_guard
 from .worker import RunWorker
 
 MODULE_TITLES = {"Hybrid": "Hybrid Rocket", "Liquid": "Liquid Engine", "Solid": "Solid Rocket Motor",
-                 "Electric": "Electric Propulsion", "Vehicle": "Vehicle", "Toy": "Toy"}
+                 "Electric": "Electric Propulsion", "Nuclear": "Nuclear Thermal Propulsion", "Vehicle": "Vehicle", "Toy": "Toy"}
 KEY_ROLE = Qt.UserRole + 1
 
 

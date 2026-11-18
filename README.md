@@ -1,6 +1,6 @@
 # PropSim
 
-Interactive 3D rocket propulsion simulator for Windows: liquid, hybrid, solid and electric propulsion in one desktop
+Interactive 3D rocket propulsion simulator for Windows: liquid, hybrid, solid, electric and nuclear thermal propulsion in one desktop
 application, with live parameter studies, time-domain simulations, synchronized 3D views and publication-style plots.
 
 ## Features
@@ -18,6 +18,11 @@ application, with live parameter studies, time-domain simulations, synchronized 
     treatments, parameter sweeps, SI or US customary units).
   - *Electric*: mission and power trades (Stuhlinger), electrothermal thrusters, gridded ion and Hall thrusters,
     ion-optics particle simulation, Hall discharge, low-thrust Edelbaum spiral with power degradation.
+  - *Nuclear*: nuclear thermal rocket performance against LOX / LH₂, one-group reactor criticality with reflectors,
+    fuel-element thermal hydraulics (chopped-cosine power, peak fuel temperature, channel pressure drop), hot bleed,
+    cold bleed and expander cycles with real hydrogen, xenon and samarium poisoning over burn and restart histories,
+    and six-group reactor kinetics with fuel, moderator and hydrogen-density feedback (startup with temperature
+    control, reactivity steps, scram with decay heat, Bode stability).
   - *Vehicle*: staging and atmosphere budget, and a 2-D point-mass ascent over a spherical Earth (U.S. Standard
     Atmosphere 1976, drag curves or your own table, wind, up to three stages, pitch kick and level-off guidance,
     perigee cutoff) that can fly thrust curves sent from the hybrid, solid and liquid models.
@@ -88,6 +93,15 @@ application, with live parameter studies, time-domain simulations, synchronized 
 - **Ion optics** (Run): ion-optics beamlet particle simulation.
 - **Hall discharge** (Run): 1-D Hall discharge.
 - **Low-thrust spiral** (Run): low-thrust Edelbaum spiral with solar-array degradation.
+
+**Nuclear**
+
+- **NTR performance** (Live): chamber temperature, pressure and area ratio give I_sp, flow, reactor power and core size, compared with a LOX / LH₂ engine (CEA) and on stage payload fraction.
+- **Reactor criticality** (Live): one-group bare or reflected sphere, cylinder or slab: k_eff, critical size and mass, reflector savings and the flux shape.
+- **Fuel element thermal hydraulics** (Live): equivalent fuel cell with a chopped-cosine power shape: propellant, wall and peak fuel temperatures, Dittus–Boelter film coefficient and channel pressure drop.
+- **NTR engine cycles** (Live): hot bleed, cold bleed and expander energy balances with CoolProp hydrogen: bleed fraction, delivered I_sp, pump outlet pressure and the T–s diagram.
+- **Xenon & samarium** (Live): iodine-xenon and promethium-samarium chains over a burn, coast and restart, with the poison reactivity against the drum excess.
+- **Reactor kinetics & startup** (Run): six-group point kinetics with fuel, moderator and propellant-density feedback: startup under outlet temperature control, reactivity steps and a scram with decay heat; closed-loop Bode plot.
 
 **Vehicle**
 
