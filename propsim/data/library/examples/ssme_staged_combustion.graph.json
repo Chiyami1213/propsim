@@ -1,0 +1,1855 @@
+{
+ "schema_version": "1.0",
+ "graph_id": "ssme_staged_combustion",
+ "name": "SSME staged combustion at rated power level (public NASA data)",
+ "description": "LOX/LH2 fuel-rich staged combustion with two preburners and four turbopumps, built only from public NASA documents: station pressures, speeds, powers, flows and turbine inlet temperatures from the 1981 Space Shuttle News Reference (rated power level), preburner flow split from the heat-balance column of NASA TP-3700 Table A.6, chamber c* from the shipped CEA tables. Turbine efficiencies, line volumes and the start sequence are estimates.",
+ "cycle": "staged_combustion_fuel_rich",
+ "reference_engine": "RS25",
+ "propellants": {
+  "oxidizer": "LOX",
+  "fuel": "LH2"
+ },
+ "nodes": [
+  {
+   "id": "ox_tank",
+   "type": "tank_regulated",
+   "label": "LOX tank",
+   "params": {
+    "p_set": {
+     "value": 689476.0,
+     "unit": "Pa",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, low-pressure oxidizer turbopump",
+     "formula": "100 psia low-pressure pump inlet; suction line not modelled"
+    },
+    "V_tank": {
+     "value": 187.375,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "rated-power flow x 8.5 min (nominal operating time, SNR p.2-4) / rho / 0.95; one engine's share, not the External Tank"
+    },
+    "fill_fraction": {
+     "value": 0.95,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "5 % ullage assumed"
+    },
+    "T_prop": {
+     "value": 90.0,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "near the normal boiling point"
+    }
+   },
+   "ui": {
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "id": "fuel_tank",
+   "type": "tank_regulated",
+   "label": "LH2 tank",
+   "params": {
+    "p_set": {
+     "value": 206843.0,
+     "unit": "Pa",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-12, low-pressure fuel turbopump",
+     "formula": "30 psia low-pressure pump inlet; suction line not modelled"
+    },
+    "V_tank": {
+     "value": 500.329,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "rated-power flow x 8.5 min (nominal operating time, SNR p.2-4) / rho / 0.95; one engine's share, not the External Tank"
+    },
+    "fill_fraction": {
+     "value": 0.95,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "5 % ullage assumed"
+    },
+    "T_prop": {
+     "value": 20.3,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "near the normal boiling point"
+    }
+   },
+   "ui": {
+    "x": 0,
+    "y": 500
+   }
+  },
+  {
+   "id": "lpftp_pump",
+   "type": "pump_centrifugal",
+   "label": "low-pressure fuel pump",
+   "params": {
+    "D_tip": {
+     "value": 0.266817,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "D = 2 sqrt(g0 H / psi) / omega with H = 1978 m from the published pressure rise, psi = 0.46 (A-1 head coefficient)"
+    },
+    "psi_design": {
+     "value": 0.46,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+    },
+    "eta_design": {
+     "value": 0.72281,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-12, low-pressure fuel turbopump",
+     "formula": "eta = mdot dp / (rho P) = 66.7 kg/s x 1.393 MPa / (71.8 kg/m3 x 2400 bhp); incompressible, inlet density from fluids/tables/LH2.csv; LH2 compressibility raises the true value"
+    },
+    "N_design": {
+     "value": 1539.38,
+     "unit": "rad/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-12, low-pressure fuel turbopump",
+     "formula": "14700 rpm"
+    },
+    "Q_design": {
+     "value": 0.928814,
+     "unit": "m3/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-12, low-pressure fuel turbopump",
+     "formula": "147 lb/s / 71.8 kg/m3"
+    }
+   },
+   "ui": {
+    "x": 150,
+    "y": 500
+   },
+   "options": {
+    "stages": "1",
+    "impeller": "axial"
+   }
+  },
+  {
+   "id": "hpftp_pump",
+   "type": "pump_centrifugal",
+   "label": "high-pressure fuel pump (3 stages)",
+   "params": {
+    "D_tip": {
+     "value": 0.612477,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "D = 2 sqrt(g0 H / psi) / omega with H = 59095 m from the published pressure rise, psi = 0.46 (A-1 head coefficient); per-stage head is a third of this"
+    },
+    "psi_design": {
+     "value": 0.46,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+    },
+    "eta_design": {
+     "value": 0.832166,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "pp.2-12 to 2-13, high-pressure fuel turbopump",
+     "formula": "eta = mdot dp / (rho P) = 66.7 kg/s x 41.603 MPa / (71.8 kg/m3 x 62270 bhp); incompressible, inlet density from fluids/tables/LH2.csv; LH2 compressibility raises the true value"
+    },
+    "N_design": {
+     "value": 3665.19,
+     "unit": "rad/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "pp.2-12 to 2-13, high-pressure fuel turbopump",
+     "formula": "35000 rpm"
+    },
+    "Q_design": {
+     "value": 0.928814,
+     "unit": "m3/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "pp.2-12 to 2-13, high-pressure fuel turbopump",
+     "formula": "147 lb/s / 71.8 kg/m3"
+    }
+   },
+   "ui": {
+    "x": 300,
+    "y": 500
+   },
+   "options": {
+    "stages": "3",
+    "impeller": "centrifugal"
+   }
+  },
+  {
+   "id": "lpotp_pump",
+   "type": "pump_centrifugal",
+   "label": "low-pressure oxidizer pump",
+   "params": {
+    "D_tip": {
+     "value": 0.237605,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "D = 2 sqrt(g0 H / psi) / omega with H = 193 m from the published pressure rise, psi = 0.46 (A-1 head coefficient)"
+    },
+    "psi_design": {
+     "value": 0.46,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+    },
+    "eta_design": {
+     "value": 0.689961,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, low-pressure oxidizer turbopump",
+     "formula": "eta = mdot dp / (rho P) = 400.5 kg/s x 2.172 MPa / (1150.1 kg/m3 x 1470 bhp); incompressible, inlet density from fluids/tables/LOX.csv"
+    },
+    "N_design": {
+     "value": 539.307,
+     "unit": "rad/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, low-pressure oxidizer turbopump",
+     "formula": "5150 rpm"
+    },
+    "Q_design": {
+     "value": 0.348238,
+     "unit": "m3/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, low-pressure oxidizer turbopump",
+     "formula": "883 lb/s / 1150.1 kg/m3"
+    }
+   },
+   "ui": {
+    "x": 150,
+    "y": 0
+   },
+   "options": {
+    "stages": "1",
+    "impeller": "axial"
+   }
+  },
+  {
+   "id": "hpotp_pump",
+   "type": "pump_centrifugal",
+   "label": "high-pressure oxidizer main pump",
+   "params": {
+    "D_tip": {
+     "value": 0.155086,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "D = 2 sqrt(g0 H / psi) / omega with H = 2611 m from the published pressure rise, psi = 0.46 (A-1 head coefficient)"
+    },
+    "psi_design": {
+     "value": 0.46,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+    },
+    "eta_design": {
+     "value": 0.791618,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, high-pressure oxidizer turbopump (main pump)",
+     "formula": "eta = mdot dp / (rho P) = 483.5 kg/s x 29.454 MPa / (1150.1 kg/m3 x 20977 bhp); incompressible, inlet density from fluids/tables/LOX.csv"
+    },
+    "N_design": {
+     "value": 3042.84,
+     "unit": "rad/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, high-pressure oxidizer turbopump (main pump)",
+     "formula": "29057 rpm"
+    },
+    "Q_design": {
+     "value": 0.42041,
+     "unit": "m3/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, high-pressure oxidizer turbopump (main pump)",
+     "formula": "1066 lb/s / 1150.1 kg/m3"
+    }
+   },
+   "ui": {
+    "x": 300,
+    "y": 0
+   },
+   "options": {
+    "stages": "1",
+    "impeller": "centrifugal"
+   }
+  },
+  {
+   "id": "pbp_pump",
+   "type": "pump_centrifugal",
+   "label": "preburner boost pump",
+   "params": {
+    "D_tip": {
+     "value": 0.134182,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "D = 2 sqrt(g0 H / psi) / omega with H = 1955 m from the published pressure rise, psi = 0.46 (A-1 head coefficient)"
+    },
+    "psi_design": {
+     "value": 0.46,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+    },
+    "eta_design": {
+     "value": 0.681302,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, high-pressure oxidizer turbopump (preburner pump)",
+     "formula": "eta = mdot dp / (rho P) = 39.0 kg/s x 22.049 MPa / (1150.1 kg/m3 x 1472 bhp); incompressible, inlet density from fluids/tables/LOX.csv"
+    },
+    "N_design": {
+     "value": 3042.84,
+     "unit": "rad/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, high-pressure oxidizer turbopump (preburner pump)",
+     "formula": "29057 rpm"
+    },
+    "Q_design": {
+     "value": 0.0339168,
+     "unit": "m3/s",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, high-pressure oxidizer turbopump (preburner pump)",
+     "formula": "86 lb/s / 1150.1 kg/m3; printed '~9 kg/s (86 lb/s)', the lb/s figure is used"
+    }
+   },
+   "ui": {
+    "x": 450,
+    "y": 100
+   },
+   "options": {
+    "stages": "1",
+    "impeller": "centrifugal"
+   }
+  },
+  {
+   "id": "hpft_turbine",
+   "type": "turbine_impulse",
+   "label": "high-pressure fuel turbine",
+   "params": {
+    "D_mean": {
+     "value": 0.373129,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "U/C0 = 0.5 assumed for a two-stage reaction turbine, C0 = 1368 m/s"
+    },
+    "eta_design": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+    },
+    "pressure_ratio": {
+     "value": 1.59759,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp); mdot 66.21 kg/s (TP-3700 preburner flows), power 46.435 MW (SNR p.2-12/2-13), cp 8306 J/(kg K), gamma 1.362; exit 3232 psia"
+    },
+    "T_inlet": {
+     "value": 961.0,
+     "unit": "K",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13 turbine inlet pressure and temperature",
+     "formula": "961 K as printed"
+    }
+   },
+   "ui": {
+    "x": 450,
+    "y": 400
+   },
+   "options": {
+    "arrangement": "reaction_2stage"
+   }
+  },
+  {
+   "id": "hpot_turbine",
+   "type": "turbine_impulse",
+   "label": "high-pressure oxidizer turbine",
+   "params": {
+    "D_mean": {
+     "value": 0.42528,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "U/C0 = 0.5 assumed for a two-stage reaction turbine, C0 = 1294 m/s"
+    },
+    "eta_design": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+    },
+    "pressure_ratio": {
+     "value": 1.5552,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp); mdot 26.66 kg/s (TP-3700 preburner flows), power 16.740 MW (SNR p.2-12/2-13), cp 9029 J/(kg K), gamma 1.375; exit 3362 psia"
+    },
+    "T_inlet": {
+     "value": 817.0,
+     "unit": "K",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13 turbine inlet pressure and temperature",
+     "formula": "817 K as printed"
+    }
+   },
+   "ui": {
+    "x": 450,
+    "y": 200
+   },
+   "options": {
+    "arrangement": "reaction_2stage"
+   }
+  },
+  {
+   "id": "lpft_turbine",
+   "type": "turbine_impulse",
+   "label": "low-pressure fuel turbine",
+   "params": {
+    "D_mean": {
+     "value": 0.2,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "not published; order of the LPFTP impeller size"
+    },
+    "eta_design": {
+     "value": 0.6,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "two-stage hydrogen turbine, no public value"
+    },
+    "pressure_ratio": {
+     "value": 1.16822,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "power 2400 bhp (p.2-12) with mdot = 25 % of the fuel flow (p.2-9) = 16.73 kg/s, inlet 260.6 K (TP-3700 Table A.6 main-chamber coolant temperature, 469.1 degR), real-gas cp/cv from CoolProp, eta 0.6; exit at the hot-gas manifold 3232 psia"
+    },
+    "T_inlet": {
+     "value": 260.611,
+     "unit": "K",
+     "quality": "derived",
+     "source_id": "NASA-TP-3700",
+     "location": "Table A.6 p.26, TCMBF heat-balance column",
+     "formula": "469.1 degR x 5/9"
+    }
+   },
+   "ui": {
+    "x": 300,
+    "y": 650
+   },
+   "options": {
+    "arrangement": "reaction_2stage"
+   }
+  },
+  {
+   "id": "lpot_turbine",
+   "type": "turbine_impulse",
+   "label": "low-pressure oxidizer turbine (hydraulic)",
+   "params": {
+    "D_mean": {
+     "value": 0.2,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "not published; order of the LPOTP size"
+    },
+    "eta_design": {
+     "value": 0.540855,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, LPOTP power and turbine drive pressure",
+     "formula": "eta = P / (mdot dp / rho) with P = 1470 bhp, mdot = HPOTP - LPOTP flow = 83.0 kg/s, dp = 4488 - 415 psia, rho 1150.1 kg/m3"
+    },
+    "pressure_ratio": {
+     "value": 10.8145,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13",
+     "formula": "4488 psia drive / 415 psia LPOTP discharge, where the drive flow rejoins"
+    }
+   },
+   "ui": {
+    "x": 150,
+    "y": 150
+   },
+   "options": {
+    "arrangement": "hydraulic_6stage"
+   }
+  },
+  {
+   "id": "lpftp_shaft",
+   "type": "shaft",
+   "label": "LPFTP shaft",
+   "params": {
+    "aux_power": {
+     "value": 0.0,
+     "unit": "W",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "no auxiliary drive"
+    }
+   },
+   "ui": {
+    "x": 200,
+    "y": 600
+   }
+  },
+  {
+   "id": "hpftp_shaft",
+   "type": "shaft",
+   "label": "HPFTP shaft",
+   "params": {
+    "aux_power": {
+     "value": 0.0,
+     "unit": "W",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "no auxiliary drive"
+    }
+   },
+   "ui": {
+    "x": 380,
+    "y": 450
+   }
+  },
+  {
+   "id": "lpotp_shaft",
+   "type": "shaft",
+   "label": "LPOTP shaft",
+   "params": {
+    "aux_power": {
+     "value": 0.0,
+     "unit": "W",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "no auxiliary drive"
+    }
+   },
+   "ui": {
+    "x": 200,
+    "y": 80
+   }
+  },
+  {
+   "id": "hpotp_shaft",
+   "type": "shaft",
+   "label": "HPOTP shaft",
+   "params": {
+    "aux_power": {
+     "value": 0.0,
+     "unit": "W",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "no auxiliary drive"
+    }
+   },
+   "ui": {
+    "x": 380,
+    "y": 120
+   }
+  },
+  {
+   "id": "fpb",
+   "type": "gas_generator",
+   "label": "fuel preburner",
+   "params": {
+    "mixture_ratio": {
+     "value": 0.866974,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-TP-3700",
+     "location": "Table A.6 p.26, heat-balance column",
+     "formula": "oxygen / hydrogen flow = 67.78 / 78.18 lb/s"
+    },
+    "p_injector_end": {
+     "value": 35604500.0,
+     "unit": "Pa",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13 turbine inlet pressure and temperature",
+     "formula": "set to the HPFT inlet pressure 5164 psia (preburner and turbine inlet share a duct)"
+    }
+   },
+   "ui": {
+    "x": 600,
+    "y": 450
+   }
+  },
+  {
+   "id": "opb",
+   "type": "gas_generator",
+   "label": "oxidizer preburner",
+   "params": {
+    "mixture_ratio": {
+     "value": 0.674359,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-TP-3700",
+     "location": "Table A.6 p.26, heat-balance column",
+     "formula": "oxygen / hydrogen flow = 23.67 / 35.10 lb/s"
+    },
+    "p_injector_end": {
+     "value": 36045800.0,
+     "unit": "Pa",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13 turbine inlet pressure and temperature",
+     "formula": "set to the HPOT inlet pressure 5228 psia (preburner and turbine inlet share a duct)"
+    }
+   },
+   "ui": {
+    "x": 600,
+    "y": 250
+   }
+  },
+  {
+   "id": "mov",
+   "type": "valve_ball",
+   "label": "main oxidizer valve",
+   "params": {
+    "diameter": {
+     "value": 0.0635,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, main oxidizer valve 2.5 in flow passage",
+     "formula": "in x 0.0254"
+    },
+    "K_open": {
+     "value": 0.81,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (ball, 90 deg open)"
+    }
+   },
+   "ui": {
+    "x": 600,
+    "y": 0
+   }
+  },
+  {
+   "id": "mfv",
+   "type": "valve_ball",
+   "label": "main fuel valve",
+   "params": {
+    "diameter": {
+     "value": 0.0635,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, main fuel valve 2.5 in flow passage",
+     "formula": "in x 0.0254"
+    },
+    "K_open": {
+     "value": 0.81,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (ball, 90 deg open)"
+    }
+   },
+   "ui": {
+    "x": 450,
+    "y": 550
+   }
+  },
+  {
+   "id": "fpov",
+   "type": "valve_poppet",
+   "label": "fuel preburner oxidizer valve",
+   "params": {
+    "diameter": {
+     "value": 0.02794,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, fuel preburner oxidizer valve 1.1 in flow passage",
+     "formula": "in x 0.0254"
+    },
+    "K_open": {
+     "value": 3.0,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (poppet full open)",
+     "formula": "midpoint of 2.5-3.5"
+    }
+   },
+   "ui": {
+    "x": 550,
+    "y": 350
+   }
+  },
+  {
+   "id": "opov",
+   "type": "valve_poppet",
+   "label": "oxidizer preburner oxidizer valve",
+   "params": {
+    "diameter": {
+     "value": 0.0160475,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-13, oxidizer preburner oxidizer valve 1.1 x 0.285 in slot",
+     "formula": "slot area 1.1 x 0.285 in2 as an equivalent round passage"
+    },
+    "K_open": {
+     "value": 3.0,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (poppet full open)",
+     "formula": "midpoint of 2.5-3.5"
+    }
+   },
+   "ui": {
+    "x": 550,
+    "y": 200
+   }
+  },
+  {
+   "id": "mcc_jacket",
+   "type": "regen_jacket",
+   "label": "main combustion chamber coolant channels",
+   "params": {
+    "n_channels": {
+     "value": 390.0,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-9, 390 coolant channels"
+    },
+    "channel_width": {
+     "value": 0.00103422,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "half of the throat circumference pi D_t / 390 (D_t 0.2568 m from A_t), the rest ribs; not in a public NASA source"
+    },
+    "channel_height": {
+     "value": 0.00258556,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "aspect ratio 2.5 assumed for milled channels"
+    },
+    "wall_thickness": {
+     "value": 0.0007,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "0.7 mm hot-gas wall assumed for a milled copper liner"
+    }
+   },
+   "ui": {
+    "x": 750,
+    "y": 600
+   }
+  },
+  {
+   "id": "nozzle_jacket",
+   "type": "regen_jacket",
+   "label": "nozzle coolant tubes",
+   "params": {
+    "n_channels": {
+     "value": 1080.0,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-10, 1080 tubes"
+    },
+    "channel_width": {
+     "value": 0.00698132,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-10, 1080 tubes, 2.4 m exit diameter",
+     "formula": "tube width at the exit = pi x 2.4 m / 1080; round tube mapped to a square channel"
+    },
+    "channel_height": {
+     "value": 0.00698132,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-10, 1080 tubes, 2.4 m exit diameter",
+     "formula": "equal to the width (round tube)"
+    },
+    "wall_thickness": {
+     "value": 0.0003,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "0.3 mm tube wall assumed; not in a public NASA source"
+    }
+   },
+   "ui": {
+    "x": 600,
+    "y": 600
+   }
+  },
+  {
+   "id": "hgm",
+   "type": "manifold",
+   "label": "hot-gas manifold",
+   "params": {
+    "volume": {
+     "value": 0.1,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "not published; order of the twin-duct hot-gas manifold"
+    }
+   },
+   "ui": {
+    "x": 800,
+    "y": 350
+   }
+  },
+  {
+   "id": "ox_manifold",
+   "type": "manifold",
+   "label": "oxidizer dome",
+   "params": {
+    "volume": {
+     "value": 0.02,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "not published"
+    }
+   },
+   "ui": {
+    "x": 750,
+    "y": 0
+   }
+  },
+  {
+   "id": "ox_injector",
+   "type": "injector",
+   "label": "main injector, oxidizer side",
+   "params": {
+    "A_total": {
+     "value": 0.00415469,
+     "unit": "m2",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp)), Cd 0.75, mdot 360.0 kg/s, dp 841 psi = HPOTP discharge 4632 psia - main valve loss - P_c"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.283294,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "injector dp / chamber pressure from the balance"
+    }
+   },
+   "ui": {
+    "x": 850,
+    "y": 100
+   },
+   "options": {
+    "type": "coaxial"
+   }
+  },
+  {
+   "id": "fuel_injector",
+   "type": "injector",
+   "label": "main injector, hot-gas fuel side",
+   "params": {
+    "A_total": {
+     "value": 0.0223959,
+     "unit": "m2",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp)), Cd 0.75, mdot 108.4 kg/s, dp 262 psi = hot-gas manifold (turbine exit estimate) - P_c, gas density 11.5 kg/m3"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.08834,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/ssme_staged_combustion.graph.json",
+     "formula": "injector dp / chamber pressure from the balance"
+    }
+   },
+   "ui": {
+    "x": 850,
+    "y": 300
+   },
+   "options": {
+    "type": "coaxial"
+   }
+  },
+  {
+   "id": "chamber",
+   "type": "chamber",
+   "label": "main combustion chamber",
+   "params": {
+    "A_t": {
+     "value": 0.0517854,
+     "unit": "m2",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-4 vacuum thrust, Isp and chamber pressure",
+     "formula": "A_t = mdot eta_c* c* / P_c, eta_c* 0.975 (library default); Thermo('LOX/LH2', source='tables').chamber(MR=6, pc=2970 psia) gives c* 2322.3 m/s, T_c 3595 K (published about 3590 K, p.2-9), gamma 1.1485; vacuum C_F 2.0063 at eps 77.5; mdot = F_vac / (Isp_vac g0) = 468.3 kg/s"
+    },
+    "contraction_ratio": {
+     "value": 2.96,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-9, contraction area ratio 2.96"
+    },
+    "eta_cstar": {
+     "value": 0.975,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-2 p.65 (750K A-1 stage engine)"
+    }
+   },
+   "ui": {
+    "x": 950,
+    "y": 200
+   }
+  },
+  {
+   "id": "nozzle",
+   "type": "nozzle_bell",
+   "label": "nozzle",
+   "params": {
+    "expansion_ratio": {
+     "value": 77.5,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-4 and p.2-10, area ratio 77.5"
+    },
+    "eta_CF": {
+     "value": 0.982643,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "NASA-SNR-1981",
+     "location": "p.2-4 vacuum Isp 455.2 s",
+     "formula": "eta_CF = Isp_vac g0 / (eta_c* c* C_F,vac); Thermo('LOX/LH2', source='tables').chamber(MR=6, pc=2970 psia) gives c* 2322.3 m/s, T_c 3595 K (published about 3590 K, p.2-9), gamma 1.1485; vacuum C_F 2.0063 at eps 77.5; mdot = F_vac / (Isp_vac g0) = 468.3 kg/s"
+    }
+   },
+   "ui": {
+    "x": 1050,
+    "y": 200
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "ox_tank.outlet->lpotp_pump.inlet",
+   "from": {
+    "node": "ox_tank",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "lpotp_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "lpotp_pump.outlet->hpotp_pump.inlet",
+   "from": {
+    "node": "lpotp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hpotp_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "hpotp_pump.outlet->mov.inlet",
+   "from": {
+    "node": "hpotp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "mov",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "hpotp_pump.outlet->lpot_turbine.inlet",
+   "from": {
+    "node": "hpotp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "lpot_turbine",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "hpotp_pump.outlet->pbp_pump.inlet",
+   "from": {
+    "node": "hpotp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "pbp_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "lpot_turbine.outlet->hpotp_pump.inlet",
+   "from": {
+    "node": "lpot_turbine",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hpotp_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "mov.outlet->ox_manifold.inlet",
+   "from": {
+    "node": "mov",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_manifold",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_manifold.outlet->ox_injector.inlet",
+   "from": {
+    "node": "ox_manifold",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_injector.outlet->chamber.ox_in",
+   "from": {
+    "node": "ox_injector",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "chamber",
+    "port": "ox_in"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "pbp_pump.outlet->fpov.inlet",
+   "from": {
+    "node": "pbp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fpov",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "pbp_pump.outlet->opov.inlet",
+   "from": {
+    "node": "pbp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "opov",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "fpov.outlet->fpb.ox_in",
+   "from": {
+    "node": "fpov",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fpb",
+    "port": "ox_in"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "opov.outlet->opb.ox_in",
+   "from": {
+    "node": "opov",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "opb",
+    "port": "ox_in"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "fuel_tank.outlet->lpftp_pump.inlet",
+   "from": {
+    "node": "fuel_tank",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "lpftp_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "lpftp_pump.outlet->hpftp_pump.inlet",
+   "from": {
+    "node": "lpftp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hpftp_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "hpftp_pump.outlet->mfv.inlet",
+   "from": {
+    "node": "hpftp_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "mfv",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "mfv.outlet->mcc_jacket.coolant_in",
+   "from": {
+    "node": "mfv",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "mcc_jacket",
+    "port": "coolant_in"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "mfv.outlet->nozzle_jacket.coolant_in",
+   "from": {
+    "node": "mfv",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "nozzle_jacket",
+    "port": "coolant_in"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "mcc_jacket.coolant_out->lpft_turbine.inlet",
+   "from": {
+    "node": "mcc_jacket",
+    "port": "coolant_out"
+   },
+   "to": {
+    "node": "lpft_turbine",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "lpft_turbine.outlet->hgm.inlet",
+   "from": {
+    "node": "lpft_turbine",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hgm",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "nozzle_jacket.coolant_out->fpb.fuel_in",
+   "from": {
+    "node": "nozzle_jacket",
+    "port": "coolant_out"
+   },
+   "to": {
+    "node": "fpb",
+    "port": "fuel_in"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "nozzle_jacket.coolant_out->opb.fuel_in",
+   "from": {
+    "node": "nozzle_jacket",
+    "port": "coolant_out"
+   },
+   "to": {
+    "node": "opb",
+    "port": "fuel_in"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "fpb.outlet->hpft_turbine.inlet",
+   "from": {
+    "node": "fpb",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hpft_turbine",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "opb.outlet->hpot_turbine.inlet",
+   "from": {
+    "node": "opb",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hpot_turbine",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "hpft_turbine.outlet->hgm.inlet",
+   "from": {
+    "node": "hpft_turbine",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hgm",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "hpot_turbine.outlet->hgm.inlet",
+   "from": {
+    "node": "hpot_turbine",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "hgm",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "hgm.outlet->fuel_injector.inlet",
+   "from": {
+    "node": "hgm",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "fuel_injector.outlet->chamber.fuel_in",
+   "from": {
+    "node": "fuel_injector",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "chamber",
+    "port": "fuel_in"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "chamber.throat->nozzle.inlet",
+   "from": {
+    "node": "chamber",
+    "port": "throat"
+   },
+   "to": {
+    "node": "nozzle",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "chamber.wall->mcc_jacket.wall",
+   "from": {
+    "node": "chamber",
+    "port": "wall"
+   },
+   "to": {
+    "node": "mcc_jacket",
+    "port": "wall"
+   },
+   "kind": "thermal",
+   "medium": "heat"
+  },
+  {
+   "id": "chamber.wall->nozzle_jacket.wall",
+   "from": {
+    "node": "chamber",
+    "port": "wall"
+   },
+   "to": {
+    "node": "nozzle_jacket",
+    "port": "wall"
+   },
+   "kind": "thermal",
+   "medium": "heat"
+  },
+  {
+   "id": "lpft_turbine.shaft->lpftp_shaft.drive",
+   "from": {
+    "node": "lpft_turbine",
+    "port": "shaft"
+   },
+   "to": {
+    "node": "lpftp_shaft",
+    "port": "drive"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "lpftp_shaft.load->lpftp_pump.shaft",
+   "from": {
+    "node": "lpftp_shaft",
+    "port": "load"
+   },
+   "to": {
+    "node": "lpftp_pump",
+    "port": "shaft"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "hpft_turbine.shaft->hpftp_shaft.drive",
+   "from": {
+    "node": "hpft_turbine",
+    "port": "shaft"
+   },
+   "to": {
+    "node": "hpftp_shaft",
+    "port": "drive"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "hpftp_shaft.load->hpftp_pump.shaft",
+   "from": {
+    "node": "hpftp_shaft",
+    "port": "load"
+   },
+   "to": {
+    "node": "hpftp_pump",
+    "port": "shaft"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "lpot_turbine.shaft->lpotp_shaft.drive",
+   "from": {
+    "node": "lpot_turbine",
+    "port": "shaft"
+   },
+   "to": {
+    "node": "lpotp_shaft",
+    "port": "drive"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "lpotp_shaft.load->lpotp_pump.shaft",
+   "from": {
+    "node": "lpotp_shaft",
+    "port": "load"
+   },
+   "to": {
+    "node": "lpotp_pump",
+    "port": "shaft"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "hpot_turbine.shaft->hpotp_shaft.drive",
+   "from": {
+    "node": "hpot_turbine",
+    "port": "shaft"
+   },
+   "to": {
+    "node": "hpotp_shaft",
+    "port": "drive"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "hpotp_shaft.load->hpotp_pump.shaft",
+   "from": {
+    "node": "hpotp_shaft",
+    "port": "load"
+   },
+   "to": {
+    "node": "hpotp_pump",
+    "port": "shaft"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "hpotp_shaft.load->pbp_pump.shaft",
+   "from": {
+    "node": "hpotp_shaft",
+    "port": "load"
+   },
+   "to": {
+    "node": "pbp_pump",
+    "port": "shaft"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  }
+ ],
+ "boundary_conditions": [
+  {
+   "node": "nozzle",
+   "port": "inlet",
+   "kind": "ambient_pressure",
+   "value": {
+    "value": 0.0,
+    "unit": "Pa",
+    "quality": "published",
+    "source_id": "NASA-SNR-1981",
+    "location": "p.2-4, vacuum thrust and Isp"
+   }
+  }
+ ],
+ "sequence": [
+  {
+   "t": {
+    "value": 0.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "start command defines t = 0"
+   },
+   "node": "mfv",
+   "command": "open",
+   "ramp": {
+    "value": 0.5,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "fuel lead; valve stroke not published"
+   },
+   "note": "the real start is a closed-loop schedule by the engine controller"
+  },
+  {
+   "t": {
+    "value": 0.3,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "after fuel lead, not published"
+   },
+   "node": "fpov",
+   "command": "open",
+   "ramp": {
+    "value": 1.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "start command to 90 % thrust in about 3.6 s (NSTS 1988 News Reference, not in the library)"
+   }
+  },
+  {
+   "t": {
+    "value": 0.4,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "after fuel lead, not published"
+   },
+   "node": "opov",
+   "command": "open",
+   "ramp": {
+    "value": 1.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "start command to 90 % thrust in about 3.6 s (NSTS 1988 News Reference, not in the library)"
+   }
+  },
+  {
+   "t": {
+    "value": 0.4,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "with the preburner valves"
+   },
+   "node": "fpb",
+   "command": "ignite"
+  },
+  {
+   "t": {
+    "value": 0.4,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "with the preburner valves"
+   },
+   "node": "opb",
+   "command": "ignite"
+  },
+  {
+   "t": {
+    "value": 0.6,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "not published"
+   },
+   "node": "mov",
+   "command": "open",
+   "ramp": {
+    "value": 2.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "start command to 90 % thrust in about 3.6 s (NSTS 1988 News Reference, not in the library)"
+   }
+  },
+  {
+   "t": {
+    "value": 0.6,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "with the main oxidizer valve"
+   },
+   "node": "chamber",
+   "command": "ignite"
+  },
+  {
+   "t": {
+    "value": 510.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/ssme_staged_combustion.graph.json",
+    "formula": "about 8.5 min nominal operating time (SNR p.2-4)"
+   },
+   "node": "*",
+   "command": "cutoff"
+  }
+ ],
+ "dashboard": "dashboards/default_panels.json",
+ "validation_targets": [
+  {
+   "node": "chamber",
+   "output": "p_c",
+   "value": {
+    "value": 20477400.0,
+    "unit": "Pa",
+    "quality": "published",
+    "source_id": "NASA-SNR-1981",
+    "location": "p.2-4 summary, 2970 psia"
+   }
+  },
+  {
+   "node": "nozzle",
+   "output": "thrust",
+   "value": {
+    "value": 2090660.0,
+    "unit": "N",
+    "quality": "published",
+    "source_id": "NASA-SNR-1981",
+    "location": "p.2-4 summary, 470 000 lbf vacuum",
+    "formula": "lbf x 4.448222"
+   }
+  },
+  {
+   "node": "nozzle",
+   "output": "isp",
+   "value": {
+    "value": 455.2,
+    "unit": "s",
+    "quality": "published",
+    "source_id": "NASA-SNR-1981",
+    "location": "p.2-4 summary, vacuum"
+   }
+  },
+  {
+   "node": "chamber",
+   "output": "T_c",
+   "value": {
+    "value": 3590.0,
+    "unit": "K",
+    "quality": "published",
+    "source_id": "NASA-SNR-1981",
+    "location": "p.2-9, about 3590 K"
+   }
+  },
+  {
+   "node": "hpftp_pump",
+   "output": "speed",
+   "value": {
+    "value": 3665.19,
+    "unit": "rad/s",
+    "quality": "published",
+    "source_id": "NASA-SNR-1981",
+    "location": "pp.2-12 to 2-13, high-pressure fuel turbopump",
+    "formula": "35 000 rpm"
+   }
+  },
+  {
+   "node": "hpotp_pump",
+   "output": "speed",
+   "value": {
+    "value": 3042.84,
+    "unit": "rad/s",
+    "quality": "published",
+    "source_id": "NASA-SNR-1981",
+    "location": "p.2-13, high-pressure oxidizer turbopump (main pump)",
+    "formula": "29 057 rpm"
+   }
+  }
+ ],
+ "design_point": {
+  "mdot_total": {
+   "value": 468.34,
+   "unit": "kg/s",
+   "quality": "derived",
+   "source_id": "NASA-SNR-1981",
+   "location": "p.2-4",
+   "formula": "F_vac / (Isp_vac g0)"
+  },
+  "mdot_fuel": {
+   "value": 66.9057,
+   "unit": "kg/s",
+   "quality": "derived",
+   "source_id": "NASA-SNR-1981",
+   "location": "p.2-4",
+   "formula": "mdot / (1 + MR); LPFTP/HPFTP flow printed as 67 kg/s"
+  },
+  "mdot_ox": {
+   "value": 401.434,
+   "unit": "kg/s",
+   "quality": "derived",
+   "source_id": "NASA-SNR-1981",
+   "location": "p.2-4",
+   "formula": "mdot MR / (1 + MR); LPOTP flow printed as 401 kg/s"
+  },
+  "hpft_exit_pressure": {
+   "value": 22286400.0,
+   "unit": "Pa",
+   "quality": "estimated",
+   "source_id": "PROPSIM-EST",
+   "location": "examples/ssme_staged_combustion.graph.json",
+   "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+  },
+  "hpot_exit_pressure": {
+   "value": 23177600.0,
+   "unit": "Pa",
+   "quality": "estimated",
+   "source_id": "PROPSIM-EST",
+   "location": "examples/ssme_staged_combustion.graph.json",
+   "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+  },
+  "lpft_inlet_pressure": {
+   "value": 26035400.0,
+   "unit": "Pa",
+   "quality": "estimated",
+   "source_id": "PROPSIM-EST",
+   "location": "examples/ssme_staged_combustion.graph.json",
+   "formula": "LPFT power balance, see lpft_turbine"
+  },
+  "mov_dp": {
+   "value": 5657960.0,
+   "unit": "Pa",
+   "quality": "derived",
+   "source_id": "NASA-SNR-1981",
+   "location": "p.2-13 passage",
+   "formula": "Main valve losses with K 0.81 through the published 2.5 in passages: oxidizer 821 psi, fuel 365 psi."
+  },
+  "mfv_dp": {
+   "value": 2517980.0,
+   "unit": "Pa",
+   "quality": "derived",
+   "source_id": "NASA-SNR-1981",
+   "location": "p.2-13 passage",
+   "formula": "Main valve losses with K 0.81 through the published 2.5 in passages: oxidizer 821 psi, fuel 365 psi."
+  }
+ },
+ "known_limitations": [
+  "Station data mix two public sources: the 1981 News Reference engine (rated power, 2970 psia) and the NASA TP-3700 heat balance (3006 psia) for the preburner split; the 104.5 % power level flown later has no complete public station set.",
+  "The low-pressure oxidizer turbine is a liquid-oxygen hydraulic turbine; the catalog has only a gas turbine, so its pressure ratio and efficiency are carried but its gas equations do not apply.",
+  "The nozzle coolant tubes take heat from the chamber wall port; the catalog has no nozzle wall port.",
+  "Chamber coolant valve, pogo accumulator, tank pressurization taps, igniters and purges are not modelled.",
+  "Turbine efficiencies are estimates; with them the turbine exits sit at 3232 psia (HPFT) and 3362 psia (HPOT) against 2970 psia in the chamber.",
+  "Regenerative channel geometry and shaft inertias are not in a public NASA source and are left null."
+ ]
+}

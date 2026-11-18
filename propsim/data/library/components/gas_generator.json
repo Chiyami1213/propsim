@@ -49,7 +49,7 @@
         "formula": "710 psia"
       },
       "min": 1000000.0,
-      "max": 30000000.0,
+      "max": 40000000.0,
       "meaning": "Injector end pressure"
     },
     {
@@ -114,6 +114,7 @@
   "valid_range": "Fuel-rich O/F where CEA equilibrium is meaningful (soot not modelled).",
   "known_limitations": [
     "Equilibrium chemistry overpredicts fuel-rich kerosene temperatures (non-equilibrium, soot).",
-    "Combustion lag not modelled."
+    "Combustion lag not modelled.",
+    "Range widened to 40 MPa for staged-combustion preburners (SSME turbine inlet pressures 5164 and 5228 psia, NASA Space Shuttle News Reference 1981 p.2-13)."
   ]
 }

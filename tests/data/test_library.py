@@ -212,7 +212,7 @@ def _validator(name: str):
 def test_example_graphs_match_schema():
     v = _validator("graph.schema.json")
     gs = data.graphs()
-    assert set(gs) == {"gg_kerolox", "pressure_fed_kerolox", "expander_hydrolox"}
+    assert set(gs) == {"gg_kerolox", "pressure_fed_kerolox", "expander_hydrolox", "ssme_staged_combustion"}
     for gid, g in gs.items():
         errors = sorted(v.iter_errors(g), key=str)
         assert not errors, f"{gid}: {errors[0].message}"
@@ -325,3 +325,16 @@ def test_next_throttle_points_close():
         assert m * isp * data.G0 == pytest.approx(F, rel=0.01), r["point"]
         eta = F**2 / (2 * m * data.thruster_power(r))
         assert eta == pytest.approx(float(r["eta_thruster"]), rel=0.03), r["point"]
+
+
+def test_ssme_graph_uses_public_sources_and_closes():
+    """SSME graph: only public sources, flows close on the printed pump flows, turbines exhaust above P_c."""
+    g = data.graphs()["ssme_staged_combustion"]
+    allowed = {"NASA-SNR-1981", "NASA-TP-3700", "PROPSIM-EST", "HH-SP125", "COOLPROP-8.0.0"}
+    vals = [v for n in g["nodes"] for v in n["params"].values()] + list(g["design_point"].values())
+    assert {v["source_id"] for v in vals} <= allowed
+    dp = {k: v["value"] for k, v in g["design_point"].items()}
+    assert dp["mdot_fuel"] == pytest.approx(147 * 0.45359237, rel=0.01)  # printed LPFTP flow
+    assert dp["mdot_ox"] == pytest.approx(883 * 0.45359237, rel=0.01)  # printed LPOTP flow
+    pc = next(t["value"]["value"] for t in g["validation_targets"] if t["output"] == "p_c")
+    assert min(dp["hpft_exit_pressure"], dp["hpot_exit_pressure"]) > pc
