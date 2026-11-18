@@ -146,7 +146,7 @@ def test_3d_panel_follows_selection_and_solution(box):
     box.canvas.scene().clearSelection()
     box.canvas.nodes["mov"].setSelected(True)
     QApplication.processEvents()
-    assert v.model.title == "Butterfly valve" and set(v.model.fields) == {"p", "T_f"}   # no wall heat transfer on a valve
+    assert v.model.title == "Butterfly valve" and set(v.model.fields) == {"model", "p", "T_f"}   # no wall heat transfer on a valve
 
 
 def test_build_guide_lists_required_and_optional_components(qapp):
@@ -233,3 +233,41 @@ def test_every_module_has_a_lowercase_hover_description(qapp, tmp_path):
     tips = [w.tree_model.item(r).child(c).toolTip() for r in range(w.tree_model.rowCount())
             for c in range(w.tree_model.item(r).rowCount())]
     assert tips and all(tips)
+
+
+def test_undo_and_redo_of_the_diagram(qapp):
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.new_doc()
+    n0 = len(w.doc["graph"]["nodes"])
+    w.canvas.add_component("tank_regulated")
+    w.canvas.add_component("valve_ball")
+    assert len(w.doc["graph"]["nodes"]) == n0 + 2
+    w.undo()
+    assert len(w.doc["graph"]["nodes"]) == n0 + 1
+    w.undo()
+    assert len(w.doc["graph"]["nodes"]) == n0
+    w.redo()
+    assert len(w.doc["graph"]["nodes"]) == n0 + 1
+
+
+def test_turbine_spins_and_particles_flow_in_the_3d_model(qapp):
+    import numpy as np
+    from propsim.core.engine_graph import solve
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.show()
+    sol = solve(w.doc["graph"], None, None)
+    nid = next(n["id"] for n in w.doc["graph"]["nodes"] if n["type"] == "turbine_impulse")
+    w.view3d.show()
+    w.view3d.show_component(w.doc["graph"], nid, sol)
+    w.view3d.refresh()
+    assert w.view3d._field_keys[0] == "model" and {"p", "T_f"} <= set(w.view3d._field_keys)
+    assert w.view3d._rotors
+    before = np.array(w.view3d._rotors[0][0].points)
+    w.view3d.flow_btn.setChecked(True)
+    w.view3d._tick()
+    w.view3d._tick()
+    after = np.array(w.view3d._rotors[0][0].points)
+    assert not np.allclose(before, after)                     # the rotor turned
+    assert "flow" in w.view3d.vp.plotter.actors

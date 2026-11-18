@@ -878,6 +878,10 @@ class CycleSandbox(QMainWindow):
         tb.addAction(self._action("New", self.new_doc, QKeySequence.New))
         tb.addAction(self._action("Open", self.open_doc, QKeySequence.Open))
         tb.addAction(self._action("Save", self.save_doc, QKeySequence.Save))
+        tb.addAction(self._action("Undo", self.undo, QKeySequence.Undo))
+        redo = self._action("Redo", self.redo, QKeySequence.Redo)
+        redo.setShortcuts([QKeySequence.Redo, QKeySequence("Ctrl+Y")])
+        tb.addAction(redo)
         tmpl = QPushButton("Templates")
         menu = QMenu(tmpl)
         for gid, name in E.templates().items():
@@ -963,7 +967,43 @@ class CycleSandbox(QMainWindow):
         self.status.setText(text)
 
     # ------------------------------------------------------------------------------------------ document
+    # ---- undo and redo of the diagram (Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y) ------------------------------------
+    def _snap(self) -> None:
+        """Remember the current diagram as an undo step (identical consecutive states are skipped)."""
+        import copy
+        if getattr(self, "_restoring", False):
+            return
+        snap = copy.deepcopy(self.doc)
+        hist = getattr(self, "_hist", [])
+        i = getattr(self, "_hi", -1)
+        if hist and i >= 0 and hist[i] == snap:
+            return
+        self._hist = hist[: i + 1] + [snap]
+        self._hist = self._hist[-80:]
+        self._hi = len(self._hist) - 1
+
+    def _go_history(self, step: int) -> None:
+        import copy
+        i = getattr(self, "_hi", -1) + step
+        if not 0 <= i < len(getattr(self, "_hist", [])):
+            return
+        self._hi = i
+        self._restoring = True
+        try:
+            self.set_doc(copy.deepcopy(self._hist[i]))
+        finally:
+            self._restoring = False
+        self.log("undo" if step < 0 else "redo")
+
+    def undo(self) -> None:
+        self._go_history(-1)
+
+    def redo(self) -> None:
+        self._go_history(1)
+
     def set_doc(self, doc: dict) -> None:
+        if not getattr(self, "_restoring", False):
+            self._hist, self._hi = [], -1                       # a new diagram starts a new history
         self._loading = True
         try:
             self.doc = doc
@@ -984,6 +1024,7 @@ class CycleSandbox(QMainWindow):
                 self.trade.refresh_inputs()
         finally:
             self._loading = False
+        self._snap()
 
     def new_doc(self) -> None:
         self.path = None
@@ -1034,6 +1075,7 @@ class CycleSandbox(QMainWindow):
     def _changed(self) -> None:
         if self._loading:
             return
+        self._snap()
         if self.sol is not None:
             self.sol = None
             self.canvas.show_results(None, None)
@@ -1184,6 +1226,7 @@ class CycleSandbox(QMainWindow):
         self._invalidate()
 
     def _invalidate(self) -> None:
+        self._snap()
         if self.sol is not None:
             self.sol = None
             self.canvas.show_results(None, None)

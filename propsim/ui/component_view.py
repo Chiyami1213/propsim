@@ -9,6 +9,8 @@ from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QPushButton, QVBoxLayout
 from ..modules.component_shapes import FIELD_TITLES, build, merged
 from .viewport3d import Viewport3D
 
+ROTOR_PARTS = {"hub", "blade", "vane", "disk", "shaft"}          # the parts that spin in pumps, inducers and turbines
+
 # solved outputs shown in the readout card, per component type: (key, label, scale, unit, digits)
 READOUT = {
     "pump_centrifugal": [("speed", "Speed", 60 / (2 * np.pi), "rpm", 0), ("dp", "Pressure rise", 1e-6, "MPa", 2),
@@ -60,6 +62,8 @@ class ComponentView(QWidget):
         self._timer.setInterval(40)
         self._timer.timeout.connect(self._tick)
         self._path: np.ndarray | None = None
+        self._rotors: list = []
+        self._merged: list = []
         self._flow_color = "#ffffff"
         self.graph: dict | None = None
         self.nid: str | None = None
@@ -125,6 +129,8 @@ class ComponentView(QWidget):
         cam = pl.camera_position if keep_camera else None
         pl.clear()
         field = self._field_keys[self.vp.field_index] if self._field_keys else None
+        if field == "model":                                     # plain appearance, no field painted on it
+            field = None
         lo = hi = None
         if field:
             vals = np.concatenate([np.asarray(p.mesh.point_data[field]) for p in m.parts if field in p.mesh.point_data])
@@ -133,7 +139,12 @@ class ComponentView(QWidget):
                 lo, hi = float(vals.min()), float(vals.max())
                 if hi <= lo:
                     hi = lo + 1.0
-        for p in merged(m):
+        self._merged = merged(m)
+        self._rotors = []
+        spin = self._node_type() in ("pump_centrifugal", "inducer", "turbine_impulse", "shaft")
+        for p in self._merged:
+            if spin and p.name in ROTOR_PARTS:
+                self._rotors.append((p.mesh, np.array(p.mesh.points)))
             if p.scalars and p.scalars != field and p.name == "coolant":
                 continue                                         # the coolant layer shows only with its own field
             if field and lo is not None and field in p.mesh.point_data:
@@ -180,7 +191,10 @@ class ComponentView(QWidget):
         """Pressure and fluid-temperature fields for every component: the solved inlet and outlet values blended along
         the flow axis (the longest extent of the model), so any part can be colored by pressure or temperature."""
         m = self.model
-        if m is None or self.sol is None:
+        if m is None:
+            return
+        m.fields = {"model": FIELD_TITLES["model"], **{k: v for k, v in m.fields.items() if k != "model"}}
+        if self.sol is None:
             return
         a, b = self._port_states()
         a = a or b
@@ -195,7 +209,8 @@ class ComponentView(QWidget):
             t = (np.asarray(part.mesh.points)[:, ax] - lo[ax]) / span
             part.mesh.point_data["p"] = (a["p"] + (b["p"] - a["p"]) * t) * 1e-6
             part.mesh.point_data["T_f"] = a["T"] + (b["T"] - a["T"]) * t
-        m.fields = {"p": FIELD_TITLES["p"], "T_f": FIELD_TITLES["T_f"], **m.fields}
+        m.fields = {"model": FIELD_TITLES["model"], "p": FIELD_TITLES["p"], "T_f": FIELD_TITLES["T_f"],
+                    **{k: v for k, v in m.fields.items() if k not in ("model", "p", "T_f")}}
 
     # ---- 3D flow animation -------------------------------------------------------------------------------
     def set_flow(self, on: bool) -> None:
@@ -234,6 +249,32 @@ class ComponentView(QWidget):
             self._flow_color = MEDIUM_COLORS["fuel"]
         self._size = float(np.linalg.norm(hi - lo))
 
+    def _node_type(self) -> str:
+        if self.graph is None or self.nid is None:
+            return ""
+        return next((n["type"] for n in self.graph["nodes"] if n["id"] == self.nid), "")
+
+    def _particles(self) -> None:
+        """Reduced-order flow visualization (not CFD): particles follow an analytic streamline field along the flow axis,
+        with a swirl in rotating machinery, colored by the solved pressure (or the fluid color without a solution)."""
+        if self._path is None:
+            return
+        rng = np.random.default_rng(3)
+        n = 420
+        self._u = rng.random(n)                                  # axial position (0..1) at phase 0
+        self._rf = np.sqrt(rng.random(n)) * 0.85                 # radial fraction of the bore
+        self._th = rng.random(n) * 2 * np.pi
+        self._vf = 0.7 + 0.6 * rng.random(n)                     # each particle's own speed
+        pts = np.vstack([np.asarray(p.mesh.points) for p in self.model.parts if p.mesh.n_points])
+        lo, hi = pts.min(axis=0), pts.max(axis=0)
+        ext = hi - lo
+        ax = int(np.argmax(ext))
+        self._ax = ax
+        self._lo, self._hi = lo, hi
+        others = [i for i in range(3) if i != ax]
+        self._R = 0.45 * float(min(ext[others])) if ext[others].min() > 0 else 0.1 * float(ext[ax])
+        self._swirl = 1.8 if self._node_type() in ("pump_centrifugal", "inducer", "turbine_impulse") else 0.25
+
     def _tick(self) -> None:
         if not self.isVisible() or self.model is None:
             return
@@ -241,14 +282,36 @@ class ComponentView(QWidget):
             self._flow_setup()
             if self._path is None:
                 return
-        self.phase = (self.phase + 0.02) % 1.0
-        a, b = self._path
-        d = (b - a) / max(float(np.linalg.norm(b - a)), 1e-12)
-        n = 10
-        cones = [pv.Cone(center=a + (b - a) * ((i + self.phase) / n), direction=d, height=0.07 * self._size,
-                         radius=0.022 * self._size, resolution=12) for i in range(n)]
-        mesh = cones[0].merge(cones[1:]) if len(cones) > 1 else cones[0]
-        self.vp.plotter.add_mesh(mesh, color=self._flow_color, name="flow", smooth_shading=True)
+            self._particles()
+        self.phase = (self.phase + 0.012) % 1.0
+        for mesh, orig in getattr(self, "_rotors", []):          # turbomachinery spins about its axis
+            a = self.phase * 2 * np.pi * 8.0
+            c, s_ = np.cos(a), np.sin(a)
+            q = orig.copy()
+            ax = self._ax
+            i, j = [k for k in range(3) if k != ax]
+            q[:, i], q[:, j] = c * orig[:, i] - s_ * orig[:, j], s_ * orig[:, i] + c * orig[:, j]
+            mesh.points = q
+        u = (self._u + self.phase * self._vf * 3.0) % 1.0
+        ax = self._ax
+        i, j = [k for k in range(3) if k != ax]
+        mid = (self._lo + self._hi) / 2.0
+        th = self._th + self._swirl * 2 * np.pi * u + self.phase * 2 * np.pi * 4.0 * (self._swirl > 1.0)
+        pos = np.zeros((len(u), 3))
+        pos[:, ax] = self._lo[ax] + (self._hi[ax] - self._lo[ax]) * u
+        pos[:, i] = mid[i] + self._R * self._rf * np.cos(th)
+        pos[:, j] = mid[j] + self._R * self._rf * np.sin(th)
+        cloud = pv.PolyData(pos)
+        a_, b_ = self._port_states()
+        a_ = a_ or b_
+        b_ = b_ or a_
+        if a_ is not None:
+            cloud["p"] = (a_["p"] + (b_["p"] - a_["p"]) * u) * 1e-6
+            self.vp.plotter.add_mesh(cloud, scalars="p", cmap="turbo", point_size=5, render_points_as_spheres=True,
+                                     show_scalar_bar=False, name="flow")
+        else:
+            self.vp.plotter.add_mesh(cloud, color=self._flow_color, point_size=5, render_points_as_spheres=True,
+                                     name="flow")
         self.vp.render()
 
     def _readout(self) -> list[str]:

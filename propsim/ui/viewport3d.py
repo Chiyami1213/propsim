@@ -68,7 +68,7 @@ class ColorBar(QWidget):
         pm = latex_pixmap(self.title, col, 9.0)
         p.drawPixmap(0, 0, pm)
         cm = matplotlib.colormaps[self.cmap]
-        x0, y0, w, h = 2, 22, 12, 160
+        x0, y0, w, h = 2, 22, 12, max(24, self.height() - 45)         # the bar shrinks with the panel
         for i in range(h):
             r, g, b, _a = cm(1 - i / (h - 1))
             p.fillRect(x0, y0 + i, w, 1, QColor.fromRgbF(r, g, b))
@@ -321,6 +321,7 @@ class Viewport3D(QWidget):
     def _place(self) -> None:
         w, h = self.stage.width(), self.stage.height()
         self.readout.move(w - self.readout.width() - 14, 12)
+        self.colorbar.setFixedSize(90, int(max(80, min(205, h - 24))))         # never taller than the view
         self.colorbar.move(18, h - self.colorbar.height() - 12)
         self.legend.move(w - self.legend.width() - 14, h - self.legend.height() - 12)
         self.readout.raise_()
