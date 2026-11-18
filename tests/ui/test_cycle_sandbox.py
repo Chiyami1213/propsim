@@ -111,3 +111,39 @@ def test_cycles_are_identified_and_flow_plays(qapp):
     assert not w.canvas.playing
     g = E.new_document()["graph"]
     assert identify_cycle(g) == "custom"
+
+
+def test_every_component_has_a_3d_model_sized_from_its_parameters():
+    from propsim.modules.component_shapes import build, merged
+    for gid in ("gg_kerolox", "ssme_staged_combustion", "expander_hydrolox", "pressure_fed_kerolox"):
+        g = E.template(gid)["graph"]
+        for n in g["nodes"]:
+            for cut in (0, 90):
+                m = build(g, n["id"], None, cut)
+                assert m.parts and all(p.mesh.n_points > 0 for p in merged(m)), (gid, n["id"])
+    g = E.template("gg_kerolox")["graph"]
+    line = next(n for n in g["nodes"] if n["type"] == "line")
+    b = build(g, line["id"], None, 0).parts[0].mesh.bounds
+    d = E.param_value(line, "diameter")[0]
+    assert abs((b[3] - b[2]) - d * 1.08) / d < 0.01             # bore plus two walls of 8 % of the radius
+    lib = {k for k in E.library()}
+    from propsim.modules.component_shapes import BUILDERS
+    assert lib <= set(BUILDERS)
+
+
+def test_3d_panel_follows_selection_and_solution(box):
+    box.load_template("gg_kerolox")
+    box.solve()
+    box.wait()
+    v = box.view3d
+    box.dock_3d.show()
+    box.canvas.scene().clearSelection()
+    box.canvas.nodes["regen_jacket"].setSelected(True)
+    QApplication.processEvents()
+    assert v.nid == "regen_jacket" and v.model is not None
+    assert set(v.model.fields) == {"T_wg", "q", "T_cool"}       # wall and coolant temperatures from the jacket march
+    assert any("Heat load" in lbl.latex() for lbl in v.vp.readout_lbls)
+    box.canvas.scene().clearSelection()
+    box.canvas.nodes["mov"].setSelected(True)
+    QApplication.processEvents()
+    assert v.model.title == "Butterfly valve" and not v.model.fields
