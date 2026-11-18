@@ -5,7 +5,7 @@ import math
 import re
 
 from PySide6.QtCore import QEvent, Qt, Signal
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSlider, QVBoxLayout, QWidget
 
 from ..core.schema import ParamModel
 from .latex import LatexLabel
@@ -110,6 +110,53 @@ class _ChoiceRow(QWidget):
         return self.meta["choices"][self.slider.currentIndex()]
 
 
+class _TextRow(QWidget):
+    """Text parameter edited in a dialog (``T`` fields): a button and a one-line summary.  Same interface as ``_Row``."""
+
+    changed = Signal()
+
+    def __init__(self, meta: dict, value: str, parent=None) -> None:
+        super().__init__(parent)
+        self.meta = meta
+        self.text = value
+        self.context = lambda: {}                                   # set by the form: the other rows' values
+        sym = meta["symbol"]
+        m = re.fullmatch(r"\\mathrm\{(.+)\}", sym)
+        self.label = LatexLabel(apa(m.group(1).replace(r"\ ", " ")) if m else rf"${sym}$", "text", 10.0)
+        self.slider = QPushButton("Edit…")                           # named ``slider`` so the form treats all rows alike
+        self.summary = QLabel()
+        self.summary.setObjectName("value")
+        v = QVBoxLayout(self)
+        v.setContentsMargins(0, 2, 0, 2)
+        v.setSpacing(2)
+        top = QHBoxLayout()
+        top.addWidget(self.label)
+        top.addStretch(1)
+        top.addWidget(self.summary)
+        v.addLayout(top)
+        v.addWidget(self.slider)
+        self.slider.clicked.connect(self.edit)
+        self.set_value(value)
+
+    def set_value(self, x: str) -> None:
+        self.text = x or ""
+        self.summary.setText(self._summarise())
+
+    def value(self) -> str:
+        return self.text
+
+    def _summarise(self) -> str:
+        from . import grain_editor
+        return grain_editor.summary(self.meta["editor"], self.text)
+
+    def edit(self) -> None:
+        from . import grain_editor
+        new = grain_editor.edit(self.meta["editor"], self.text, self.context(), self)
+        if new is not None and new != self.text:
+            self.set_value(new)
+            self.changed.emit()
+
+
 class ParamForm(QWidget):
     """Auto-generated parameter form for a ``ParamModel`` subclass."""
 
@@ -133,7 +180,9 @@ class ParamForm(QWidget):
                 g.setObjectName("groupTitle")
                 g.setContentsMargins(0, 8, 0, 2)
                 lay.addWidget(g)
-            row = (_ChoiceRow if meta["kind"] == "choice" else _Row)(meta, getattr(values, meta["name"]))
+            row = {"choice": _ChoiceRow, "text": _TextRow}.get(meta["kind"], _Row)(meta, getattr(values, meta["name"]))
+            if meta["kind"] == "text":
+                row.context = lambda: {k: r.value() for k, r in self.rows.items()}
             row.changed.connect(self.changed)
             for w in (row, row.label, row.slider):
                 w.installEventFilter(self)

@@ -32,6 +32,15 @@ def H(default: Any = "") -> Any:
     return Field(default, json_schema_extra={"kind": "hidden"})
 
 
+def T(default: str = "", *, label: str, desc: str, editor: str, group: str = "") -> Any:
+    """Text value edited in a dialog (e.g. a custom grain drawn as a list of shapes): shown as a button plus a one-line
+    summary and stored as text, so it is saved with the case and sent to the Run worker like any other parameter.
+    ``editor`` names the dialog in :mod:`propsim.ui.grain_editor`."""
+    return Field(default, description=desc,
+                 json_schema_extra={"kind": "text", "symbol": rf"\mathrm{{{label.replace(' ', chr(92) + ' ')}}}",
+                                    "units": "", "dims": "1", "group": group, "editor": editor})
+
+
 class ParamModel(BaseModel):
     """Base class for parameter schemas."""
 
