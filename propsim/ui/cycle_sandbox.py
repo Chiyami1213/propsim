@@ -770,7 +770,7 @@ class CycleSandbox(QMainWindow):
         self.dock_insp.raise_()
         for d in self.docks:
             d.show()
-        self.resizeDocks([self.dock_parts, self.dock_insp], [230, 370], Qt.Horizontal)
+        self.resizeDocks([self.dock_parts, self.dock_insp], [230, 520], Qt.Horizontal)       # wide enough for the cycle schematic
         self.resizeDocks([self.dock_res], [280], Qt.Vertical)
 
     def _style(self) -> None:
