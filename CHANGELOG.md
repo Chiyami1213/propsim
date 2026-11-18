@@ -14,6 +14,12 @@ New changes go above this line, newest first.
   the motor impulse class, and a *File, Export Thrust Curve (.eng)* export. Validated against Nakka's Kappa-SB static
   test KSB-002 (burn time, C_F and total impulse within 6 %) and the Shuttle RSRM burn law (AIAA 2000-3803).
 
+- Cycle sandbox: a *Start-up* panel runs the engine from closed to mainstage with an editable valve schedule, throttle
+  points, tank propellant loads (a run ends when a tank is dry) and optional starters. Shaft speeds and tank masses
+  are integrated over quasi-steady network solves; chamber pressure and every station's pressure, temperature and flow
+  can be plotted, scrubbed or played back on the diagram, with CSV export. Library cycles: pressure-fed, gas
+  generator (settles at the design 7.2 MPa and shaft speed) and expander. Turbine, shaft-inertia and accessory-load
+  start-up models are PROPSIM-EST and flagged as such.
 - Cycle sandbox: a *Trade Study* panel. *Sweep* varies a part parameter, a valve position or a design target over a
   range (warm-started from point to point) and plots or tabulates thrust, Isp, powers, wall temperature, NPSH or any
   part output, with CSV export. *Compare Designs* solves saved designs or templates side by side.
