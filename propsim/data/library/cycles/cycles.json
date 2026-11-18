@@ -1,0 +1,335 @@
+{
+  "cycles": [
+    {
+      "cycle_id": "pressure_fed",
+      "name": "Pressure-fed",
+      "flow_type": "none",
+      "description": "Tank pressure alone drives the propellants through valves, lines and injector; no turbomachinery.",
+      "turbine_drive": "none",
+      "turbine_exhaust": "none",
+      "component_types": [
+        "tank_regulated",
+        "tank_blowdown",
+        "line",
+        "valve_ball",
+        "orifice",
+        "injector",
+        "chamber",
+        "nozzle_bell"
+      ],
+      "reference_engines": [
+        "HH_A3",
+        "HH_A4"
+      ],
+      "propsim_cycle": null,
+      "cycle_efficiency_min": null,
+      "cycle_efficiency_max": null,
+      "governing_equations": [],
+      "known_limitations": [
+        "Tank pressure must exceed chamber pressure plus all feed losses, which limits chamber pressure (A-3 and A-4: 100 psia chamber, 160 to 170 psia tanks)."
+      ]
+    },
+    {
+      "cycle_id": "gas_generator",
+      "name": "Gas generator (separate flow, open)",
+      "flow_type": "separate",
+      "description": "A small fuel-rich gas generator burns bled propellant to drive the turbine; the exhaust is dumped overboard or into the low-pressure nozzle region.",
+      "turbine_drive": "gas_generator",
+      "turbine_exhaust": "overboard_or_nozzle",
+      "component_types": [
+        "pump_centrifugal",
+        "turbine_impulse",
+        "gas_generator",
+        "shaft",
+        "injector",
+        "chamber",
+        "nozzle_bell",
+        "regen_jacket"
+      ],
+      "reference_engines": [
+        "HH_A1",
+        "F1",
+        "J2"
+      ],
+      "propsim_cycle": "gg",
+      "cycle_efficiency_min": {
+        "value": 0.96,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-22)"
+      },
+      "cycle_efficiency_max": {
+        "value": 0.99,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-22)"
+      },
+      "turbine_inlet_temperature_max": {
+        "value": 1199.82,
+        "unit": "K",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.197, text: practical design limit around 1700 degF",
+        "formula": "1700 degF to K"
+      },
+      "governing_equations": [
+        {
+          "name": "turbopump cycle efficiency",
+          "form": "\\eta_c = (I_s)_{eng} / (I_s)_{tc}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-21) p.199"
+        },
+        {
+          "name": "separate-flow (open) cycle efficiency",
+          "form": "\\eta_{sc} = \\frac{\\dot m_{tc}(I_s)_{tc} + \\dot m_t (I_s)_{te}}{\\dot m_{eng}(I_s)_{tc}}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-22) p.200"
+        },
+        {
+          "name": "turbine power from available energy",
+          "form": "P_t = \\eta_t \\dot m_t c_p T_0 \\left[1 - (p_e/p_0)^{(\\gamma-1)/\\gamma}\\right]",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-17) to (6-19) pp.196-198"
+        },
+        {
+          "name": "pump power",
+          "form": "P_p = \\dot m g_0 H / \\eta_p",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-3), (6-4) p.189"
+        },
+        {
+          "name": "shaft power balance",
+          "form": "\\sum P_t = \\sum P_p + P_{aux}",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (6-5) p.199"
+        }
+      ],
+      "known_limitations": [
+        "Turbine exhaust produces little thrust (A-1: 2700 lb of 750000 lb), so engine Isp is below thrust-chamber Isp."
+      ]
+    },
+    {
+      "cycle_id": "tap_off",
+      "name": "Chamber tap-off (separate flow, open)",
+      "flow_type": "separate",
+      "description": "Hot gas tapped from the main chamber, cooled by mixing to an allowable temperature, drives the turbines; exhaust is returned to the nozzle extension as film coolant (A-2).",
+      "turbine_drive": "chamber_tapoff",
+      "turbine_exhaust": "nozzle",
+      "component_types": [
+        "pump_centrifugal",
+        "turbine_impulse",
+        "shaft",
+        "injector",
+        "chamber",
+        "nozzle_bell",
+        "regen_jacket",
+        "orifice"
+      ],
+      "reference_engines": [
+        "HH_A2"
+      ],
+      "propsim_cycle": null,
+      "cycle_efficiency_min": {
+        "value": 0.96,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-22)"
+      },
+      "cycle_efficiency_max": {
+        "value": 0.99,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-22)"
+      },
+      "turbine_inlet_temperature_max": {
+        "value": 1199.82,
+        "unit": "K",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.197, text: practical design limit around 1700 degF",
+        "formula": "1700 degF to K"
+      },
+      "governing_equations": [
+        {
+          "name": "turbopump cycle efficiency",
+          "form": "\\eta_c = (I_s)_{eng} / (I_s)_{tc}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-21) p.199"
+        },
+        {
+          "name": "separate-flow (open) cycle efficiency",
+          "form": "\\eta_{sc} = \\frac{\\dot m_{tc}(I_s)_{tc} + \\dot m_t (I_s)_{te}}{\\dot m_{eng}(I_s)_{tc}}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-22) p.200"
+        },
+        {
+          "name": "turbine power from available energy",
+          "form": "P_t = \\eta_t \\dot m_t c_p T_0 \\left[1 - (p_e/p_0)^{(\\gamma-1)/\\gamma}\\right]",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-17) to (6-19) pp.196-198"
+        },
+        {
+          "name": "pump power",
+          "form": "P_p = \\dot m g_0 H / \\eta_p",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-3), (6-4) p.189"
+        },
+        {
+          "name": "shaft power balance",
+          "form": "\\sum P_t = \\sum P_p + P_{aux}",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (6-5) p.199"
+        }
+      ],
+      "known_limitations": [
+        "Not implemented as a PropSim cycle yet; model it as gas_generator with the generator replaced by a tap from the chamber."
+      ]
+    },
+    {
+      "cycle_id": "expander_closed",
+      "name": "Expander (topping flow, closed)",
+      "flow_type": "topping",
+      "description": "Fuel heated in the regenerative jacket drives the turbine and is then injected into the chamber.",
+      "turbine_drive": "jacket_heated_fuel",
+      "turbine_exhaust": "chamber",
+      "component_types": [
+        "pump_centrifugal",
+        "turbine_impulse",
+        "shaft",
+        "regen_jacket",
+        "injector",
+        "chamber",
+        "nozzle_bell"
+      ],
+      "reference_engines": [],
+      "propsim_cycle": "expander",
+      "cycle_efficiency_min": {
+        "value": 0.996,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-23)"
+      },
+      "cycle_efficiency_max": {
+        "value": 0.9996,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-23)"
+      },
+      "governing_equations": [
+        {
+          "name": "turbopump cycle efficiency",
+          "form": "\\eta_c = (I_s)_{eng} / (I_s)_{tc}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-21) p.199"
+        },
+        {
+          "name": "topping-flow (closed) cycle efficiency",
+          "form": "\\eta_{tc} = 1 - \\frac{g_0 (MR\\,\\Delta H_o + \\Delta H_f)}{(1+MR)\\,c_p (T_c)_{ns}}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-23) p.200",
+          "note": "SI form of the printed US-unit equation (778 ft lbf/Btu absorbed by using J and m); Delta H are pump heads from inlet to chamber stagnation pressure"
+        },
+        {
+          "name": "turbine power from available energy",
+          "form": "P_t = \\eta_t \\dot m_t c_p T_0 \\left[1 - (p_e/p_0)^{(\\gamma-1)/\\gamma}\\right]",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-17) to (6-19) pp.196-198"
+        },
+        {
+          "name": "pump power",
+          "form": "P_p = \\dot m g_0 H / \\eta_p",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-3), (6-4) p.189"
+        },
+        {
+          "name": "shaft power balance",
+          "form": "\\sum P_t = \\sum P_p + P_{aux}",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (6-5) p.199"
+        }
+      ],
+      "known_limitations": [
+        "Turbine power is limited by the heat picked up in the jacket, which limits chamber pressure.",
+        "No reference engine with a sourced cycle label yet (the RL10 sources used do not state the cycle; gaps.md)."
+      ]
+    },
+    {
+      "cycle_id": "staged_combustion_fuel_rich",
+      "name": "Staged combustion, fuel-rich (topping flow, closed)",
+      "flow_type": "topping",
+      "description": "All fuel and part of the oxidizer burn in fuel-rich preburner(s); the gas drives the turbines and then burns with the remaining oxidizer in the main chamber.",
+      "turbine_drive": "preburner",
+      "turbine_exhaust": "chamber",
+      "component_types": [
+        "pump_centrifugal",
+        "turbine_impulse",
+        "gas_generator",
+        "shaft",
+        "regen_jacket",
+        "injector",
+        "chamber",
+        "nozzle_bell"
+      ],
+      "reference_engines": [
+        "RS25"
+      ],
+      "propsim_cycle": "staged",
+      "cycle_efficiency_min": {
+        "value": 0.996,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-23)"
+      },
+      "cycle_efficiency_max": {
+        "value": 0.9996,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.200, text after eq. (6-23)"
+      },
+      "governing_equations": [
+        {
+          "name": "turbopump cycle efficiency",
+          "form": "\\eta_c = (I_s)_{eng} / (I_s)_{tc}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-21) p.199"
+        },
+        {
+          "name": "topping-flow (closed) cycle efficiency",
+          "form": "\\eta_{tc} = 1 - \\frac{g_0 (MR\\,\\Delta H_o + \\Delta H_f)}{(1+MR)\\,c_p (T_c)_{ns}}",
+          "source_id": "HH-SP125",
+          "location": "eq. (6-23) p.200",
+          "note": "SI form of the printed US-unit equation (778 ft lbf/Btu absorbed by using J and m); Delta H are pump heads from inlet to chamber stagnation pressure"
+        },
+        {
+          "name": "turbine power from available energy",
+          "form": "P_t = \\eta_t \\dot m_t c_p T_0 \\left[1 - (p_e/p_0)^{(\\gamma-1)/\\gamma}\\right]",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-17) to (6-19) pp.196-198"
+        },
+        {
+          "name": "pump power",
+          "form": "P_p = \\dot m g_0 H / \\eta_p",
+          "source_id": "HH-SP125",
+          "location": "eqs. (6-3), (6-4) p.189"
+        },
+        {
+          "name": "shaft power balance",
+          "form": "\\sum P_t = \\sum P_p + P_{aux}",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (6-5) p.199"
+        }
+      ],
+      "known_limitations": [
+        "Turbine exhaust pressure must exceed chamber pressure, so pump discharge pressures are much higher and turbine pressure ratio much lower than in open cycles (p.200)."
+      ]
+    }
+  ]
+}

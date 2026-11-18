@@ -21,6 +21,24 @@ Huzel & Huang Table 1-9 gives 3455 K; the shipped CEA tables give 3352 K (-3.0 %
 1.1 %. Likely cause: the 1960s RP-1 heat of formation behind Huzel & Huang versus the CEA RP-1 card (Mehta et al.
 1995). **Used: the CEA tables** (modern species data). No action needed for preliminary design.
 
+## A-1 turbine shaft torque unit
+
+Huzel & Huang Table 3-2 (p.65) prints the A-1 turbine torque as 20380 in-lb. Sample Calculation (6-5) (p.199) uses
+20380 ft-lb, and only ft-lb agrees with the printed 27140 bhp at 7000 rpm (T omega = P within 0.1 %; in-lb would be
+12 times too small). Both rows are kept in `engine_params.csv`; the sample-calculation row is preferred. The A-2
+torques (Table 3-3) are in-lb and agree with their power and speed.
+
+## A-1 thrust-chamber thrust
+
+Table 3-2 gives 747000 lb; Sample Calculation (6-6) (p.201) uses the test value 747300 lb (0.04 %). The table
+value is preferred.
+
+## Table 6-4 gas constant at 1250 degF (LOX/RP-1)
+
+Table 6-4 (p.197) prints R = 58.6 ft/degR at 1250 degF, between 47.1 at 1200 degF and 50.4 at 1300 degF; c_p (gamma -
+1) / gamma gives 50.2. The printed value is kept as published (checked against the page image) and flagged in
+`checks.md`; use c_p and gamma for that row, or interpolate R from the neighbours.
+
 ## Small differences, no action
 
 - LH2 and LOX critical and boiling points: CoolProp (modern equations of state) and Huzel & Huang Table 1-5 agree

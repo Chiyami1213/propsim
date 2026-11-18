@@ -1,0 +1,103 @@
+{
+  "type": "inducer",
+  "category": "turbomachinery",
+  "description": "Axial inducer ahead of the main impeller: raises inlet pressure to suppress main-pump cavitation.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    },
+    {
+      "name": "shaft",
+      "kind": "shaft",
+      "direction": "bidir",
+      "medium": "torque"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "psi",
+      "unit": "1",
+      "default": {
+        "value": 0.1,
+        "unit": "1",
+        "quality": "derived",
+        "source_id": "HH-SP125",
+        "location": "Table 6-5 p.213",
+        "formula": "midpoint of 0.06-0.15 rounded"
+      },
+      "min": 0.06,
+      "max": 0.15,
+      "meaning": "Head coefficient",
+      "table": "components/tables/inducer_design_ranges.csv"
+    },
+    {
+      "name": "phi_inlet",
+      "unit": "1",
+      "default": {
+        "value": 0.13,
+        "unit": "1",
+        "quality": "derived",
+        "source_id": "HH-SP125",
+        "location": "Table 6-5 p.213",
+        "formula": "midpoint of 0.06-0.20"
+      },
+      "min": 0.06,
+      "max": 0.2,
+      "meaning": "Inlet flow coefficient"
+    },
+    {
+      "name": "suction_specific_speed",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 7.3,
+      "max": 18.3,
+      "meaning": "Omega_ss at the cavitation limit (Table 6-5 range)"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "head",
+      "unit": "m",
+      "meaning": "Inducer head"
+    },
+    {
+      "name": "npsh_available",
+      "unit": "m",
+      "meaning": "NPSH at inducer inlet"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "suction specific speed",
+      "form": "\\Omega_{ss} = \\omega\\sqrt{Q}/(g\\,NPSH_c)^{3/4}",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-10) p.192 (SI dimensionless)"
+    },
+    {
+      "name": "Thoma parameter",
+      "form": "\\tau = NPSH_c/\\Delta H = (\\Omega_s/\\Omega_{ss})^{4/3}",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-11) p.192"
+    }
+  ],
+  "valid_range": "Table 6-5 ranges.",
+  "known_limitations": [
+    "Design-range data only; no head-breakdown curve yet."
+  ]
+}

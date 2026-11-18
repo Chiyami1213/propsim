@@ -1,0 +1,12 @@
+oxidizer,fuel,condition,Lstar_min,Lstar_max,unit,quality,source_id,location,formula
+ClF3,hydrazine_base,,0.762,0.889,m,published,HH-SP125,Table 4-1 p.87,30-35 in x 0.0254
+LF2,N2H4,,0.6096,0.7112,m,published,HH-SP125,Table 4-1 p.87,24-28 in x 0.0254
+LF2,LH2,GH2 injection,0.5588,0.6604,m,published,HH-SP125,Table 4-1 p.87,22-26 in x 0.0254
+LF2,LH2,LH2 injection,0.635,0.762,m,published,HH-SP125,Table 4-1 p.87,25-30 in x 0.0254
+H2O2,RP1,including catalyst bed,1.524,1.778,m,published,HH-SP125,Table 4-1 p.87,60-70 in x 0.0254
+nitric_acid,hydrazine_base,,0.762,0.889,m,published,HH-SP125,Table 4-1 p.87,30-35 in x 0.0254
+N2O4,hydrazine_base,,0.762,0.889,m,published,HH-SP125,Table 4-1 p.87,30-35 in x 0.0254
+LOX,NH3,,0.762,1.016,m,published,HH-SP125,Table 4-1 p.87,30-40 in x 0.0254
+LOX,LH2,GH2 injection,0.5588,0.7112,m,published,HH-SP125,Table 4-1 p.87,22-28 in x 0.0254
+LOX,LH2,LH2 injection,0.762,1.016,m,published,HH-SP125,Table 4-1 p.87,30-40 in x 0.0254
+LOX,RP1,,1.016,1.27,m,published,HH-SP125,Table 4-1 p.87,40-50 in x 0.0254

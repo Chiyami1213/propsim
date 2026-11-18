@@ -1,0 +1,162 @@
+{
+  "type": "valve_butterfly",
+  "category": "valve",
+  "description": "Butterfly valve; typical main propellant valve of large engines.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "any"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "any"
+    },
+    {
+      "name": "command",
+      "kind": "signal",
+      "direction": "in",
+      "medium": "command"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "diameter",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.001,
+      "max": 1.0,
+      "user_input": true,
+      "meaning": "Flow diameter of the valve passage"
+    },
+    {
+      "name": "K_open",
+      "unit": "1",
+      "default": {
+        "value": 0.31,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 7-4 p.286 (butterfly, 90 deg open)"
+      },
+      "min": 0.0,
+      "max": null,
+      "meaning": "Loss coefficient fully open",
+      "table": "components/tables/loss_coefficients.csv"
+    },
+    {
+      "name": "t_open",
+      "unit": "s",
+      "default": {
+        "value": null,
+        "unit": "s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Opening command time"
+    },
+    {
+      "name": "ramp_open",
+      "unit": "s",
+      "default": {
+        "value": null,
+        "unit": "s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0,
+      "max": 10.0,
+      "user_input": true,
+      "meaning": "Opening duration (stroke time)"
+    },
+    {
+      "name": "t_close",
+      "unit": "s",
+      "default": {
+        "value": null,
+        "unit": "s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Closing command time"
+    },
+    {
+      "name": "ramp_close",
+      "unit": "s",
+      "default": {
+        "value": null,
+        "unit": "s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0,
+      "max": 10.0,
+      "user_input": true,
+      "meaning": "Closing duration (stroke time)"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "opening",
+      "unit": "1",
+      "meaning": "Opening fraction 0..1 (prescribed by the schedule)"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "opening",
+      "unit": "1",
+      "meaning": "Opening fraction"
+    },
+    {
+      "name": "dp",
+      "unit": "Pa",
+      "meaning": "Pressure drop"
+    },
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Mass flow"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "loss versus opening",
+      "form": "\\Delta p = K(\\theta)\\,\\frac{\\rho v^2}{2},\\quad K(\\theta)\\ \\text{interpolated in Table 7-4}",
+      "source_id": "HH-SP125",
+      "location": "eq. (7-9) p.285 and Table 7-4 p.286"
+    },
+    {
+      "name": "schedule",
+      "form": "f(t)=s\\!\\left(\\frac{t-t_{open}}{\\tau_o}\\right)\\left[1-s\\!\\left(\\frac{t-t_{close}}{\\tau_c}\\right)\\right],\\ s(x)=x^2(3-2x)",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: valve_fraction()",
+      "note": "the existing code uses K = K_open / f^2; with this record use the Table 7-4 K(angle) instead"
+    }
+  ],
+  "valid_range": "Table 7-4 openings; below the smallest tabulated opening extrapolate in log K.",
+  "known_limitations": [
+    "Stroke times are user input: no generic published opening/closing time law is in the library yet (gaps.md).",
+    "Cavitation in the valve throat not modelled."
+  ],
+  "implementation": "propsim/core/feed/network.py"
+}

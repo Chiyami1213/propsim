@@ -1,0 +1,186 @@
+{
+  "type": "pump_centrifugal",
+  "category": "turbomachinery",
+  "description": "Centrifugal pump: head and efficiency from nondimensional characteristics, power from head and flow.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    },
+    {
+      "name": "shaft",
+      "kind": "shaft",
+      "direction": "bidir",
+      "medium": "torque"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "D_tip",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.02,
+      "max": 1.0,
+      "user_input": true,
+      "meaning": "Impeller tip diameter"
+    },
+    {
+      "name": "psi_design",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.3,
+      "max": 0.7,
+      "meaning": "Head coefficient g H/U^2 at design (null: derive from the design point)"
+    },
+    {
+      "name": "eta_design",
+      "unit": "1",
+      "default": {
+        "value": 0.707,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine), oxidizer pump"
+      },
+      "min": 0.45,
+      "max": 0.92,
+      "meaning": "Overall efficiency at design",
+      "table": "components/tables/pump_efficiency_vs_specific_speed.csv"
+    },
+    {
+      "name": "N_design",
+      "unit": "rad/s",
+      "default": {
+        "value": null,
+        "unit": "rad/s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Design shaft speed"
+    },
+    {
+      "name": "Q_design",
+      "unit": "m3/s",
+      "default": {
+        "value": null,
+        "unit": "m3/s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Design volume flow"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "head",
+      "unit": "m",
+      "meaning": "Developed head"
+    },
+    {
+      "name": "dp",
+      "unit": "Pa",
+      "meaning": "Pressure rise"
+    },
+    {
+      "name": "power",
+      "unit": "W",
+      "meaning": "Shaft power"
+    },
+    {
+      "name": "efficiency",
+      "unit": "1",
+      "meaning": "Efficiency"
+    },
+    {
+      "name": "npsh_available",
+      "unit": "m",
+      "meaning": "NPSH available"
+    },
+    {
+      "name": "speed",
+      "unit": "rad/s",
+      "meaning": "Shaft speed"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "head-pressure",
+      "form": "\\Delta p = \\rho g H",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-3) p.189 (SI)"
+    },
+    {
+      "name": "head coefficient",
+      "form": "\\psi = g H/U^2",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-4) p.189 (SI)"
+    },
+    {
+      "name": "specific speed",
+      "form": "\\Omega_s = \\omega\\sqrt{Q}/(gH)^{3/4}",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-7) p.190, SI dimensionless form",
+      "note": "Ns_US = 2733 Omega_s"
+    },
+    {
+      "name": "NPSH available",
+      "form": "NPSH_a = \\frac{p_{in}-p_v}{\\rho g}",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-8) p.192 (SI, no elevation term)"
+    },
+    {
+      "name": "cavitation margin",
+      "form": "NPSH_a > NPSH_c",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-9) p.192"
+    },
+    {
+      "name": "power",
+      "form": "P = \\frac{\\dot m g H}{\\eta_p}",
+      "source_id": "HH-SP125",
+      "location": "eqs. (6-12), (6-13) p.194 (SI)"
+    },
+    {
+      "name": "affinity (off-design)",
+      "form": "Q\\propto\\omega,\\ H\\propto\\omega^2,\\ P\\propto\\omega^3",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/cycles.py (Pump)",
+      "note": "standard similarity laws; H&H Fig. 6-24 shows the H-Q curve shape"
+    }
+  ],
+  "valid_range": "Near the design flow coefficient; head breakdown under cavitation is not modelled.",
+  "known_limitations": [
+    "No inducer head-breakdown law yet (Stenning GTL-44 in the literature archive; block B follow-up).",
+    "Bearing and seal losses lumped in efficiency."
+  ],
+  "implementation": "propsim/core/feed/cycles.py"
+}
