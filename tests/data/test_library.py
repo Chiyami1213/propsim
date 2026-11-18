@@ -338,3 +338,21 @@ def test_ssme_graph_uses_public_sources_and_closes():
     assert dp["mdot_ox"] == pytest.approx(883 * 0.45359237, rel=0.01)  # printed LPOTP flow
     pc = next(t["value"]["value"] for t in g["validation_targets"] if t["output"] == "p_c")
     assert min(dp["hpft_exit_pressure"], dp["hpot_exit_pressure"]) > pc
+
+
+def test_loss_coefficients_against_borda_carnot():
+    """Table 7-4 enlargement matches Borda-Carnot at d1/d2 = 1/4 and 1/2; the 3/4 row is a known misprint."""
+    from propsim.data import closure
+
+    rows = {
+        (r["fitting"], float(r["geometry_value"])): float(r["K_nominal"])
+        for r in data.component_table("loss_coefficients")
+        if r["fitting"] in ("sudden_enlargement", "sudden_contraction")
+    }
+    for ratio in (0.25, 0.5):
+        assert rows[("sudden_enlargement", ratio)] == pytest.approx(
+            closure.sudden_expansion_K(ratio, 1.0), rel=0.06
+        )
+    assert closure.sudden_expansion_K(0.75, 1.0) == pytest.approx(0.191, abs=0.001)
+    assert rows[("sudden_enlargement", 0.75)] == 0.5  # printed value, flagged in conflicts.md
+    assert closure.sharp_contraction_K(0.5, 1.0) == pytest.approx(0.496, abs=0.002)

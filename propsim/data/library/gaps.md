@@ -48,6 +48,12 @@ design run.
 11. **Gas generator**: fuel-rich product properties are in `cycles/turbine_drive_gas.csv` (Table 6-4) for
     LOX/RP-1, N2O4/UDMH and LOX/LH2 only; LOX/CH4 and oxidizer-rich (ORSC) preburner gas have no source yet.
 
+## Loss coefficients (cross-check with Rennels)
+
+1. **Other fittings** (bends, tees, valves): Rennels and Hudson give formulas for tees, bends and valves that depend on
+   Reynolds number and roughness; only sudden enlargement and contraction are cross-checked so far.
+2. **Reference velocity** of every Table 7-4 coefficient is not stated in the handbook.
+
 ## Reference engines (block D)
 
 1. **Flight engines have top-level data only** (thrust, Isp, MR, expansion ratio, mass, size). No flow rates,

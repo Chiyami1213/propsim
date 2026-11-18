@@ -371,6 +371,38 @@ def electric_section() -> tuple[list[str], int]:
     return lines + [""], n_flag
 
 
+def loss_section() -> tuple[list[str], int]:
+    lines = [
+        "## 11. Loss coefficients against Rennels and Hudson",
+        "",
+        "Huzel & Huang Table 7-4 sudden enlargement and contraction coefficients against the Borda-Carnot "
+        "equation (K on the inlet velocity) and the Benedict-based sharp-edged contraction fit (K on the "
+        "downstream velocity), both from Rennels and Hudson, Pipe Flow (2012), eq. 11.6 and 10.3 to 10.4. "
+        "Flagged beyond 15 %. The reference velocity of the Table 7-4 values is not stated, so the "
+        "downstream (small-pipe) velocity is assumed for contractions and the inlet velocity for "
+        "enlargements.",
+        "",
+        "| fitting | diameter ratio | Table 7-4 K | Rennels K | Δ% | flag |",
+        "|---|---|---|---|---|---|",
+    ]
+    n_flag = 0
+    for r in data.component_table("loss_coefficients"):
+        if r["fitting"] == "sudden_enlargement":
+            ref = closure.sudden_expansion_K(float(r["geometry_value"]), 1.0)
+        elif r["fitting"] == "sudden_contraction":
+            ref = closure.sharp_contraction_K(float(r["geometry_value"]), 1.0)
+        else:
+            continue
+        d = float(r["K_nominal"]) / ref - 1
+        bad = abs(d) > 0.15
+        n_flag += bad
+        lines.append(
+            f"| {r['fitting']} | {r['geometry_value']} | {float(r['K_nominal']):.2f} | {ref:.3f} | "
+            f"{100 * d:+.0f} | {'**check**' if bad else 'ok'} |"
+        )
+    return lines + [""], n_flag
+
+
 def main() -> int:
     problems = data.validate()
     integrity = (
@@ -389,6 +421,7 @@ def main() -> int:
     mat, n_mat = material_section()
     hyb, n_hyb = hybrid_section()
     ele, n_ele = electric_section()
+    los, n_los = loss_section()
     head = [
         "# Library checks",
         "",
@@ -397,19 +430,31 @@ def main() -> int:
         f"Summary: {len(problems)} integrity problems, {n_cea} theoretical-performance cases outside "
         f"{TOL_CEA:g} %, {n_sca} multi-source scalars spreading more than {TOL_SCALAR:g} %, {n_eng} engine "
         f"closure checks outside tolerance, {n_tg} turbine-gas rows flagged, {n_mat} material-fit checks "
-        f"flagged, {n_hyb} hybrid cases flagged, {n_ele} electric throttle points flagged.",
+        f"flagged, {n_hyb} hybrid cases flagged, {n_ele} electric throttle points flagged, {n_los} loss "
+        "coefficients differing from Rennels by more than 15 %.",
         "",
     ]
     OUT.write_text(
         "\n".join(
-            head + integrity + cea + sca + table_section() + eng + tg + graph_section() + mat + hyb + ele
+            head
+            + integrity
+            + cea
+            + sca
+            + table_section()
+            + eng
+            + tg
+            + graph_section()
+            + mat
+            + hyb
+            + ele
+            + los
         ),
         encoding="utf-8",
     )
     print(
         f"wrote {OUT}: {len(problems)} integrity problems, {n_cea} CEA flags, {n_sca} scalar flags, "
         f"{n_eng} engine flags, {n_tg} turbine-gas flags, {n_mat} material flags, {n_hyb} hybrid flags, "
-        f"{n_ele} electric flags"
+        f"{n_ele} electric flags, {n_los} loss-coefficient flags"
     )
     return 1 if problems else 0
 

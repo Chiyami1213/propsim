@@ -244,3 +244,23 @@ def turbine_gas_consistency(tol: float = 0.03) -> list[tuple[dict[str, str], flo
         if abs(d) > tol:
             bad.append((r, d))
     return bad
+
+
+# ---- loss-coefficient cross-check against Rennels & Hudson, Pipe Flow (2012), Ch. 10 and 11 ----
+
+
+def sudden_expansion_K(d_small: float, d_large: float) -> float:
+    """Borda-Carnot K on the inlet (small pipe) velocity, K1 = (1 - (d1/d2)^2)^2 (Pipe Flow eq. 11.6)."""
+    beta = d_small / d_large
+    return (1.0 - beta**2) ** 2
+
+
+def sharp_contraction_K(d_small: float, d_large: float) -> float:
+    """Sharp-edged contraction K on the downstream (small pipe) velocity (Pipe Flow eq. 10.3, 10.4).
+
+    K2 = 0.0696 (1 - beta^5) lambda^2 + (lambda - 1)^2,
+    lambda = 1 + 0.622 (1 - 0.215 beta^2 - 0.785 beta^5).
+    """
+    beta = d_small / d_large
+    lam = 1.0 + 0.622 * (1.0 - 0.215 * beta**2 - 0.785 * beta**5)
+    return 0.0696 * (1.0 - beta**5) * lam**2 + (lam - 1.0) ** 2

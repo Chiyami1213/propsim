@@ -33,6 +33,10 @@ New changes go above this line, newest first.
 - Component library, SSME example graph: fuel-rich staged combustion with two preburners and four turbopumps at
   rated power level, built only from public NASA documents (1981 Space Shuttle News Reference, NASA TP-3700); chamber
   temperature from the shipped CEA tables matches the published 3590 K.
+- Component library, loss-coefficient cross-check: Huzel & Huang Table 7-4 sudden enlargement and contraction
+  coefficients compared with the Borda-Carnot and Benedict-fit equations of Rennels and Hudson, Pipe Flow (2012);
+  `propsim.data.closure.sudden_expansion_K` and `sharp_contraction_K`; one enlargement value and the contraction
+  values disagree and are recorded in `conflicts.md`.
 
 - Solid: quasi-steady CP motor (SI and US customary units) with optional end-face burning, constant-rate and
   pressure-dependent throat erosion, and one-parameter sweeps drawn on all plots.
