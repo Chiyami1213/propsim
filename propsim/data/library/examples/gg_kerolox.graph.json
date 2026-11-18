@@ -777,6 +777,9 @@
    "ui": {
     "x": 700,
     "y": 400
+   },
+   "options": {
+    "hydraulics": "none"
    }
   },
   {

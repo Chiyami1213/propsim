@@ -470,6 +470,9 @@
    "ui": {
     "x": 550,
     "y": 400
+   },
+   "options": {
+    "hydraulics": "none"
    }
   },
   {
@@ -478,12 +481,12 @@
    "label": "jacket hydraulic loss",
    "params": {
     "diameter": {
-     "value": 0.0485385,
+     "value": 0.080295,
      "unit": "m",
      "quality": "derived",
      "source_id": "HH-SP125",
      "location": "Table 3-3 p.69 (jacket and manifold pressure drop 325 psi)",
-     "formula": "equivalent orifice with the liquid inlet density, Cd = 0.75; the heated hydrogen is supercritical, so this is a placeholder for the jacket's own loss model"
+     "formula": "equivalent orifice A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75, with the density of the heated hydrogen leaving the jacket (9.454 kg/m3 at 240 K, 10 MPa, CoolProp table); lumps the jacket and manifold loss (the jacket node carries heat only)"
     },
     "Cd": {
      "value": 0.75,
