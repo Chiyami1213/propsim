@@ -2,6 +2,12 @@
 
 New changes go above this line, newest first.
 
+## Unreleased
+
+- Component library, block A (fluids and propellants): `propsim/data/library` with sourced fluid scalars, CoolProp
+  property tables for 11 fluids, CEA reactant cards and published theoretical-performance cases, read by
+  `propsim.data`; checks in `tools/check_library.py` and `tests/data`.
+
 ## 1.0.0
 
 - Live mode (physics recomputed in under 50 ms while a slider drags) and Run mode (background process with progress,
