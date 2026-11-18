@@ -184,8 +184,13 @@ class NodeItem(QGraphicsItem):
         f.setPointSizeF(7.4)
         p.setFont(f)
         p.setPen(QColor(t["dim"]))
-        p.drawText(QRectF(sym.left() - 20, sym.bottom() + 3, sym.width() + 40, 12), Qt.AlignCenter,
-                   tag_for(self.node["type"], idx))
+        low = [it.pos().x() for it in self.ports.values() if it.pos().y() >= self.h - 1]     # shaft ports on the bottom edge
+        if low:                                                    # keep the tag clear of them: left of the first one
+            p.drawText(QRectF(4, sym.bottom() + 3, min(low) - 12, 12), Qt.AlignRight | Qt.AlignVCenter,
+                       tag_for(self.node["type"], idx))
+        else:
+            p.drawText(QRectF(sym.left() - 20, sym.bottom() + 3, sym.width() + 40, 12), Qt.AlignCenter,
+                       tag_for(self.node["type"], idx))
         for k, letters in enumerate(INSTRUMENTS.get(self.node["type"], [])[:2]):     # ISA-5.1 bubbles, top right
             c = QPointF(NODE_W - 13 - 26 * k, 14)
             p.setPen(QPen(ink, 0.9))
