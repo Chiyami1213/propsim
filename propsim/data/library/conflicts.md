@@ -57,6 +57,24 @@ The SSME example graph uses the 1981 summary value 2970 psia and area ratio 77.5
 station data come from the same document. The 2024 sheet describes the current RS-25 for SLS and stays in
 `engines/engine_params.csv`.
 
+## Sudden enlargement and contraction coefficients
+
+| source | enlargement d1/d2 = 1/4, 1/2, 3/4 | contraction d2/d1 = 1/4, 1/2, 3/4 | location |
+|---|---|---|---|
+| Huzel & Huang (HH-SP125) | 0.92, 0.56, 0.50 | 0.42, 0.33, 0.19 | Table 7-4, p. 286 |
+| Rennels and Hudson (RENNELS-2012), equations | 0.879, 0.562, 0.191 | 0.557, 0.496, 0.294 | eq. 11.6 (Borda-Carnot) and eq. 10.3 to 10.4 |
+
+Table 7-4 stays in `components/tables/loss_coefficients.csv` as printed. Two points to know when using it:
+
+- The enlargement value 0.50 at d1/d2 = 3/4 cannot be right for the Borda-Carnot loss, which is exact for a sudden
+  expansion with uniform inlet flow: 0.19. The same row of the table as printed also lists 0.50 for the ordinary
+  entrance, so it may be a misprint, but the library keeps the printed value and flags it.
+- The Table 7-4 contraction values are 25 to 35 % below the Benedict-based fit that Rennels and Hudson recommend
+  (K on the downstream velocity). Rennels notes that older values were capped near 0.5 and that measured sharp-edged
+  coefficients can exceed it. For new designs the Rennels equations, available as
+  `propsim.data.closure.sudden_expansion_K` and `sharp_contraction_K`, are the better estimate; the A-1 example
+  graphs keep the Huzel & Huang values so they reproduce the published pressure drops.
+
 ## Small differences, no action
 
 - LH2 and LOX critical and boiling points: CoolProp (modern equations of state) and Huzel & Huang Table 1-5 agree
