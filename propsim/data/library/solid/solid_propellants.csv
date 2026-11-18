@@ -1,0 +1,12 @@
+propellant_id,property,value,unit,quality,source_id,location,note,formula
+KNSB,rho_ideal,1841,kg/m3,published,NAKKA-SORB,Quality Control section,ideal (theoretical) density of KN/sorbitol 65/35,1.841 g/cm3 to kg/m3
+KNSB,Isp_vs_KNSU,0.99,1,published,NAKKA-SORB,performance paragraph,"Isp is stated as 'less than 1 % lower' than KN/sucrose; combustion temperature about 100 C lower; used only to justify KNSU thermochemistry as a stand-in",
+KNSU,Tc,1720,K,published,NAKKA-TECHS,note 3,"KN/sucrose 65/35, PROPEP at 1000 psia (68 atm)",
+KNSU,gamma,1.133,1,published,NAKKA-TECHS,note 3,mixture ratio of specific heats used for c*,
+KNSU,gamma_2ph,1.0437,1,published,NAKKA-TECHS,note 4,two-phase ratio of specific heats used for Isp,
+KNSU,M,0.04198,kg/mol,published,NAKKA-TECHS,notes 3 and 4,effective molar mass,41.98 kg/kmol to kg/mol
+KNSU,cstar,919,m/s,published,NAKKA-TECHS,note 3,ideal characteristic velocity,
+KNSU,Isp_ideal,166,s,published,NAKKA-TECHS,note 4,"frozen flow, 68 atm to 1 atm optimum expansion, no two-phase losses",
+RSRM_PBAN,r_ref,0.0093472,m/s,published,AIAA-2000-3803,RSRM CFD model description,nominal burn rate at 625 psia and 60 degF,0.368 in/s to m/s
+RSRM_PBAN,p_ref,4309223,Pa,published,AIAA-2000-3803,RSRM CFD model description,reference pressure of the nominal burn rate,625 psia to Pa
+RSRM_PBAN,n,0.35,1,published,AIAA-2000-3803,RSRM CFD model description,burn-rate pressure exponent,

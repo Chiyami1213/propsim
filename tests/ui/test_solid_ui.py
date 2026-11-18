@@ -111,3 +111,56 @@ def test_custom_section_and_stack_editors(win):
     assert p.section_json == json.dumps(spec) and p.stack_json == text
     m = p.to_si()
     assert len(m.stack) == 2 and m.stack[1].prop.cstar == 1400.0 and m.stack[1].burn_head
+
+
+def test_grain_designer_new_sections_segments_and_ends(win):
+    """Every section kind (including the end burner) evaluates in the Live designer, with segments and burning ends."""
+    from propsim.sims.solid_burn import KINDS
+
+    win.select_model("solid.grain")
+    form = win.form
+    form.rows["ends"].slider.setCurrentIndex(form.rows["ends"].meta["choices"].index("both"))
+    for kind in [k for k in KINDS if k != "custom"]:
+        form.rows["kind"].slider.setCurrentIndex(form.rows["kind"].meta["choices"].index(kind))
+        QApplication.processEvents()
+        r = win.ctrl.evaluate(form.values())
+        assert r["Kn"][0] > 0 and r["web"] > 0 and r["remain"][0] == pytest.approx(1.0)
+        _standards(win)
+    form.rows["kind"].slider.setCurrentIndex(form.rows["kind"].meta["choices"].index("circle"))
+    form.rows["ends"].slider.setCurrentIndex(0)
+    QApplication.processEvents()
+
+
+def test_bands_editor_loads_a_library_law(win):
+    import json
+
+    from propsim.ui import grain_editor as ge
+
+    dlg = ge.BandsEditor("", {"a_mm": 6.0, "n": 0.4})
+    assert json.loads(dlg.text()) == [[0.1, 10.0, 6.0, 0.4]]
+    dlg.preset.setCurrentIndex(dlg.preset.findData("KNSB"))
+    rows = json.loads(dlg.text())
+    assert len(rows) == 5 and rows[0][2] == pytest.approx(10.71) and dlg.buttons.button(QDialogButtonBox.Ok).isEnabled()
+    assert ge.summary("bands", dlg.text()).startswith("5 band")
+    dlg.table.item(1, 0).setText("0.9")                                         # gap after band 1: rejected
+    assert not dlg.buttons.button(QDialogButtonBox.Ok).isEnabled()
+
+
+def test_ballistics_with_band_law_and_eng_export(win, tmp_path):
+    win.select_model("solid.ballistics")
+    form = win.form
+    form.rows["stack_json"].set_value("")
+    form.rows["section_json"].set_value("")
+    form.rows["kind"].slider.setCurrentIndex(form.rows["kind"].meta["choices"].index("wagon"))
+    form.rows["law"].slider.setCurrentIndex(form.rows["law"].meta["choices"].index("KNSB"))
+    QApplication.processEvents()
+    win.start_run()
+    _wait(win)
+    r = win.result
+    assert r is not None and "Isp" in r.channels and r.meta["impulse_class"]
+    path = tmp_path / "motor.eng"
+    win.export(".eng", str(path))
+    lines = [ln for ln in path.read_text().splitlines() if not ln.startswith(";")]
+    assert len(lines[0].split()) == 7 and float(lines[-1].split()[1]) == 0.0
+    form.rows["law"].slider.setCurrentIndex(0)
+    QApplication.processEvents()

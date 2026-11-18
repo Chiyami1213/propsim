@@ -85,11 +85,13 @@ def rot(X, Y, ang: float):
     return X * np.cos(ang) + Y * np.sin(ang), -X * np.sin(ang) + Y * np.cos(ang)
 
 
-KINDS = ["circle", "star", "wagon", "finocyl", "center4", "center6"]
+KINDS = ["circle", "star", "wagon", "finocyl", "center4", "center6", "moon", "cslot", "dgrain", "xcore"]
+# sections with no port at all: only an end face burns (handled by the ballistics, not by a burnback table)
+PORTLESS = ["endburner"]
 
 
 def sdf_field(kind: str, X, Y, R_out: float, R_p: float = 15.0, n: int = 6, w: float = 8.0, r_tip: float = 0.6,
-              r_valley: float = 0.3, depth: float = 0.55):
+              r_valley: float = 0.3, depth: float = 0.55, offset: float = 10.0):
     """Signed distance of the initial port at points ``(X, Y)``; lengths in the same unit as ``R_out`` (mm).
 
     * ``circle``: bore of radius ``R_p``.
@@ -97,7 +99,25 @@ def sdf_field(kind: str, X, Y, R_out: float, R_p: float = 15.0, n: int = 6, w: f
     * ``wagon``: bore ``R_p`` plus ``n`` flat-ended slots of width ``w`` reaching ``depth * R_out``.
     * ``finocyl``: bore ``R_p`` plus ``n`` fins (slots with rounded ends) of width ``w`` reaching ``depth * R_out``.
     * ``center4`` / ``center6``: bore plus 4 / 6 satellite bores of radius ``R_p`` on a ring at ``R_out / 2``.
+    * ``moon``: bore of radius ``R_p`` whose centre sits ``offset`` off the axis (a moon burner; 0 is a plain bore).
+    * ``cslot``: one slot of width ``w`` cut in from the case wall, ``depth * R_out`` deep (C-slot).
+    * ``dgrain``: the propellant is cut by a flat at ``offset`` from the axis; everything beyond it is port (D-grain).
+    * ``xcore``: ``n`` arms of width ``w`` from the axis to ``depth * R_out``, without a centre bore (X-core for n = 4).
     """
+    if kind == "moon":
+        return sd_circle(X, Y, R_p, offset, 0.0)
+    if kind == "cslot":
+        hl = 0.5 * depth * R_out + 0.05 * R_out              # runs past the case wall so the slot is open there
+        return sd_box(X, Y, hl, w / 2, R_out * (1.0 - depth) + hl)
+    if kind == "dgrain":
+        return offset - X
+    if kind == "xcore":
+        sd = None
+        for j in range(n):
+            u, v = rot(X, Y, 2 * np.pi * j / n)
+            f = sd_box(u, v, 0.5 * depth * R_out + w / 4, w / 2, 0.5 * depth * R_out - w / 4)
+            sd = f if sd is None else np.minimum(sd, f)
+        return sd
     if kind == "star":
         return sd_star(X, Y, n, r_tip * R_out, r_valley * R_out)
     sd = sd_circle(X, Y, R_p)

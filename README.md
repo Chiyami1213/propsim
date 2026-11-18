@@ -13,8 +13,10 @@ application, with live parameter studies, time-domain simulations, synchronized 
     valve timing), pump-fed cycles (gas generator, expander, staged combustion), chugging and L\* stability.
   - *Hybrid*: regression laws, port and grain, core flow fields, fuel and oxidizer, instability and scaling,
     0-D and quasi-1D burns, N₂O self-pressurized blowdown.
-  - *Solid*: grain designer (star, wagon wheel, finocyl and more), burn rate and K_n, 3D level-set burnback,
-    internal ballistics with erosive burning, and a quasi-steady CP motor (end-face burning, three throat-erosion
+  - *Solid*: grain designer (BATES segments, star, wagon wheel, finocyl, moon burner, C-slot, D-grain, X-core, end
+    burner and custom sections), burn rate and K_n with pressure-band laws (KNSB and KNDX from Nakka), 3D level-set
+    burnback, internal ballistics with erosive burning, nozzle losses, throat erosion, Isp and a .eng thrust-curve
+    export (validated against the Kappa-SB static test), and a quasi-steady CP motor (end-face burning, three throat-erosion
     treatments, parameter sweeps, SI or US customary units).
   - *Electric*: mission and power trades (Stuhlinger), electrothermal thrusters, gridded ion and Hall thrusters,
     ion-optics particle simulation, Hall discharge, low-thrust Edelbaum spiral with power degradation.
@@ -77,7 +79,7 @@ application, with live parameter studies, time-domain simulations, synchronized 
 
 **Solid**
 
-- **Grain designer** (Editor window, Solid): grain sections (star, wagon wheel, finocyl and more) with burnback tables, 3D grain with a side-view cutaway, Open in Main Window.
+- **Grain designer** (Editor window, Solid): grain sections (BATES, star, wagon wheel, finocyl, moon burner, C-slot, D-grain, X-core, end burner and more) with burnback tables, segments and burning ends, 3D grain with a side-view cutaway, Open in Main Window.
 - **Burn rate & K_n** (Live): burn-rate and K_n tool.
 - **3D burnback** (Run): 3-D level-set burnback.
 - **Internal ballistics** (Run): internal ballistics.

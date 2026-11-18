@@ -27,6 +27,7 @@ DASHBOARDS = LIBRARY / "dashboards"
 MATERIALS = LIBRARY / "materials"
 HYBRID = LIBRARY / "hybrid"
 ELECTRIC = LIBRARY / "electric"
+SOLID = LIBRARY / "solid"
 G0 = 9.80665  # standard gravity, m/s2 (exact by definition)
 FIT_FORMS = {"log10_poly", "poly_floor", "cu_rational"}
 MATERIAL_UNITS = {
@@ -77,6 +78,7 @@ UNITS = {
     "kg m2",
     "1/K",
     "W/(m2 K)",
+    "N s",
 }
 TABLE_COLUMNS = ["T", "p", "phase", "rho", "mu", "cp", "cv", "k", "a_sound", "h", "s"]
 SAT_COLUMNS = ["T", "p_sat", "rho_l", "rho_v", "h_l", "h_v", "cp_l", "mu_l", "k_l", "sigma"]
@@ -282,6 +284,56 @@ def _check_hybrid(problems: list[str]) -> None:
     for fid, f in fuels.items():
         if f["source_id"] not in sources():
             problems.append(f"hybrid/hybrid_fuels.csv {fid}: unknown source {f['source_id']!r}")
+
+
+def solid_burn_laws() -> dict[str, list[dict[str, str]]]:
+    """``propellant_id`` -> its rows of ``solid/burn_rate_laws.csv`` in band order (``a`` is SI: r in m/s, p in Pa)."""
+    out: dict[str, list[dict[str, str]]] = {}
+    for r in _read_csv(SOLID / "burn_rate_laws.csv"):
+        out.setdefault(r["propellant_id"], []).append(r)
+    return {k: sorted(v, key=lambda r: int(r["band"])) for k, v in out.items()}
+
+
+def solid_burn_bands(propellant_id: str) -> tuple:
+    """Pressure bands ``((p_lo, p_hi, a, n), ...)`` (SI) of a banded solid propellant, for ``SolidProp.bands``."""
+    rows = solid_burn_laws()[propellant_id]
+    if any(r["p_lo"] == "" for r in rows):
+        raise ValueError(f"{propellant_id} has a single burn law, not pressure bands")
+    return tuple((float(r["p_lo"]), float(r["p_hi"]), float(r["a"]), float(r["n"])) for r in rows)
+
+
+def solid_propellants(propellant_id: str | None = None) -> list[dict[str, str]]:
+    """Rows of ``solid/solid_propellants.csv`` (long format), optionally for one propellant."""
+    rows = _read_csv(SOLID / "solid_propellants.csv")
+    return [r for r in rows if propellant_id is None or r["propellant_id"] == propellant_id]
+
+
+def solid_value(propellant_id: str, prop: str) -> float:
+    return float(next(r["value"] for r in solid_propellants(propellant_id) if r["property"] == prop))
+
+
+def static_tests(test_id: str | None = None) -> dict[str, dict[str, str]]:
+    """``quantity`` -> row of ``solid/static_tests.csv`` for one test (all rows keyed ``test_id:quantity`` if None)."""
+    rows = _read_csv(SOLID / "static_tests.csv")
+    if test_id is None:
+        return {f"{r['test_id']}:{r['quantity']}": r for r in rows}
+    return {r["quantity"]: r for r in rows if r["test_id"] == test_id}
+
+
+def _check_solid(problems: list[str]) -> None:
+    laws = [r for v in solid_burn_laws().values() for r in v]
+    _check_provenance(laws, "solid/burn_rate_laws.csv", problems, unit_col=None, value_col="a")
+    _check_provenance(solid_propellants(), "solid/solid_propellants.csv", problems)
+    _check_provenance(list(static_tests().values()), "solid/static_tests.csv", problems, value_col=None)
+    for pid, rows in solid_burn_laws().items():
+        for r, nxt in zip(rows[:-1], rows[1:]):
+            if r["p_hi"] != nxt["p_lo"]:
+                problems.append(f"solid/burn_rate_laws.csv {pid}: bands {r['band']} and {nxt['band']} not contiguous")
+        for r in rows:
+            if r["r_unit_source"] == "mm/s" and r["p_unit_source"] == "MPa":
+                a = float(r["a_source"]) * 1e-3 / 1e6 ** float(r["n"])
+                if abs(a / float(r["a"]) - 1.0) > 1e-4:
+                    problems.append(f"solid/burn_rate_laws.csv {pid} band {r['band']}: a does not match a_source")
 
 
 def thrusters() -> dict[str, dict[str, str]]:
@@ -651,6 +703,7 @@ def validate() -> list[str]:
     _check_panels(problems)
     _check_materials(problems)
     _check_hybrid(problems)
+    _check_solid(problems)
     _check_electric(problems)
 
     for p in LIBRARY.rglob("*.json"):

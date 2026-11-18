@@ -1,7 +1,19 @@
 r"""Solid-rocket internal ballistics (MATHKIT.md Sections 2.1-2.3): burn law, equilibrium, 0-D and spatial (1-D) transient.
 
 Burn law :math:`r=a(T_i)\,p_c^n`, :math:`a(T_i)=a_0e^{\sigma_p(T_i-T_0)}` (``a`` in m·s⁻¹·Pa⁻ⁿ); equilibrium
-:math:`p_c=(a\rho_pc^*K_n)^{\frac1{1-n}}`, :math:`K_n=A_b/A_t`.
+:math:`p_c=(a\rho_p\eta_{c^*}c^*K_n)^{\frac1{1-n}}`, :math:`K_n=A_b/A_t`.  A propellant can instead carry a
+*pressure-band* law (Nakka 1999 style): its own :math:`a_k, n_k` in each pressure range :math:`[p_k, p_{k+1})`; the
+equilibrium is then found band by band (the lowest self-consistent root wins) with a bracketed fallback.
+
+Nozzle: delivered :math:`c^*_d=\eta_{c^*}c^*` sets the flow, :math:`\dot m=p_cA_t/c^*_d`; the thrust coefficient is
+the ideal one at the nozzle's :math:`\gamma` (two-phase value when given) with the conical divergence factor on the
+momentum term and an overall efficiency,
+
+.. math::  C_F=\eta_F\Big[\lambda\,C_{F,mom}+\Big(\frac{p_e}{p_c}-\frac{p_a}{p_c}\Big)\varepsilon\Big],\qquad
+           \lambda=\frac{1+\cos\alpha}{2}
+
+(Sutton & Biblarz Eq. 3-34).  Throat erosion grows the throat diameter at :math:`\dot D_t=\dot e_{ref}(p_c/p_{ref})^{k}`
+while propellant burns; the exit area stays fixed, so :math:`\varepsilon` falls as the throat opens.
 
 Chamber filling with a growing free volume (state :math:`[p_c,\ w,\ V_c]`):
 
@@ -31,8 +43,8 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
 
-from ..constants import P_SEA_LEVEL
-from ..nozzle import CF, Gamma, exit_state
+from ..constants import G0, P_SEA_LEVEL
+from ..nozzle import CF, Gamma, divergence_factor, exit_state
 
 R_U = 8.314462618
 
@@ -55,10 +67,38 @@ class SolidProp:
     gamma: float = 1.2
     alpha: float = 6.0e-6       # Lenoir-Robillard coefficient (SI); 0 disables erosive burning
     beta: float = 53.0
+    bands: tuple = ()           # optional pressure-band law: ((p_lo, p_hi, a, n), ...) in Pa, m·s⁻¹·Pa⁻ⁿ; overrides a, n
+    gamma_noz: float = 0.0      # ratio of specific heats for the nozzle expansion (two-phase); 0 = same as gamma
+
+    @property
+    def temp_factor(self) -> float:
+        return float(np.exp(self.sigma_p * (self.Ti - self.T0)))
 
     @property
     def a_eff(self) -> float:
-        return self.a * float(np.exp(self.sigma_p * (self.Ti - self.T0)))
+        return self.a * self.temp_factor
+
+    @property
+    def g_noz(self) -> float:
+        return self.gamma_noz if self.gamma_noz > 0.0 else self.gamma
+
+    def band_index(self, p):
+        """Index of the pressure band holding ``p`` (clamped to the first / last band)."""
+        his = np.array([b[1] for b in self.bands[:-1]])
+        return np.searchsorted(his, np.asarray(p, float), side="right")
+
+    def a_n(self, p):
+        """``(a_eff, n)`` that apply at pressure ``p``: the band's values, or the single law's."""
+        if not self.bands:
+            return self.a_eff, self.n
+        k = self.band_index(p)
+        a = np.array([b[2] for b in self.bands])[k] * self.temp_factor
+        n = np.array([b[3] for b in self.bands])[k]
+        return a, n
+
+    @property
+    def n_max(self) -> float:
+        return max([b[3] for b in self.bands]) if self.bands else self.n
 
     @property
     def RT(self) -> float:
@@ -66,14 +106,46 @@ class SolidProp:
 
     def rate(self, p):
         """Base burn rate (m·s⁻¹) at chamber pressure ``p`` (Pa), including the temperature sensitivity."""
-        return self.a_eff * np.maximum(p, 1.0) ** self.n
+        p = np.maximum(p, 1.0)
+        if not self.bands:
+            return self.a_eff * p ** self.n
+        a, n = self.a_n(p)
+        return a * p ** n
 
 
-def p_equilibrium(prop: SolidProp, Kn: float) -> float:
-    """:math:`p_c=(a\\rho_pc^*K_n)^{1/(1-n)}` (Pa); only meaningful for n < 1."""
-    if prop.n >= 1.0:
-        raise ValueError("equilibrium pressure does not exist for n >= 1 (unstable)")
-    return (prop.a_eff * prop.rho_p * prop.cstar * Kn) ** (1.0 / (1.0 - prop.n))
+def bands_from_mm_MPa(rows) -> tuple:
+    """Pressure bands from rows ``(p_lo, p_hi, a', n)`` with p in MPa and r (mm/s) = a' p(MPa)^n."""
+    rows = sorted((float(lo), float(hi), float(a), float(n)) for lo, hi, a, n in rows)
+    for (lo, hi, a, n), nxt in zip(rows, rows[1:] + [None]):
+        if not hi > lo or a <= 0 or n >= 1.0:
+            raise ValueError("each band needs p_hi > p_lo, a > 0 and n < 1")
+        if nxt is not None and abs(nxt[0] - hi) > 1e-9:
+            raise ValueError("pressure bands must be contiguous (each band starts where the previous one ends)")
+    return tuple((lo * 1e6, hi * 1e6, a_from_mm_MPa(a, n), n) for lo, hi, a, n in rows)
+
+
+def p_equilibrium(prop: SolidProp, Kn: float, eta_c: float = 1.0) -> float:
+    """:math:`p_c=(a\\rho_p\\eta_{c^*}c^*K_n)^{1/(1-n)}` (Pa); only meaningful for n < 1.
+
+    With pressure bands each band's closed form is tried and kept if it lands inside its own band (lowest first); a
+    band gap or overlap falls back to a bracketed root of :math:`\\rho_p\\eta c^*K_n r(p)-p`."""
+    cs = prop.cstar * eta_c
+    if not prop.bands:
+        if prop.n >= 1.0:
+            raise ValueError("equilibrium pressure does not exist for n >= 1 (unstable)")
+        return (prop.a_eff * prop.rho_p * cs * Kn) ** (1.0 / (1.0 - prop.n))
+    nb = len(prop.bands)
+    for k, (lo, hi, a, n) in enumerate(prop.bands):
+        p = (a * prop.temp_factor * prop.rho_p * cs * Kn) ** (1.0 / (1.0 - n))
+        if (k == 0 or p >= lo) and (k == nb - 1 or p < hi):
+            return float(p)
+    f = lambda p: prop.rho_p * cs * Kn * float(prop.rate(p)) - p
+    grid = np.geomspace(1e3, 1e9, 400)
+    v = np.array([f(x) for x in grid])
+    i = np.where(np.sign(v[:-1]) != np.sign(v[1:]))[0]
+    if not i.size:
+        raise ValueError("no equilibrium pressure for this burn law and K_n")
+    return float(brentq(f, grid[i[0]], grid[i[0] + 1], xtol=1e-6))
 
 
 def stability_note(n: float) -> str:
@@ -148,6 +220,13 @@ class SolidMotor:
     p0: float = P_SEA_LEVEL
     R_case: float = 0.06        # grain outer radius (m)
     grains: tuple = ()          # optional stack of :class:`Grain`; empty = one grain from ``prop``/``table``/``L``
+    eta_c: float = 1.0          # c* efficiency (delivered / ideal)
+    alpha_div: float = 0.0      # nozzle divergence half-angle (deg); 0 = no divergence loss
+    eta_F: float = 1.0          # other thrust-coefficient losses (friction, two-phase lag, ...)
+    p_amb: float = P_SEA_LEVEL  # ambient pressure for the thrust (Pa)
+    edot_t: float = 0.0         # throat-diameter growth rate at ``p_ref_t`` (m·s⁻¹); 0 = no erosion
+    p_ref_t: float = 5e6        # reference pressure of the erosion law (Pa)
+    k_t: float = 0.8            # pressure exponent of the erosion law
 
     @classmethod
     def from_grains(cls, grains, **kw) -> "SolidMotor":
@@ -157,6 +236,11 @@ class SolidMotor:
     @property
     def stack(self) -> tuple:
         return self.grains or (Grain(self.prop, self.table, self.L),)
+
+    @property
+    def Ae(self) -> float:
+        """Nozzle exit area (m²), fixed by the initial throat and expansion ratio."""
+        return self.At * self.eps
 
     @cached_property
     def cells(self) -> tuple[np.ndarray, np.ndarray]:
@@ -197,6 +281,30 @@ class SolidMotor:
         return self.cell_x() / self.v_fs
 
 
+def portless_table(R_out: float, L: float) -> SectionTable:
+    """Section table of a grain without a port (end burner): no burning perimeter, the full case area."""
+    return SectionTable(np.array([0.0, L]), np.zeros(2), np.zeros(2), float(np.pi * R_out**2))
+
+
+def segment_burn_area(table: SectionTable, L: float, d, n_seg: int = 1, faces: int = 0):
+    """Burning area of ``n_seg`` identical segments after a burn distance ``d`` (m²), with ``faces`` (0, 1 or 2) end
+    faces per segment uninhibited.  The faces recede at the same rate as the port, so each segment shortens by
+    ``faces * d``: :math:`A_b=N[\\Pi(d)(L-kd)+k(A_{case}-A_p(d))]` (the BATES relation for a circular port)."""
+    d = np.asarray(d, float)
+    Lr = np.maximum(L - faces * d, 0.0)
+    side = table.perim(d) * Lr
+    end = faces * np.maximum(table.A_case - table.area(d), 0.0)
+    return np.where(Lr > 0.0, n_seg * (side + end), 0.0)
+
+
+def segment_web(table: SectionTable, L: float, faces: int = 0) -> float:
+    """Burn distance to burnout of a segment: the port web or half/all the length, whichever comes first."""
+    axial = L / faces if faces else np.inf
+    radial = table.web if float(np.max(table.P)) > 0.0 else np.inf
+    w = min(axial, radial)
+    return float(w if np.isfinite(w) else L)
+
+
 def _grain_slices(m: SolidMotor) -> list[slice]:
     gi = m.cells[0]
     return [slice(int(np.argmax(gi == g)), int(np.argmax(gi == g) + np.sum(gi == g))) for g in range(len(m.stack))]
@@ -210,13 +318,15 @@ def _grain_mass0(g: Grain) -> float:
 
 # ------------------------------------------------------------------------------------------- physics
 def evaluate(m: SolidMotor, t: float, y: np.ndarray) -> dict:
-    """Instantaneous quantities for state ``y = [w_1..w_nc, p_c, V_c, e_head_1..e_head_G, e_aft_1..e_aft_G]``."""
+    """Instantaneous quantities for state ``y = [w_1..w_nc, p_c, V_c, e_head_1..e_head_G, e_aft_1..e_aft_G, D_t]``."""
     nc, st = m.nc, m.stack
     G = len(st)
     gi, dx0 = m.cells
     sl = _grain_slices(m)
     w, p, Vc = y[:nc], y[nc], y[nc + 1]
     e_h, e_a = y[nc + 2:nc + 2 + G], y[nc + 2 + G:nc + 2 + 2 * G]
+    Dt = y[nc + 2 + 2 * G] if len(y) > nc + 2 + 2 * G else m.Dt
+    At = 0.25 * np.pi * Dt * Dt
     Ap, Pb = np.empty(nc), np.empty(nc)
     for g, gr in enumerate(st):
         Ap[sl[g]], Pb[sl[g]] = gr.table.area(w[sl[g]]), gr.table.perim(w[sl[g]])
@@ -279,14 +389,22 @@ def evaluate(m: SolidMotor, t: float, y: np.ndarray) -> dict:
         gam = float(sum(wts[g] * st[g].prop.gamma for g in range(G)))
         cstar = float(np.sqrt(RT) / Gamma(gam))
     rho_c = p / RT
-    dp = RT / Vc * (mgen - rho_c * dVc + mig - p * m.At / cstar)
+    cs_d = cstar * m.eta_c
+    dp = RT / Vc * (mgen - rho_c * dVc + mig - p * At / cs_d)
+    dDt = m.edot_t * (max(p, 0.0) / m.p_ref_t) ** m.k_t if (m.edot_t > 0.0 and mgen > 0.0) else 0.0
+    Gf = np.where(Ap > 1e-12, Gf, 0.0)                         # a port-less (end-burning) grain has no core flow
+    if G > 1:
+        gam_n = float(sum(wts[g] * st[g].prop.g_noz for g in range(G)))
+    else:
+        gam_n = st[0].prop.g_noz
     return dict(w=w, p=p, Vc=Vc, r=r, r0=r0, G=Gf, Ab=Ab, Ap=Ap, Pb=Pb, D=D, mgen=mgen, mig=mig, dp=dp, dVc=dVc,
-                dw=r, lit=lit, RT=RT, cstar=cstar, gamma=gam, de_head=de_h, de_aft=de_a, gen_g=gen_g, f=f)
+                dw=r, lit=lit, RT=RT, cstar=cstar, gamma=gam, gamma_noz=gam_n, de_head=de_h, de_aft=de_a, gen_g=gen_g,
+                f=f, At=At, Dt=Dt, dDt=dDt)
 
 
 def _rhs(t: float, y, m: SolidMotor):
     e = evaluate(m, t, y)
-    return np.concatenate([e["dw"], [e["dp"], e["dVc"]], e["de_head"], e["de_aft"]])
+    return np.concatenate([e["dw"], [e["dp"], e["dVc"]], e["de_head"], e["de_aft"], [e["dDt"]]])
 
 
 def _clip_state(m: SolidMotor, y: np.ndarray) -> None:
@@ -306,7 +424,7 @@ def initial_state(m: SolidMotor) -> np.ndarray:
     nc, G = m.nc, len(m.stack)
     gi, dx0 = m.cells
     Vc0 = float(sum(np.sum(gr.table.area(np.zeros(1)) * dx0[gi == g]) for g, gr in enumerate(m.stack))) + m.V_extra
-    return np.concatenate([np.zeros(nc), [m.p0, Vc0], np.zeros(2 * G)])
+    return np.concatenate([np.zeros(nc), [m.p0, Vc0], np.zeros(2 * G), [m.Dt]])
 
 
 def integrate(m: SolidMotor, t_end: float, n_frames: int = 601, progress: Callable[[float], None] | None = None,
@@ -317,7 +435,7 @@ def integrate(m: SolidMotor, t_end: float, n_frames: int = 601, progress: Callab
     Y = np.empty((len(y), n_frames))
     Y[:, 0] = y
     edges = np.linspace(0, n_frames - 1, n_chunks + 1).astype(int)
-    atol = np.concatenate([np.full(nc, 1e-9), [1e-3, 1e-9], np.full(2 * G, 1e-9)])
+    atol = np.concatenate([np.full(nc, 1e-9), [1e-3, 1e-9], np.full(2 * G, 1e-9), [1e-9]])
     for k in range(n_chunks):
         i0, i1 = edges[k], edges[k + 1]
         if i1 <= i0:
@@ -339,31 +457,47 @@ def integrate(m: SolidMotor, t_end: float, n_frames: int = 601, progress: Callab
 def derived(m: SolidMotor, t, Y) -> dict[str, np.ndarray]:
     nc, st = m.nc, m.stack
     n = len(t)
-    keys = ["Ab", "mgen", "mig", "r_mean", "r_head", "r_aft", "eros_aft", "cstar", "gamma"]
+    keys = ["Ab", "mgen", "mig", "r_mean", "r_head", "r_aft", "eros_aft", "cstar", "gamma", "gamma_noz", "G_max",
+            "J_aft"]
     d = {k: np.empty(n) for k in keys}
     webs = np.array([st[g].table.web for g in m.cells[0]])
     W = np.minimum(Y[:nc], webs[:, None])
     r_x, G_x = np.empty((nc, n)), np.empty((nc, n))
     lit_frac = np.empty(n)
+    Dt = Y[-1] if Y.shape[0] > nc + 2 + 2 * len(st) else np.full(n, m.Dt)
+    At = 0.25 * np.pi * Dt**2
     for i in range(n):
         e = evaluate(m, t[i], np.concatenate([W[:, i], Y[nc:, i]]))
         d["Ab"][i], d["mgen"][i], d["mig"][i] = e["Ab"], e["mgen"], e["mig"]
-        d["cstar"][i], d["gamma"][i] = e["cstar"], e["gamma"]
+        d["cstar"][i], d["gamma"][i], d["gamma_noz"][i] = e["cstar"], e["gamma"], e["gamma_noz"]
         burning = e["r"] > 0
         d["r_mean"][i] = e["r"][burning].mean() * 1e3 if burning.any() else 0.0
         d["r_head"][i], d["r_aft"][i] = e["r"][0] * 1e3, e["r"][-1] * 1e3
         d["eros_aft"][i] = e["r"][-1] / e["r0"][-1] if e["r0"][-1] > 0 else 1.0
         r_x[:, i], G_x[:, i] = e["r"] * 1e3, e["G"]
         lit_frac[i] = float(np.mean(e["r"] > 0))
+        d["G_max"][i] = float(np.max(e["G"]))
+        d["J_aft"][i] = float(e["Ap"][-1]) / At[i]
     p = np.maximum(Y[nc], 0.0)                                # solver noise can leave -1e-3 Pa after tail-off
-    pe_pc = np.array([exit_state(m.eps, g)[1] for g in d["gamma"]])
-    cf = np.array([CF(g, pe, P_SEA_LEVEL / max(pi, 1.0), m.eps) for g, pe, pi in zip(d["gamma"], pe_pc, p)])
-    F = np.maximum(cf * p * m.At, 0.0)
-    out = {"Pc": p / 1e6, "F": F / 1e3, "Ab": d["Ab"], "mdot": p * m.At / d["cstar"], "mdot_gen": d["mgen"],
-           "Vc": Y[nc + 1], "w_mean": W.mean(axis=0) * 1e3, "rdot": d["r_mean"], "rdot_head": d["r_head"],
-           "rdot_aft": d["r_aft"], "erosive_aft": d["eros_aft"], "CF": cf}
-    out["Kn"] = d["Ab"] / m.At
+    eps = m.Ae / At
+    pe_pc = np.array([exit_state(max(e_, 1.0001), g)[1] for e_, g in zip(eps, d["gamma_noz"])])
+    lam = float(divergence_factor(np.radians(m.alpha_div)))
+    cf_v = np.array([CF(g, pe, 0.0, e_) for g, pe, e_ in zip(d["gamma_noz"], pe_pc, eps)])
+    mom = cf_v - pe_pc * eps
+    cf = m.eta_F * (lam * mom + (pe_pc - m.p_amb / np.maximum(p, 1.0)) * eps)
+    cf_vac = m.eta_F * (lam * mom + pe_pc * eps)
+    F = np.maximum(cf * p * At, 0.0)
+    mdot = p * At / (d["cstar"] * m.eta_c)
+    out = {"Pc": p / 1e6, "F": F / 1e3, "F_vac": np.maximum(cf_vac * p * At, 0.0) / 1e3, "Ab": d["Ab"], "mdot": mdot,
+           "mdot_gen": d["mgen"], "Vc": Y[nc + 1], "w_mean": W.mean(axis=0) * 1e3, "rdot": d["r_mean"],
+           "rdot_head": d["r_head"], "rdot_aft": d["r_aft"], "erosive_aft": d["eros_aft"], "CF": cf}
+    out["Kn"] = d["Ab"] / At
     out["lit_frac"] = lit_frac
+    out["Isp"] = np.where(mdot > 1e-6 * max(float(mdot.max()), 1e-12), F / np.maximum(mdot, 1e-12) / G0, np.nan)
+    out["Dt"] = Dt * 1e3
+    out["eps"] = eps
+    out["G_max"] = d["G_max"]
+    out["J_aft"] = d["J_aft"]
     if len(st) > 1:
         out["cstar_eff"], out["gamma_eff"] = d["cstar"], d["gamma"]
     G = len(st)
@@ -377,19 +511,95 @@ def derived(m: SolidMotor, t, Y) -> dict[str, np.ndarray]:
     return out
 
 
+IMPULSE_CLASSES = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def impulse_class(I_t: float) -> str:
+    """Letter class of a total impulse (N·s): A is up to 2.5 N·s and every next letter doubles the upper limit; the
+    percentage says where the motor sits within its class (NAR / Tripoli convention)."""
+    if not I_t > 0:
+        return "–"
+    if I_t <= 0.3125:
+        return "micro"
+    k = max(0, int(np.ceil(np.log2(I_t / 2.5))))
+    if k >= len(IMPULSE_CLASSES):
+        return f">{IMPULSE_CLASSES[-1]}"
+    lo, hi = (0.0 if k == 0 else 2.5 * 2 ** (k - 1)), 2.5 * 2**k
+    return f"{IMPULSE_CLASSES[k]} ({100 * (I_t - lo) / (hi - lo):.0f} %)"
+
+
+def grain_web(g: Grain) -> float:
+    """Distance the grain burns before it is consumed (m): the section's web, or for a port-less grain (end
+    burner) the length over the number of burning end faces."""
+    if float(np.max(g.table.P)) > 0.0:
+        return g.table.web
+    faces = int(g.burn_head) + int(g.burn_aft)
+    return g.L / max(faces, 1)
+
+
+def propellant_volume0(g: Grain) -> float:
+    return max(g.table.A_case - float(g.table.A_p[0]), 0.0) * g.L
+
+
 def summary(m: SolidMotor, t, ch: dict[str, np.ndarray]) -> dict[str, float]:
     F = ch["F"] * 1e3
     It = float(np.trapezoid(F, t))
+    It_vac = float(np.trapezoid(ch["F_vac"] * 1e3, t))
     mprop = float(np.trapezoid(ch["mdot_gen"], t) + m.m_ig)
     above = np.where(ch["Pc"] >= 0.1 * ch["Pc"].max())[0]
     tb = float(t[above[-1]] - t[above[0]]) if above.size > 1 else 0.0
     st = m.stack
     same = all(g.prop == st[0].prop for g in st)
-    n_max = max(g.prop.n for g in st)
-    return {"I_t_Ns": It, "Isp_avg": It / (mprop * 9.80665) if mprop > 0 else float("nan"), "m_prop": mprop,
-            "Pc_max_MPa": float(ch["Pc"].max()), "F_max_kN": float(ch["F"].max()), "t_burn": tb,
-            "Pc_eq_MPa": (float(p_equilibrium(m.prop, float(ch["Kn"].max())) / 1e6)
-                          if same and m.prop.n < 1 else float("nan")),
-            "Kn_max": float(ch["Kn"].max()), "web_mm": max(g.table.web for g in st) * 1e3,
+    n_max = max(g.prop.n_max for g in st)
+    sel = slice(above[0], above[-1] + 1) if above.size > 1 else slice(None)
+    V_prop = sum(propellant_volume0(g) for g in st)
+    V_free = float(sum(g.table.A_p[0] * g.L for g in st)) + m.V_extra
+    m_load = sum(g.prop.rho_p * propellant_volume0(g) for g in st)
+    try:
+        pc_eq = float(p_equilibrium(m.prop, float(ch["Kn"][sel].max()), m.eta_c) / 1e6) if same else float("nan")
+    except ValueError:
+        pc_eq = float("nan")
+    J0 = float(ch["J_aft"][0])
+    Ab_geo0 = sum(float(segment_burn_area(g.table, g.L, 0.0, 1, int(g.burn_head) + int(g.burn_aft))) for g in st)
+    return {"I_t_Ns": It, "I_t_vac_Ns": It_vac, "Isp_avg": It / (mprop * G0) if mprop > 0 else float("nan"),
+            "Isp_vac_avg": It_vac / (mprop * G0) if mprop > 0 else float("nan"), "m_prop": mprop,
+            "m_loaded": m_load, "Pc_max_MPa": float(ch["Pc"].max()),
+            "Pc_avg_MPa": float(np.mean(ch["Pc"][sel])) if tb > 0 else float("nan"),
+            "F_max_kN": float(ch["F"].max()), "F_avg_kN": It / tb / 1e3 if tb > 0 else float("nan"), "t_burn": tb,
+            "Pc_eq_MPa": pc_eq, "Kn_max": float(ch["Kn"].max()), "Kn_0": Ab_geo0 / m.At,
+            "web_mm": max(grain_web(g) for g in st) * 1e3,
             "erosive_peak": float(np.max(ch["erosive_aft"])), "note": stability_note(n_max),
-            "n_grains": len(st), "mixed": not same}
+            "n_grains": len(st), "mixed": not same, "impulse_class": impulse_class(It),
+            "port_throat_0": J0, "G_max": float(np.max(ch["G_max"])),
+            "vol_loading": V_prop / max(V_prop + V_free, 1e-12), "L_over_D": m.L / (2.0 * m.R_case),
+            "Dt_end_mm": float(ch["Dt"][-1]), "port_choked": bool(J0 < 1.0 and J0 > 0.0)}
+
+
+def eng_text(t, F_N, name: str, diameter_mm: float, length_mm: float, m_prop: float, m_total: float | None = None,
+             maker: str = "PropSim", n_pts: int = 32) -> str:
+    """Thrust curve in the RASP ``.eng`` text format used by rocket flight simulators.
+
+    Header ``name diameter length delays propellant-mass total-mass maker`` (mm, kg), then ``time thrust`` pairs (s,
+    N) from first thrust to burnout ending at zero thrust.  The curve is resampled to ``n_pts`` points placed where the
+    thrust changes most, so the impulse is kept to within the trapezoid error."""
+    t, F = np.asarray(t, float), np.maximum(np.asarray(F_N, float), 0.0)
+    on = np.where(F > 0.01 * F.max())[0] if F.max() > 0 else np.array([], int)
+    if on.size < 2:
+        raise ValueError("no thrust to export")
+    i0, i1 = on[0], min(on[-1] + 1, len(t) - 1)
+    ts, Fs = t[i0:i1 + 1] - t[i0], F[i0:i1 + 1].copy()
+    Fs[-1] = 0.0
+    # pick points by cumulative |dF| + time so steep parts get more points; always keep the ends
+    s = np.concatenate([[0.0], np.cumsum(np.abs(np.diff(Fs)) / max(Fs.max(), 1e-12) + np.diff(ts) / max(ts[-1], 1e-12))])
+    idx = np.unique(np.searchsorted(s, np.linspace(0.0, s[-1], n_pts)).clip(0, len(ts) - 1))
+    idx = np.unique(np.concatenate([[0], idx, [len(ts) - 1]]))
+    tsel, Fsel = ts[idx], Fs[idx]
+    if tsel[0] == 0.0:                                      # the format starts at the first positive time
+        tsel[0] = min(1e-3, 0.5 * tsel[1])
+    clean = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name) or "PropSim"
+    mt = m_total if m_total is not None else m_prop
+    lines = [f"; {clean} exported by PropSim (predicted, not measured)",
+             f"; total impulse {np.trapezoid(Fsel, tsel):.1f} N-s, burn time {tsel[-1]:.3f} s",
+             f"{clean} {diameter_mm:.0f} {length_mm:.0f} 0 {m_prop:.4f} {mt:.4f} {maker}"]
+    lines += [f"   {a:.4f} {b:.2f}" for a, b in zip(tsel, Fsel)]
+    return "\n".join(lines) + "\n"
