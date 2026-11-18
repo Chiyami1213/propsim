@@ -16,5 +16,10 @@ New changes go above this line, newest first.
   simulation, Hall discharge, low-thrust Edelbaum spiral.
 - All math in LaTeX; every plot has a grid; dockable panels with a restorable default layout.
 - Five color themes (Graphite, Ocean, Forest, Plum, Light) with a palette picker that collapses to names when narrow.
+- Vehicle: staging and atmosphere budget; point-mass ascent with the U.S. Standard Atmosphere 1976, staging, wind,
+  drag curves or a drag table, level-off guidance, and thrust profiles sent from hybrid, solid and liquid runs.
+- Panels with drag grips and close buttons, a View > Panels menu and a restorable default layout; guided tutorial
+  navigated with the arrow keys; solid scrollbars; crisp text at fractional display scaling.
+- Reports (HTML, PDF, LaTeX tables with figures) and a user guide.
 - Export to PNG, CSV, MATLAB `.mat`, HDF5, and runnable Python and MATLAB scripts.
 - Windows installer with a system-requirements page and a link to the online help.
