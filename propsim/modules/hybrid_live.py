@@ -370,5 +370,5 @@ def draw_section_slab(vp, dist: np.ndarray, inside: np.ndarray, h: float, web_ma
     if not getattr(vp, "_slab_view_set", False):
         vp.reset_view(position="iso", zoom=1.0)
     vp._slab_view_set = True
-    vp.set_colorbar(cmap, 0.0, 1.0, r"$rac{d}{w_{max}}$ (–)")
+    vp.set_colorbar(cmap, 0.0, 1.0, r"$\frac{d}{w_{max}}$ (–)")
     vp.render()
