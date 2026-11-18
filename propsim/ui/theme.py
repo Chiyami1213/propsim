@@ -73,19 +73,20 @@ class _Theme(QObject):
 theme = _Theme()
 
 
-def arrow_png(color: str) -> str:
+def arrow_png(color: str, up: bool = False) -> str:
     """Path (forward slashes, for ``url()``) of a plain down-pointing chevron in ``color``: the combo box arrow, drawn
     flat instead of the native raised button.  Written once per color to the temporary folder."""
     folder = Path(tempfile.gettempdir()) / "propsim_arrows"
     folder.mkdir(parents=True, exist_ok=True)
-    f = folder / f"down_{color.lstrip('#')}.png"
+    f = folder / f"{'up' if up else 'down'}_{color.lstrip('#')}.png"
     if not f.is_file():
         img = QImage(20, 20, QImage.Format_ARGB32)
         img.fill(Qt.transparent)
         p = QPainter(img)
         p.setRenderHint(QPainter.Antialiasing)
         p.setPen(QPen(QColor(color), 2.0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        p.drawPolyline([QPointF(4.5, 7.0), QPointF(10.0, 12.5), QPointF(15.5, 7.0)])
+        pts = [QPointF(4.5, 12.5), QPointF(10.0, 7.0), QPointF(15.5, 12.5)] if up else [QPointF(4.5, 7.0), QPointF(10.0, 12.5), QPointF(15.5, 7.0)]
+        p.drawPolyline(pts)
         p.end()
         img.save(str(f))
     return f.as_posix()
@@ -133,6 +134,14 @@ QLabel#badge {{ border: 1.5px solid {t['accent']}; border-radius: 6px; padding: 
 QLabel#badge[mode="run"] {{ border-color: {t['ok']}; color: {t['ok']}; background: rgba(92,201,122,0.12); }}
 QComboBox {{ background: {t['btn']}; border: 1px solid {t['edge']}; border-radius: 5px; padding: 2px 6px;
             color: {t['dim']}; }}
+QSpinBox, QDoubleSpinBox {{ background: {t['btn']}; border: 1px solid {t['edge']}; border-radius: 5px; padding: 2px 6px;
+                           color: {t['text']}; }}
+QSpinBox::up-button, QDoubleSpinBox::up-button, QSpinBox::down-button, QDoubleSpinBox::down-button {{
+    subcontrol-origin: border; width: 20px; border: none; background: transparent; }}
+QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-position: top right; }}
+QSpinBox::down-button, QDoubleSpinBox::down-button {{ subcontrol-position: bottom right; }}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{ image: url({arrow_png(t['dim'], True)}); width: 10px; height: 10px; }}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{ image: url({arrow_png(t['dim'])}); width: 10px; height: 10px; }}
 QComboBox::drop-down {{ border: none; background: transparent; width: 24px; }}
 QComboBox::down-arrow {{ image: url({arrow_png(t['dim'])}); width: 10px; height: 10px; }}
 QComboBox QAbstractItemView {{ background: {t['panel']}; selection-background-color: {t['select_bg']}; }}

@@ -40,21 +40,24 @@ class GrainDesignerHybridTool:
 
 TOOL_KEYS = (CycleSandboxTool.key, GrainDesignerSolidTool.key, GrainDesignerHybridTool.key)
 # Live models that the grain designer window hosts: not in the tree, still reachable by key
-EXTRA: dict[str, type[ModelController]] = {SolidGrainLiveModel.key: SolidGrainLiveModel, PortLiveModel.key: PortLiveModel}
+# (also the models the designers replaced: the injector and jacket are components of the liquid engine designer, the
+# burn rate and K_n curves are a tab of the solid grain designer)
+EXTRA: dict[str, type[ModelController]] = {
+    SolidGrainLiveModel.key: SolidGrainLiveModel, PortLiveModel.key: PortLiveModel, InjectorLiveModel.key: InjectorLiveModel,
+    RegenLiveModel.key: RegenLiveModel, BurnRateLiveModel.key: BurnRateLiveModel}
 
 # module -> list of (label, mode, controller class or None when planned). Labels are plain text (Qt tree). Mode
 # "tool" entries open their own window instead of loading a model.
 TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
     "Common": [("Thermochemistry & nozzle", "live", EngineLiveModel)],
-    "Liquid": [("Injector & chamber", "live", InjectorLiveModel), ("Regenerative cooling", "live", RegenLiveModel),
-               ("Feed network transient", "run", FeedTransientModel), ("Pump-fed cycles", "run", CycleModel),
+    "Liquid": [("Feed network transient", "run", FeedTransientModel), ("Pump-fed cycles", "run", CycleModel),
                ("Chugging & L* stability", "run", ChuggingModel), ("Cycle sandbox", "tool", CycleSandboxTool)],
     "Hybrid": [("Nozzle thrust coefficient", "live", NozzleLiveModel), ("Regression laws", "live", RegressionLiveModel),
                ("Grain designer", "tool", GrainDesignerHybridTool),
                ("Core flow fields", "live", FlowLiveModel), ("Fuel & oxidizer", "live", FuelLiveModel),
                ("Instability & scaling", "live", StabilityLiveModel), ("0-D burn", "run", HybridBurnModel),
                ("Quasi-1D burn", "run", HybridBurn1DModel), ("N₂O blowdown", "run", N2OBlowdownModel), ("ILFI stability", "run", None)],
-    "Solid": [("Grain designer", "tool", GrainDesignerSolidTool), ("Burn rate & K_n", "live", BurnRateLiveModel),
+    "Solid": [("Grain designer", "tool", GrainDesignerSolidTool), 
               ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel),
               ("CP motor (quasi-steady)", "run", CPMotorModel), ("CP motor (US units)", "run", CPMotorUSModel)],
     "Electric": [("Mission & power trades", "live", TradesLiveModel), ("Electrothermal thrusters", "live", ThermalLiveModel),

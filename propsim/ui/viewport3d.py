@@ -324,6 +324,11 @@ class Viewport3D(QWidget):
         self.colorbar.setFixedSize(90, int(max(80, min(205, h - 24))))         # never taller than the view
         self.colorbar.move(18, h - self.colorbar.height() - 12)
         self.legend.move(w - self.legend.width() - 14, h - self.legend.height() - 12)
+        # with no room the legend would sit on the readout card or the color bar: show it only when it fits
+        fits = (self.legend.y() > self.readout.geometry().bottom() + 6 and
+                not (self.colorbar.isVisible() and self.colorbar.geometry().right() + 6 > self.legend.x() and
+                     self.colorbar.geometry().bottom() > self.legend.y()))
+        self.legend.setVisible(bool(self.legend._rows) and self._legend_on and fits)
         self.readout.raise_()
         self.colorbar.raise_()
         self.legend.raise_()

@@ -15,7 +15,7 @@ import math
 
 import numpy as np
 from PySide6.QtCore import QTimer, QObject, QPointF, QRectF, Qt, QThread, Signal
-from PySide6.QtGui import QAction, QBrush, QColor, QFont, QKeySequence, QLinearGradient, QPainter, QPainterPath, QPen
+from PySide6.QtGui import QAction, QBrush, QColor, QFont, QFontMetricsF, QKeySequence, QLinearGradient, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QGraphicsItem, QGraphicsPathItem, QGraphicsScene, QGraphicsView, QHBoxLayout,
                                QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
@@ -36,6 +36,7 @@ MEDIUM_COLORS = {"ox": "#ff9d3c", "fuel": "#5cc97a", "gas": "#ff5a3c", "shaft": 
 COLOR_BY = {"Propellant": None, "Pressure (MPa)": "p", "Temperature (K)": "T", "Mass flow (kg/s)": "mdot"}
 # display units for parameters (SI value * factor = shown value)
 DISPLAY = {"Pa": ("MPa", 1e-6), "rad/s": ("rpm", 30.0 / math.pi), "W": ("kW", 1e-3)}
+AMBIENT_PRESETS = {"Vacuum": 0.0, "Sea level": 101.325}
 SUMMARY = {  # one-line state on the node after a solve: (output, label, factor, unit, digits)
     "tank_regulated": [("mdot", "ṁ", 1, "kg/s", 1)], "tank_blowdown": [("mdot", "ṁ", 1, "kg/s", 1)],
     "pump_centrifugal": [("dp", "Δp", 1e-6, "MPa", 2), ("power", "P", 1e-6, "MW", 2), ("speed", "N", 30 / math.pi,
@@ -178,8 +179,10 @@ class NodeItem(QGraphicsItem):
         f.setBold(True)
         p.setFont(f)
         p.setPen(ink)
-        p.drawText(QRectF(6, 2, NODE_W - 70, 18), Qt.AlignVCenter | Qt.AlignLeft,
-                   self.node.get("label") or self.node["id"])
+        n_bub = len(INSTRUMENTS.get(self.node["type"], [])[:2])
+        room = NODE_W - 12 - 26 * n_bub                             # the bubbles take the right end of the title row
+        title = QFontMetricsF(p.font()).elidedText(self.node.get("label") or self.node["id"], Qt.ElideRight, room)
+        p.drawText(QRectF(6, 2, room + 4, 20), Qt.AlignVCenter | Qt.AlignLeft, title)
         f.setBold(False)
         f.setPointSizeF(7.4)
         p.setFont(f)
@@ -210,7 +213,8 @@ class NodeItem(QGraphicsItem):
             p.setFont(f)
             y = self.h - 12.0 * len(self.state) - 4
             for line in self.state:
-                p.drawText(QRectF(8, y, NODE_W - 16, 12), Qt.AlignLeft | Qt.AlignVCenter, line)
+                p.drawText(QRectF(8, y - 1, NODE_W - 12, 15), Qt.AlignLeft | Qt.AlignVCenter,
+                           QFontMetricsF(p.font()).elidedText(line, Qt.ElideRight, NODE_W - 16))
                 y += 12.0
 
     def itemChange(self, change, value):
@@ -380,6 +384,7 @@ class Canvas(QGraphicsView):
         self.scene().setSceneRect(-4000, -4000, 8000, 8000)
         self.setRenderHints(QPainter.Antialiasing | QPainter.TextAntialiasing)
         self.setDragMode(QGraphicsView.RubberBandDrag)
+        self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)       # no trails when a component is dragged
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setAcceptDrops(True)
         self.graph: dict = E.blank_graph()
@@ -814,6 +819,27 @@ class CycleSandbox(QMainWindow):
         theme.changed.connect(lambda *_: self._style())
         self.load_template("gg_kerolox")
 
+    def make_design(self):
+        import copy
+        from .. import design as D
+        g = self.doc["graph"]
+        return D.Design("liquid", g.get("name", "liquid engine"), copy.deepcopy(self.doc), g.get("graph_id", "user"))
+
+    def use_in_analysis(self) -> None:
+        main = self.parent()
+        if main is not None and hasattr(main, "set_design"):
+            main.set_design(self.make_design())
+
+    def _ambient_preset(self, name: str) -> None:
+        if name in AMBIENT_PRESETS:
+            self.pa_box.setValue(AMBIENT_PRESETS[name])
+
+    def _sync_ambient_preset(self, kpa: float) -> None:
+        name = next((k for k, v in AMBIENT_PRESETS.items() if abs(v - kpa) < 1e-3), "Custom")
+        self.amb_preset.blockSignals(True)
+        self.amb_preset.setCurrentText(name)
+        self.amb_preset.blockSignals(False)
+
     def _show_guide(self) -> None:
         self.dock_guide.show()
         self.dock_guide.raise_()
@@ -898,15 +924,25 @@ class CycleSandbox(QMainWindow):
                 self.ox_box.addItem(fid)
             if "fuel" in r["role"]:
                 self.fu_box.addItem(fid)
+        for box in (self.ox_box, self.fu_box):
+            for i in range(box.count()):
+                r = fl[box.itemText(i)]
+                box.setItemData(i, f"{r['name']} ({r['formula']}); {r['role'].replace(';', ', ')}", Qt.ToolTipRole)
         tb.addWidget(self.ox_box)
         tb.addWidget(QLabel(" Fuel "))
         tb.addWidget(self.fu_box)
         self.ox_box.currentTextChanged.connect(lambda v: self._propellant("oxidizer", v))
         self.fu_box.currentTextChanged.connect(lambda v: self._propellant("fuel", v))
-        tb.addWidget(QLabel(" Ambient (kPa) "))
+        tb.addWidget(QLabel(" Ambient "))
+        self.amb_preset = QComboBox()
+        self.amb_preset.addItems(["Custom", "Vacuum", "Sea level"])
+        self.amb_preset.setToolTip("ambient pressure the nozzle exhausts into: vacuum (0 kPa) or sea level (101.325 kPa)")
+        self.amb_preset.currentTextChanged.connect(self._ambient_preset)
+        tb.addWidget(self.amb_preset)
+        tb.addWidget(QLabel(" (kPa) "))
         self.pa_box = QDoubleSpinBox()
         self.pa_box.setRange(0.0, 200.0)
-        self.pa_box.setDecimals(2)
+        self.pa_box.setDecimals(3)
         self.pa_box.valueChanged.connect(self._ambient)
         tb.addWidget(self.pa_box)
         tb.addSeparator()
@@ -915,6 +951,10 @@ class CycleSandbox(QMainWindow):
         self.solve_btn.setShortcut("Ctrl+R")
         self.solve_btn.clicked.connect(self.solve)
         tb.addWidget(self.solve_btn)
+        use = QPushButton("Use in Analysis")
+        use.setToolTip("make this engine the active design: the liquid analysis modules start from it")
+        use.clicked.connect(self.use_in_analysis)
+        tb.addWidget(use)
         guide = QPushButton("Build Guide")
         guide.clicked.connect(self._show_guide)
         tb.addWidget(guide)
@@ -1014,6 +1054,7 @@ class CycleSandbox(QMainWindow):
             pa = next((b["value"]["value"] for b in g.get("boundary_conditions", [])
                        if b["kind"] == "ambient_pressure"), 0.0)
             self.pa_box.setValue(pa / 1e3)
+            self._sync_ambient_preset(pa / 1e3)
             self.canvas.set_graph(g)
             self.sol = None
             self.canvas.show_results(None, None)
@@ -1176,8 +1217,26 @@ class CycleSandbox(QMainWindow):
             for j, it in enumerate((it0, itv, itu, its)):
                 t.setItem(i, j, it)
         t.itemChanged.connect(lambda it, node=node, spec=spec, t=t: self._edit_param(node, spec, t, it))
-        self.insp_layout.addWidget(t, 2)
-        self.insp_layout.addWidget(self._state_box(node), 3)
+        t.setMouseTracking(True)
+        t.setMinimumHeight(240)
+        t.itemEntered.connect(lambda it, spec=spec, node=node: self._hint_for(it, spec, node))
+        self.insp_layout.addWidget(t, 5)
+        self.hint_box = QLabel("hover over a parameter for what it means")
+        self.hint_box.setObjectName("hoverbox")
+        self.hint_box.setWordWrap(True)
+        self.hint_box.setMinimumHeight(48)
+        self.insp_layout.addWidget(self.hint_box)
+        self.insp_layout.addWidget(self._state_box(node), 2)
+
+    def _hint_for(self, it, spec: dict, node: dict) -> None:
+        """Helper box: what the parameter under the mouse is, its unit and range, and where its value comes from."""
+        if it.column() not in (0, 1, 2, 3) or it.row() >= len(spec["parameters"]) or not hasattr(self, "hint_box"):
+            return
+        prm = spec["parameters"][it.row()]
+        val, prov, default = E.param_value(node, prm["name"])
+        lo, hi = prm.get("min"), prm.get("max")
+        rng = f" · range {lo:g} to {hi:g} {prm['unit']}" if lo is not None and hi is not None else ""
+        self.hint_box.setText(f"{prm['name']}: {prm.get('meaning', '').lower()} ({prm['unit']}){rng} · {prov or 'required'}")
 
     def _state_box(self, node: dict) -> QWidget:
         t = QTableWidget(0, 2)

@@ -140,6 +140,15 @@ reopens your previous model and parameters.
 **View, Color Theme** (F10) lists Graphite, Ocean, Forest, Plum and Light with their palettes; the picker
 shows only the names when its window is narrow. The choice is remembered.
 
+## Designs and analysis
+
+Build the engine or motor first, then test it. The **Design** menu opens the liquid engine designer (cycle sandbox) and
+the solid and hybrid grain designers. **Use in Analysis** makes the current design the active one; opening an analysis
+module of the same kind (Liquid: feed transient, pump-fed cycles, chugging; Solid: ballistics, burnback, CP motor;
+Hybrid: the burns) then starts from the design's values, limited to the module's slider range (the log says which).
+**File, Open Design** reopens a saved grain design; **Analysis, Use Active Design in This Module** reloads the open
+module, and **Clear Active Design** goes back to the module defaults. Nuclear and electric designers are planned.
+
 ## Preferences
 
 **Edit, Preferences** (F9) has two pages. *Appearance* sets the color theme and whether the 3D view shows the

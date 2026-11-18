@@ -76,6 +76,7 @@ class MainWindow(QMainWindow):
         migrated = storage.migrate_legacy(self.home) if home is None else 0
         gc_guard.install(parent=self)                      # cyclic GC only between events, never inside a paint
         self.use_settings = use_settings
+        self.design = None                                 # the active design the analysis modules start from
         self.bindings: dict[str, tuple[QAction, str]] = {}      # command -> (action, default shortcut)
         self.confirm_close = False                         # the app entry point turns this on
         self._layout_restored = False
@@ -217,6 +218,7 @@ class MainWindow(QMainWindow):
         self._act(f, "Open case", self.open_case, QKeySequence.Open)
         self._act(f, "Save case", self.save_case, QKeySequence.Save)
         self._act(f, "Open result", self.open_result)
+        self._act(f, "Open design", self.open_design)
         self._act(f, "Screenshot", self.take_screenshot, "F2")
         f.addSeparator()
         self._act(f, "Restore last session", self.restore_session)
@@ -254,6 +256,9 @@ class MainWindow(QMainWindow):
         s = mb.addMenu("&Analysis")                        # test and analyze a design with the analysis modules
         self._act(s, "Run", self.start_run, "Ctrl+R")
         self._act(s, "Cancel", self.cancel_run, "Esc")
+        s.addSeparator()
+        self._act(s, "Use active design in this module", self.apply_design)
+        self._act(s, "Clear active design", self.clear_design)
         s.addSeparator()
         va = s.addMenu(apa("Validation"))
         self._act(va, "Run reference + core tests", self.run_validation)
@@ -340,6 +345,47 @@ class MainWindow(QMainWindow):
             return None
         self._log(f"screenshot saved: {path}")
         return path
+
+    # ---- designs ---------------------------------------------------------------------------------------
+    def set_design(self, design) -> None:
+        """Make ``design`` the active one: analysis modules of its kind start from it when they are opened."""
+        self.design = design
+        self._log(f"active design: {design.name} ({design.kind}); open an analysis module to use it")
+        self._sync_title()
+
+    def clear_design(self) -> None:
+        self.design = None
+        self._log("no active design: analysis modules use their own defaults")
+        self._sync_title()
+
+    def apply_design(self) -> None:
+        """Reload the open analysis module from the active design."""
+        from .. import design as D
+        if self.ctrl is not None and D.applies_to(self.design, self.ctrl.key):
+            self.select_model(self.ctrl.key, None)
+        else:
+            self._log("the active design does not apply to this module")
+
+    def open_design(self, path: str | None = None) -> None:
+        """Open a saved design, make it active and show it in its designer."""
+        from .. import design as D
+        if not path:
+            path, _ = QFileDialog.getOpenFileName(self, "Open Design", str(self.home / "designs"),
+                                                  "PropSim design (*.psimdesign.json)")
+        if not path:
+            return
+        try:
+            d = D.Design.load(path)
+        except (ValueError, OSError, KeyError) as e:
+            self._log(f"cannot open design: {e}")
+            return
+        self.set_design(d)
+        if d.kind == "liquid":
+            self.open_cycle_sandbox()
+            self.sandbox.set_doc(d.data)
+        elif d.kind in ("solid", "hybrid"):
+            self.open_grain_designer(d.kind)
+            self.grain_win.load_design(d)
 
     def toggle_full_screen(self) -> None:
         """F11: full-screen mode on and off (the window keeps its normal size and place for the way back)."""
@@ -436,6 +482,14 @@ class MainWindow(QMainWindow):
         self.active_run = None
         self._stale_noted = False
         self.playback.set_range(0, 1.0)
+        if params is None:
+            from .. import design as D
+            up, clamped = D.fit(D.updates(self.design, key), ctrl.Params)
+            if up:
+                params = up
+                self._log(f"{ctrl.title}: parameters taken from the design '{self.design.name}'")
+                if clamped:
+                    self._log("outside this module's slider range, limited: " + ", ".join(clamped))
         base = ctrl.Params(**params) if params else None
         self.form = ParamForm(ctrl.Params, base)
         self._prev_values = self.form.values().model_dump()
@@ -477,7 +531,8 @@ class MainWindow(QMainWindow):
 
     def _sync_title(self) -> None:
         mod = MODULE_TITLES.get(self.ctrl.module, self.ctrl.module) if self.ctrl else ""
-        self.setWindowTitle(f"PropSim — {apa(mod)} · Case: {self.case_name}")
+        design = f" · Design: {self.design.name}" if getattr(self, "design", None) else ""
+        self.setWindowTitle(f"PropSim — {apa(mod)} · Case: {self.case_name}{design}")
 
     # =================================================================== Live mode
     def _on_params_changed(self) -> None:

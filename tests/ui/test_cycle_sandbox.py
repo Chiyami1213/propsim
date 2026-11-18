@@ -271,3 +271,20 @@ def test_turbine_spins_and_particles_flow_in_the_3d_model(qapp):
     after = np.array(w.view3d._rotors[0][0].points)
     assert not np.allclose(before, after)                     # the rotor turned
     assert "flow" in w.view3d.vp.plotter.actors
+
+
+def test_ambient_presets_and_helper_box(qapp):
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.amb_preset.setCurrentText("Vacuum")
+    assert w.pa_box.value() == 0.0
+    w.amb_preset.setCurrentText("Sea level")
+    assert abs(w.pa_box.value() - 101.325) < 1e-3
+    w.pa_box.setValue(50.0)
+    w._sync_ambient_preset(50.0)
+    assert w.amb_preset.currentText() == "Custom"
+    nid = next(n["id"] for n in w.doc["graph"]["nodes"] if n["type"] == "tank_regulated")
+    w.inspect(nid)
+    assert hasattr(w, "hint_box")
+    from PySide6.QtCore import Qt
+    assert w.ox_box.itemData(0, Qt.ToolTipRole)

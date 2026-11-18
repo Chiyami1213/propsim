@@ -109,3 +109,20 @@ def test_preferences_is_f9_and_targets_show_units(qapp, tmp_path):
     w = _win(tmp_path)
     assert w.bindings["Edit: Preferences"][1] == "F9"
     assert output_unit("p_c") == "Pa" and output_unit("thrust") == "N" and output_unit("mixture_ratio") == "–"
+
+
+def test_active_design_feeds_the_analysis_modules(qapp, tmp_path):
+    from propsim import design as D
+    w = _win(tmp_path)
+    w.set_design(D.Design("solid", "my grain", {"R_out": 55.0, "L_g": 0.9}))
+    w.select_model("solid.ballistics")
+    v = w.form.values()
+    assert v.R_out == 55.0 and v.L_g == 0.9
+    w.select_model("hybrid.burn0d")                            # a solid design does not touch a hybrid module
+    assert w.form.values().R_p0 == 25.0
+    w.clear_design()
+    assert w.design is None
+    # the Design and Analysis menus exist and Validation sits under Analysis
+    names = list(w.bindings)
+    assert any(n.startswith("Design:") for n in names) and "Analysis: Run" in names
+    assert any(n.startswith("Validation:") for n in names)

@@ -57,6 +57,16 @@ class GrainDesigner(QMainWindow):
         self.mode_box.currentIndexChanged.connect(lambda _: self.set_mode(self.mode_box.currentData()))
         tb.addWidget(self.mode_box)
         tb.addSeparator()
+        use = QPushButton("Use in Analysis")
+        use.setToolTip("make this the active design: the solid or hybrid analysis modules start from it")
+        use.clicked.connect(self.use_in_analysis)
+        tb.addWidget(use)
+        save = QPushButton("Save Design")
+        save.clicked.connect(self.save_design)
+        tb.addWidget(save)
+        opn = QPushButton("Open Design")
+        opn.clicked.connect(self.open_design)
+        tb.addWidget(opn)
         send = QPushButton("Open in Main Window")
         send.clicked.connect(self.open_in_main)
         tb.addWidget(send)
@@ -118,6 +128,38 @@ class GrainDesigner(QMainWindow):
         self.ctrl.update_scene(self.vp, p, r, None)
         self.vp.set_readout(self.ctrl.readout(p, r, None))
         self.vp.set_caption(self.ctrl.caption(p, r, None))
+
+    # ---- designs ------------------------------------------------------------------------------------------
+    def make_design(self):
+        from .. import design as D
+        return D.Design(self.mode, f"{MODES[self.mode][0]} grain design", self.form.values().model_dump(), "user")
+
+    def load_design(self, d) -> None:
+        """Show a saved design (its kind picks solid or hybrid)."""
+        if d.kind != self.mode:
+            self.mode_box.setCurrentIndex(self.mode_box.findData(d.kind))
+        keep = set(self.ctrl.Params.model_fields)
+        self.form.set_values({k: v for k, v in d.data.items() if k in keep})
+        self.refresh()
+
+    def use_in_analysis(self) -> None:
+        if self.main is not None:
+            self.main.set_design(self.make_design())
+
+    def save_design(self) -> None:
+        from PySide6.QtWidgets import QFileDialog
+        home = self.main.home if self.main is not None else None
+        start = str((home / "designs") if home else "") + f"/{self.mode}_grain"
+        path, _ = QFileDialog.getSaveFileName(self, "Save Design", start, "PropSim design (*.psimdesign.json)")
+        if path:
+            d = self.make_design()
+            d.save(path)
+            if self.main is not None:
+                self.main.set_design(d)
+
+    def open_design(self) -> None:
+        if self.main is not None:
+            self.main.open_design()
 
     def open_in_main(self) -> None:
         """Select the matching Live model in the main window with these parameters."""
