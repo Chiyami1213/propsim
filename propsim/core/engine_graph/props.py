@@ -113,6 +113,18 @@ class Props:
         except ValueError:
             return T_hint
 
+    def rho_at(self, p: float, h: float, T_hint: float) -> float:
+        """Density alone at ``(p, h)``: the hot path of the solver, so no transport properties are evaluated."""
+        if self.incompressible:
+            return self.rho_ref
+        import CoolProp.CoolProp as CP
+        st = self._st()
+        try:
+            st.update(CP.HmassP_INPUTS, h, max(p, 1e3))
+            return st.rhomass() * self.rho_scale
+        except ValueError:
+            return self.at(p, h, T_hint)["rho"]
+
     def at(self, p: float, h: float, T_hint: float) -> dict[str, float]:
         """``T, rho, mu, cp, k, phase`` (``phase``: liquid, gas or supercritical) and ``s`` at ``(p, h)``."""
         if self.incompressible:
@@ -126,7 +138,10 @@ class Props:
             try:
                 st.update(CP.PT_INPUTS, p, float(np.clip(T_hint, st.Tmin() + 0.5, st.Tmax() - 1.0)))
             except ValueError:
-                st.update(CP.PT_INPUTS, max(p, 2e5), st.Tmin() + 2.0)
+                try:
+                    st.update(CP.PT_INPUTS, max(p, 2e5), st.Tmin() + 2.0)
+                except ValueError:                       # far outside the fluid's range (a diverging iterate)
+                    st.update(CP.PT_INPUTS, float(np.clip(p, 2e5, 0.5 * st.pmax())), st.Tmin() + 2.0)
         T = st.T()
         try:
             mu, k = st.viscosity(), st.conductivity()
@@ -190,7 +205,7 @@ def liquid_state(fid: str, p: float, T: float, ox_frac: float) -> State:
 def density(s: State, p: float) -> float:
     if s.kind == "gas":
         return max(p, 1e3) / (s.R * s.T)
-    return props(s.fluid).at(p, s.h, s.T)["rho"]
+    return props(s.fluid).rho_at(p, s.h, s.T)
 
 
 def as_gas(s: State, p: float) -> tuple[float, float, float]:

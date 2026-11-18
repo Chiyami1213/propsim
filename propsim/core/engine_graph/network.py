@@ -88,6 +88,8 @@ class Network:
             raise GraphError(f"design mode needs as many free parameters as targets ({len(self.free)} free, "
                              f"{len(self.targets)} targets)")
         self._free_val: dict[tuple[str, str], float] = {}
+        self.overrides: dict[tuple[str, str], float] = {}   # time-dependent values set by the transient (tank p, ...)
+        self.speed_set: list[float] | None = None          # transient: shaft speeds held, not balanced
         self._build_topology()
         self.models: dict[str, Model] = {nid: MODELS[n["type"]](self, nid) for nid, n in self.nodes.items()}
         self._layout()
@@ -95,6 +97,8 @@ class Network:
     # ------------------------------------------------------------------------------------------------ parameters
     def param(self, nid: str, name: str, default=None):
         key = (nid, name)
+        if key in self.overrides:
+            return self.overrides[key]
         if key in self._free_val:
             return self._free_val[key]
         n = self.nodes[nid]
@@ -376,6 +380,7 @@ class Network:
         ok = ok or res < 1e-5
         msg = "converged" if ok else f"not converged (largest residual {res:.2e})"
         self.x = x
+        self.ev = ev
         return self._solution(ev, ok, msg, res, it + 1, warnings)
 
     def signs(self) -> np.ndarray:
@@ -619,7 +624,11 @@ class _Eval:
                 except (ValueError, ZeroDivisionError):
                     P += 1e9
             if k < len(r):
-                r[k] = P / net.P_ref
+                if net.speed_set is not None:          # transient: the speed is a state, the power is an output
+                    N_set = net.speed_set[g_i]
+                    r[k] = (self.N[g_i] - N_set) / max(abs(N_set), 100.0)
+                else:
+                    r[k] = P / net.P_ref
             k += 1
         for t in net.targets:
             m = net.models[t["node"]]
