@@ -57,7 +57,7 @@
         "location": "p.128, rule of thumb with eq. (4-40)",
         "formula": "15-20 percent; upper value"
       },
-      "min": 0.1,
+      "min": 0.05,
       "max": 0.3,
       "meaning": "Design injection pressure drop / chamber pressure (stiffness)",
       "table": "components/tables/design_rules.csv"
@@ -117,7 +117,8 @@
   "valid_range": "Liquid injection; for gas-side injection (preburner gas, GH2) use compressible orifice flow.",
   "known_limitations": [
     "No atomization or mixing-efficiency model (c* efficiency is a chamber parameter).",
-    "Per-type Cd correlations pending (gaps.md)."
+    "Per-type Cd correlations pending (gaps.md).",
+    "Range lowered to 0.05 for hot-gas fuel injectors of staged-combustion engines, where the turbine exhaust enters with a small pressure drop (SSME example graph estimate 0.088)."
   ],
   "implementation": "propsim/core/feed/network.py"
 }

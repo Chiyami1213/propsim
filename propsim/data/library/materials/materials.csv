@@ -1,0 +1,9 @@
+material_id,name,uns,class,typical_use
+AL6061_T6,Aluminum 6061-T6,A96061,aluminum alloy,"tanks, lines, low-pressure structure"
+CU_OFHC,"Copper, oxygen-free high conductivity",C10100/C10200,copper,chamber liners (pure-copper reference)
+IN718,Inconel 718,N07718,nickel superalloy,"turbomachinery, manifolds, injector bodies"
+INCONEL_X,Inconel X (X-750),N07750,nickel superalloy,tubular chamber walls (Huzel & Huang sample calculations)
+SS304,Stainless steel 304,S30400,austenitic stainless steel,"lines, tanks, fittings"
+SS316,Stainless steel 316,S31600,austenitic stainless steel,"lines, fittings"
+TI6AL4V,Ti-6Al-4V,R56400,titanium alloy,"pressurant bottles, impellers"
+GRCOP84,GRCop-84 (Cu-8Cr-4Nb),,copper alloy,high-heat-flux combustion chamber liners

@@ -1,0 +1,2 @@
+thruster_id,name,class,propellant,developer,source_id,location,note
+NEXT,NASA Evolutionary Xenon Thruster (NEXT),gridded_ion,xenon,NASA Glenn Research Center,NASA-TM-2008-214986,Tables 3 and 4 pp.11-15,36 cm beam diameter; values are beginning-of-life (BOL); the throttle table is the demonstrated thruster and PPU performance

@@ -212,7 +212,7 @@ def _validator(name: str):
 def test_example_graphs_match_schema():
     v = _validator("graph.schema.json")
     gs = data.graphs()
-    assert set(gs) == {"gg_kerolox", "pressure_fed_kerolox", "expander_hydrolox"}
+    assert set(gs) == {"gg_kerolox", "pressure_fed_kerolox", "expander_hydrolox", "ssme_staged_combustion"}
     for gid, g in gs.items():
         errors = sorted(v.iter_errors(g), key=str)
         assert not errors, f"{gid}: {errors[0].message}"
@@ -249,3 +249,92 @@ def test_gg_kerolox_uses_published_a1_values():
     assert nodes["ox_pump"]["params"]["D_tip"]["quality"] == "published"
     targets = {(t["node"], t["output"]): t["value"]["value"] for t in g["validation_targets"]}
     assert targets["nozzle", "thrust"] == pytest.approx(747000 * 4.4482216, rel=1e-6)
+
+
+def test_material_fits_evaluate_in_si():
+    from propsim.data.matprops import material_property
+
+    # Plausibility at room temperature (not a second source): conductivities, modulus, copper expansion
+    assert material_property("SS304", "k", 300.0) == pytest.approx(15.3, rel=0.02)
+    assert material_property("CU_OFHC", "k", 300.0, segment="RRR100") == pytest.approx(396.0, rel=0.02)
+    assert material_property("SS304", "E", 293.0) == pytest.approx(199.5e9, rel=0.01)
+    assert material_property("CU_OFHC", "alpha", 300.0) == pytest.approx(16.6e-6, rel=0.02)
+    # thermal strain is zero at the 293 K reference and the floor below T_low
+    assert abs(material_property("TI6AL4V", "thermal_strain", 293.0)) < 2e-6
+    assert material_property("SS304", "thermal_strain", 10.0) == pytest.approx(-300.04e-5)
+    with pytest.raises(KeyError):
+        material_property("CU_OFHC", "k", 100.0)  # copper conductivity needs an RRR segment
+    with pytest.raises(ValueError):
+        material_property("IN718", "k", 900.0)  # NIST fits stop at 300 K (gaps.md)
+
+
+def test_inconel_x_points_match_the_graph_wall():
+    k = [r for r in data.material_points("INCONEL_X") if r["property"] == "k"]
+    wall = {n["id"]: n for n in data.graphs()["gg_kerolox"]["nodes"]}["regen_jacket"]["params"]["k_wall"]
+    assert any(float(r["value"]) == pytest.approx(wall["value"], rel=1e-4) for r in k)
+
+
+def test_high_temperature_points():
+    rows = data.material_points("IN718")
+    e70 = next(r for r in rows if r["property"] == "E" and r["location"].startswith("Table 4 at 70 degF"))
+    assert float(e70["value"]) == pytest.approx(29.0e6 * 6894.757, rel=1e-5)
+    assert float(e70["T_min"]) == pytest.approx(294.26, abs=0.01)
+    gr = [r for r in data.material_points("GRCOP84") if r["property"] == "yield_strength"]
+    assert {round(float(r["T_max"])) for r in gr} == {294, 811}
+
+
+def test_regression_laws_convert_to_si():
+    # SP-1a/GOX: r = 0.488 G^0.62 in mm/s with G in g/(cm2 s); 30 g/(cm2 s) = 300 kg/(m2 s)
+    assert data.regression_rate("SP1A_GOX", 300.0) == pytest.approx(0.488e-3 * 30.0**0.62, rel=1e-5)
+    # Kibbey 18 % Al: in/s with lbm/(in2 s)
+    G_us = 0.2
+    G_si = G_us * 0.45359237 / 0.0254**2
+    assert data.regression_rate("HTPB_AL18_GOX", G_si) == pytest.approx(
+        0.1262 * G_us**0.7121 * 0.0254, rel=1e-5
+    )
+
+
+def test_hotfire_flux_columns_are_aligned():
+    """Initial oxidizer flux equals mdot / initial port area within 10 % (throttled test excepted)."""
+    import math
+
+    cases = data.hotfire_cases()
+    assert len(cases) >= 20
+    for c in cases:
+        if "Thr" in c["case_id"]:
+            continue
+        g = float(c["mdot_ox"]) / (math.pi * float(c["D_port0"]) ** 2 / 4)
+        assert g == pytest.approx(float(c["G_ox0"]), rel=0.10), c["case_id"]
+
+
+def test_next_throttle_table_converts_to_si():
+    rows = data.throttle_table("NEXT")
+    assert len(rows) == 56
+    top = next(r for r in rows if r["point"] == "T3-01")  # 5.76 mg/s, 236 mN, 4190 s, 7.220 kW PPU input
+    assert float(top["mdot"]) == pytest.approx(5.76e-6)
+    assert float(top["thrust"]) == pytest.approx(0.236)
+    assert float(top["P_in_ppu"]) == pytest.approx(7220.0)
+    assert float(top["life"]) == pytest.approx(37.6 * 3.6e6)
+    assert len(data.throttle_table("NEXT", "extended")) == 16
+
+
+def test_next_throttle_points_close():
+    """Thrust = mdot Isp g0 and eta_t = F^2 / (2 mdot P_thruster) hold on every printed point."""
+    for r in data.throttle_table():
+        m, F, isp = float(r["mdot"]), float(r["thrust"]), float(r["Isp"])
+        assert m * isp * data.G0 == pytest.approx(F, rel=0.01), r["point"]
+        eta = F**2 / (2 * m * data.thruster_power(r))
+        assert eta == pytest.approx(float(r["eta_thruster"]), rel=0.03), r["point"]
+
+
+def test_ssme_graph_uses_public_sources_and_closes():
+    """SSME graph: only public sources, flows close on the printed pump flows, turbines exhaust above P_c."""
+    g = data.graphs()["ssme_staged_combustion"]
+    allowed = {"NASA-SNR-1981", "NASA-TP-3700", "PROPSIM-EST", "HH-SP125", "COOLPROP-8.0.0"}
+    vals = [v for n in g["nodes"] for v in n["params"].values()] + list(g["design_point"].values())
+    assert {v["source_id"] for v in vals} <= allowed
+    dp = {k: v["value"] for k, v in g["design_point"].items()}
+    assert dp["mdot_fuel"] == pytest.approx(147 * 0.45359237, rel=0.01)  # printed LPFTP flow
+    assert dp["mdot_ox"] == pytest.approx(883 * 0.45359237, rel=0.01)  # printed LPOTP flow
+    pc = next(t["value"]["value"] for t in g["validation_targets"] if t["output"] == "p_c")
+    assert min(dp["hpft_exit_pressure"], dp["hpot_exit_pressure"]) > pc

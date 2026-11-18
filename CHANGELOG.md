@@ -19,6 +19,20 @@ New changes go above this line, newest first.
   type, and three example graphs (gas-generator kerolox from the Huzel & Huang A-1, pressure-fed kerolox, expander
   hydrolox) with every value published, derived or flagged estimated; graph wiring and units checked by
   `propsim.data.validate`.
+- Component library, block E part 1 (materials): NIST cryogenic property fits (conductivity, specific heat,
+  Young's modulus, thermal expansion, 4 to 300 K) for 6061-T6, OFHC copper, Inconel 718, 304, 316 and Ti-6Al-4V,
+  Huzel & Huang Inconel X points at chamber-wall temperatures, evaluated by `propsim.data.matprops`.
+- Component library, block E part 2: Inconel 718 properties to 2000 degF (Special Metals bulletin) and GRCop-84
+  strength and conductivity (NASA/TM-2005-213566), with trend checks on the transcribed tables.
+- Component library, block F part 1 (hybrid): regression-rate laws (SP-1a paraffin, HTPB, aluminized HTPB with
+  GOX) in SI and 22 published SP-1a/GOX hot-fire cases, read by `propsim.data.regression_rate` and
+  `propsim.data.hotfire_cases`.
+- Component library, block G (electric): NEXT gridded-ion throttle tables (56 beginning-of-life points, nominal
+  with PPU efficiency and extended thruster-only, NASA/TM-2008-214986) in SI, read by `propsim.data.throttle_table`,
+  with thrust, efficiency and lifetime-impulse closure checks.
+- Component library, SSME example graph: fuel-rich staged combustion with two preburners and four turbopumps at
+  rated power level, built only from public NASA documents (1981 Space Shuttle News Reference, NASA TP-3700); chamber
+  temperature from the shipped CEA tables matches the published 3590 K.
 
 - Solid: quasi-steady CP motor (SI and US customary units) with optional end-face burning, constant-rate and
   pressure-dependent throat erosion, and one-parameter sweeps drawn on all plots.

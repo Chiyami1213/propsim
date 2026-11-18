@@ -24,6 +24,26 @@ CYCLES = LIBRARY / "cycles"
 CONDITIONS = {"sl", "vac", "n/a", "unstated"}
 EXAMPLES = LIBRARY / "examples"
 DASHBOARDS = LIBRARY / "dashboards"
+MATERIALS = LIBRARY / "materials"
+HYBRID = LIBRARY / "hybrid"
+ELECTRIC = LIBRARY / "electric"
+G0 = 9.80665  # standard gravity, m/s2 (exact by definition)
+FIT_FORMS = {"log10_poly", "poly_floor", "cu_rational"}
+MATERIAL_UNITS = {
+    "k": "W/(m K)",
+    "cp": "J/(kg K)",
+    "E": "Pa",
+    "thermal_strain": "1",
+    "alpha": "1/K",
+    "poisson": "1",
+    "yield_strength": "Pa",
+    "ultimate_strength": "Pa",
+    "shear_modulus": "Pa",
+    "density": "kg/m3",
+    "T_solidus": "K",
+    "T_liquidus": "K",
+    "alpha_mean": "1/K",
+}
 # valve timing parameters may come from the graph sequence instead of the node
 SEQUENCED = {"t_open", "ramp_open", "t_close", "ramp_close"}
 
@@ -55,6 +75,7 @@ UNITS = {
     "W",
     "rad/s",
     "kg m2",
+    "1/K",
 }
 TABLE_COLUMNS = ["T", "p", "phase", "rho", "mu", "cp", "cv", "k", "a_sound", "h", "s"]
 SAT_COLUMNS = ["T", "p_sat", "rho_l", "rho_v", "h_l", "h_v", "cp_l", "mu_l", "k_l", "sigma"]
@@ -202,6 +223,126 @@ def graphs() -> dict[str, dict]:
 def default_panels() -> dict[str, list[dict]]:
     """Component type -> standard panels (``dashboards/default_panels.json``); ``$node`` is a placeholder."""
     return json.loads((DASHBOARDS / "default_panels.json").read_text(encoding="utf-8"))["panels_by_type"]
+
+
+@cache
+def materials() -> dict[str, dict[str, str]]:
+    """``material_id`` -> row of ``materials/materials.csv``."""
+    return {r["material_id"]: r for r in _read_csv(MATERIALS / "materials.csv")}
+
+
+@cache
+def material_fits() -> list[dict[str, str]]:
+    """Rows of ``materials/property_fits.csv``; evaluate with ``propsim.data.matprops.material_property``."""
+    return _read_csv(MATERIALS / "property_fits.csv")
+
+
+def material_points(material_id: str | None = None) -> list[dict[str, str]]:
+    """Rows of ``materials/material_points.csv`` (single published values with a temperature range)."""
+    return [
+        r for r in _read_csv(MATERIALS / "material_points.csv") if material_id in (None, r["material_id"])
+    ]
+
+
+def hybrid_fuels() -> dict[str, dict[str, str]]:
+    """``fuel_id`` -> row of ``hybrid/hybrid_fuels.csv``."""
+    return {r["fuel_id"]: r for r in _read_csv(HYBRID / "hybrid_fuels.csv")}
+
+
+def regression_laws() -> dict[str, dict[str, str]]:
+    """``law_id`` -> row of ``hybrid/regression_laws.csv``; ``a`` is SI (r in m/s with G in kg/(m2 s))."""
+    return {r["law_id"]: r for r in _read_csv(HYBRID / "regression_laws.csv")}
+
+
+def regression_rate(law_id: str, G_ox: float) -> float:
+    """Fuel regression rate (m/s) from a library law at oxidizer mass flux ``G_ox`` (kg/(m2 s))."""
+    r = regression_laws()[law_id]
+    return float(r["a"]) * G_ox ** float(r["n"])
+
+
+def hotfire_cases() -> list[dict[str, str]]:
+    """Rows of ``hybrid/hotfire_cases.csv`` (published hybrid motor tests, SI)."""
+    return _read_csv(HYBRID / "hotfire_cases.csv")
+
+
+def _check_hybrid(problems: list[str]) -> None:
+    fuels = hybrid_fuels()
+    oxid = set(fluids()) | {"GOX"}
+    for name, rows in (
+        ("regression_laws.csv", list(regression_laws().values())),
+        ("hotfire_cases.csv", hotfire_cases()),
+    ):
+        _check_provenance(rows, f"hybrid/{name}", problems, unit_col=None, value_col=None)
+        for i, r in enumerate(rows, start=2):
+            if r["fuel"] not in fuels:
+                problems.append(f"hybrid/{name}:{i}: unknown fuel {r['fuel']!r}")
+            if r["oxidizer"] not in oxid:
+                problems.append(f"hybrid/{name}:{i}: unknown oxidizer {r['oxidizer']!r}")
+    for fid, f in fuels.items():
+        if f["source_id"] not in sources():
+            problems.append(f"hybrid/hybrid_fuels.csv {fid}: unknown source {f['source_id']!r}")
+
+
+def thrusters() -> dict[str, dict[str, str]]:
+    """``thruster_id`` -> row of ``electric/thrusters.csv``."""
+    return {r["thruster_id"]: r for r in _read_csv(ELECTRIC / "thrusters.csv")}
+
+
+def throttle_table(thruster_id: str | None = None, table: str | None = None) -> list[dict[str, str]]:
+    """Rows of ``electric/throttle_tables.csv`` (SI), optionally for one thruster and one table."""
+    rows = _read_csv(ELECTRIC / "throttle_tables.csv")
+    return [
+        r
+        for r in rows
+        if (thruster_id is None or r["thruster_id"] == thruster_id) and (table is None or r["table"] == table)
+    ]
+
+
+def thruster_power(row: dict[str, str]) -> float:
+    """Electrical power into the thruster (W): printed, or PPU input times PPU efficiency."""
+    if row["P_in_thruster"]:
+        return float(row["P_in_thruster"])
+    return float(row["P_in_ppu"]) * float(row["eta_ppu"])
+
+
+def _check_electric(problems: list[str]) -> None:
+    th = thrusters()
+    rows = throttle_table()
+    _check_provenance(rows, "electric/throttle_tables.csv", problems, unit_col=None, value_col=None)
+    for tid, t in th.items():
+        if t["source_id"] not in sources():
+            problems.append(f"electric/thrusters.csv {tid}: unknown source {t['source_id']!r}")
+    for i, r in enumerate(rows, start=2):
+        tag = f"electric/throttle_tables.csv:{i}"
+        if r["thruster_id"] not in th:
+            problems.append(f"{tag}: unknown thruster {r['thruster_id']!r}")
+            continue
+        if not (r["P_in_thruster"] or (r["P_in_ppu"] and r["eta_ppu"])):
+            problems.append(f"{tag}: no thruster or PPU input power")
+            continue
+        m, F, isp = float(r["mdot"]), float(r["thrust"]), float(r["Isp"])
+        if abs(m * isp * G0 / F - 1) > 0.01:
+            problems.append(f"{tag}: thrust differs from mdot Isp g0 by more than 1 %")
+
+
+def _check_materials(problems: list[str]) -> None:
+    mats = materials()
+    fits = material_fits()
+    _check_provenance(fits, "materials/property_fits.csv", problems, value_col=None)
+    pts = material_points()
+    _check_provenance(pts, "materials/material_points.csv", problems)
+    for name, rows in (("property_fits.csv", fits), ("material_points.csv", pts)):
+        for i, r in enumerate(rows, start=2):
+            tag = f"materials/{name}:{i}"
+            if r["material_id"] not in mats:
+                problems.append(f"{tag}: unknown material {r['material_id']!r}")
+            if MATERIAL_UNITS.get(r["property"]) != r["unit"]:
+                problems.append(f"{tag}: property {r['property']!r} with unit {r['unit']!r}")
+            if r["T_min"] and r["T_max"] and float(r["T_min"]) > float(r["T_max"]):
+                problems.append(f"{tag}: T_min > T_max")
+    for i, r in enumerate(fits, start=2):
+        if r["form"] not in FIT_FORMS:
+            problems.append(f"materials/property_fits.csv:{i}: unknown form {r['form']!r}")
 
 
 def _check_sv(v: dict, unit: str | None, tag: str, problems: list[str]) -> None:
@@ -507,6 +648,9 @@ def validate() -> list[str]:
     for g in graphs().values():
         _check_graph(g, problems)
     _check_panels(problems)
+    _check_materials(problems)
+    _check_hybrid(problems)
+    _check_electric(problems)
 
     for p in LIBRARY.rglob("*.json"):
         try:

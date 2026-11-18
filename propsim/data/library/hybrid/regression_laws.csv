@@ -1,0 +1,4 @@
+law_id,fuel,oxidizer,form,a,n,a_source,r_unit_source,G_unit_source,G_min,G_max,OF_range,quality,source_id,location,note,formula
+SP1A_GOX,SP1A,GOX,r = a G_ox^n,0.000117063,0.62,0.488,mm/s,g/(cm2 s),20,1020,1.7-2.3,published,KARABEYOGLU-2003,eq. (2) p.6,"paraffin-based SP-1a; flux range is the tested range (Conclusions p.8), the paper states validity for O/F 1.7 to 2.3","a_SI = 0.488 x 0.001 / 10^0.62 (r in m/s, G in kg/(m2 s))"
+HTPB_GOX,HTPB,GOX,r = a G_ox^n,3.04336e-05,0.681,0.146,mm/s,g/(cm2 s),,,,published,KARABEYOGLU-2003,section 2 p.3 (citing its ref. 10),flux range not stated,"a_SI = 0.146 x 0.001 / 10^0.681 (r in m/s, G in kg/(m2 s))"
+HTPB_AL18_GOX,HTPB_AL18,GOX,r = a G_ox^n,3.00986e-05,0.7121,0.1262,in/s,lbm/(in2 s),,281.228,,published,KIBBEY-2017,"Figure 4, power fit to the 18 % Al DOE data","HTPB with 18 % aluminum; plot axis to 0.4 lbm/(in2 s), 3:1 flux span","a_SI = 0.1262 x 0.0254 / 703.07^0.7121 (r in m/s, G in kg/(m2 s))"

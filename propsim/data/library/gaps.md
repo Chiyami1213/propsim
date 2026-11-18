@@ -71,8 +71,11 @@ design run.
 
 ## Graphs and dashboards (block H)
 
-1. **SSME staged-combustion example graph** is not included yet: its station data (pressures, temperatures and flows)
-   come from documents marked proprietary or private-use, and the repository is public. A public NASA source is needed.
+1. **SSME example graph** uses public NASA data only (1981 Space Shuttle News Reference at rated power, NASA
+   TP-3700 heat balance for the preburner split). Still missing from public sources: turbine efficiencies and exit
+   pressures, injector and valve pressure drops, coolant channel geometry, shaft inertias, the 104.5 % power level
+   station set and the controller start schedule. The main valve losses through the printed 2.5 in passages
+   (oxidizer about 820 psi) look high; the passage size may refer to a different part of the valve.
 2. **Estimated values in the examples** (counts in `checks.md` section 7): line lengths, manifold volumes, tank
    sizes, valve stroke times and sequence thresholds are not published for the Huzel & Huang engines. The pressure-fed
    kerolox and expander hydrolox graphs adapt published engines to other propellants or another cycle.
@@ -83,6 +86,37 @@ design run.
    against the 0.15 to 0.2 rule of thumb), nozzle C_F efficiency up to 1.05 (A-2 to A-4 list 1.01 to 1.02),
    turbine inlet temperature from 100 K and pressure ratio from 1.05 (expander turbines).
 
-## Later blocks
+## Materials (block E)
 
-Materials, hybrid and electric arrive in later PRs; their gaps will be listed here.
+1. **Above 300 K**: Inconel 718 is covered to 1366 K (Special Metals bulletin) and GRCop-84 has room temperature
+   and 538 degC strength plus a conductivity range. Still missing: GRCop-84 conductivity, expansion and modulus
+   versus temperature (NASA/TM-2005-213566 gives them only as plots), CuCrZr, OFHC copper, C-103 niobium and
+   304/316/Ti-6Al-4V above 300 K. Candidate public source: MIL-HDBK-5J (public domain, figures need digitizing).
+2. **Strength** versus temperature for the aluminum, stainless and titanium alloys; Inconel 718, GRCop-84 and
+   Inconel X have points.
+3. **Density, melting point and service temperature** are not in the NIST pages; to come from the same sources.
+4. **Ablatives and graphite** (carbon-phenolic, silica-phenolic, carbon-carbon): density, conductivity and
+   char/erosion data from NASA SP-8xxx monographs.
+5. **Missing NIST properties**: Inconel 718 and Ti-6Al-4V specific heat and modulus, copper modulus.
+
+## Hybrid (block F)
+
+1. **More regression laws**: HTPB/N2O, paraffin/N2O, HDPE, PMMA and ABS with N2O and LOX, including G^n x^m
+   forms with a length exponent. Public candidates: NASA/NTRS reports, university theses and AIAA papers.
+2. **SP-1a O/F-corrected law** (Karabeyoglu 2003 eq. 3): its layout could not be read from the PDF text layer.
+3. **Hot-fire cases**: only SP-1a/GOX so far; per-test grain length and fuel mass are not tabulated, and the
+   chamber pressure is not marked gauge or absolute. Test 4L-12 is left out: its initial flux disagrees with its
+   flow rate and port by a factor of 2.3. N2O cases with thrust and pressure histories are still needed.
+4. **Fuel properties**: density, heat of gasification and melt-layer properties of paraffin and HTPB blends.
+5. **Graphite nozzle erosion rates** and post-combustion chamber guidance.
+
+## Electric (block G)
+
+1. **Only NEXT so far.** Throttle tables for NSTAR, Hall thrusters (SPT-100, BPT-4000, HiVHAc, HERMeS/AEPS),
+   arcjets and resistojets are still needed from open NASA/NTRS or AIAA sources.
+2. **NEXT end-of-life performance**: the tables are beginning of life; degradation with throughput is not tabulated.
+3. **Thruster power on the nominal table**: Table 3 prints PPU input power only; thruster power is taken as
+   P_PPU eta_PPU (`propsim.data.thruster_power`), which carries the two-figure rounding of eta_PPU.
+4. **Mass and geometry**: thruster, PPU and feed-system masses and the gimbal envelope are not in the library.
+5. **NASA/TM-2002-211892** (Oleson et al.) Table 2 has a further NEXT throttle set, but the power column's unit is
+   not legible in the text layer, so it was not transcribed.
