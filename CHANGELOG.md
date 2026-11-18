@@ -4,6 +4,9 @@ New changes go above this line, newest first.
 
 ## Unreleased
 
+- Cycle sandbox: a *Trade Study* panel. *Sweep* varies a part parameter, a valve position or a design target over a
+  range (warm-started from point to point) and plots or tabulates thrust, Isp, powers, wall temperature, NPSH or any
+  part output, with CSV export. *Compare Designs* solves saved designs or templates side by side.
 - Cycle sandbox: a *3D Model* panel shows the selected component, sized from its parameters (lines, valves at their
   solved position, pumps by impeller kind and stages, turbines by arrangement, tanks with their fill, chamber and Rao
   nozzle contour, jacket channels, injectors, manifolds). Cutaway, a readout of the solved state, and wall
