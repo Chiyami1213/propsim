@@ -152,6 +152,20 @@ def main() -> int:
         except Exception as e:                                           # noqa: BLE001
             manual.append(("cycle-sandbox.png", "liquid.sandbox", str(e)))
             print(f"{'cycle-sandbox.png':48s} FAILED: {e}")
+    for mode in ("solid", "hybrid"):                                       # the grain designer window, per motor type
+        if wanted and f"grain.{mode}" not in wanted:
+            continue
+        try:
+            win.open_grain_designer(mode)
+            gw = win.grain_win
+            gw.resize(1500, 900)
+            pump(3.0)
+            img, _ = fix_black_3d(gw, gw.grab().toImage())
+            size = save_png(img, OUT / f"grain-designer-{mode}.png")
+            print(f"{'grain-designer-' + mode + '.png':48s} {size / 1024:6.0f} KB")
+        except Exception as e:                                           # noqa: BLE001
+            manual.append((f"grain-designer-{mode}.png", f"grain.{mode}", str(e)))
+            print(f"{'grain-designer-' + mode + '.png':48s} FAILED: {e}")
     win.close()
     W.shutdown()
     if manual:

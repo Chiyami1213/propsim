@@ -36,6 +36,10 @@ New changes go above this line, newest first.
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
   3-D burnback accepts custom sections.
+- Grain designer is now a window of its own (Simulation > Grain designer, Ctrl+G, or the Solid and Hybrid tree entries), for
+  solid and hybrid motors, with Open in Main Window.
+- Cycle sandbox: a Build Guide panel walks through choosing the cycle type, adding the required and optional components,
+  connecting them and solving; a 3D model of the selected component (PR 17).
 - Cycle sandbox: a Play Flow button animates the flow diagram itself; the Cycle Animation panel redraws the engine as a
   textbook-style schematic (pumps, turbine and shaft, gas generator or preburner, valves, chamber, nozzle and regenerative
   cooling tubes) for pressure-fed, gas-generator, expander and staged-combustion cycles, and falls back to the diagram for

@@ -26,6 +26,22 @@ class CycleSandboxTool:
     key = "liquid.sandbox"
 
 
+class GrainDesignerSolidTool:
+    """Tree entry that opens the grain designer window in solid mode (``propsim.ui.grain_designer``)."""
+
+    key = "grain.solid"
+
+
+class GrainDesignerHybridTool:
+    """Tree entry that opens the grain designer window in hybrid mode."""
+
+    key = "grain.hybrid"
+
+
+TOOL_KEYS = (CycleSandboxTool.key, GrainDesignerSolidTool.key, GrainDesignerHybridTool.key)
+# Live models that the grain designer window hosts: not in the tree, still reachable by key
+EXTRA: dict[str, type[ModelController]] = {SolidGrainLiveModel.key: SolidGrainLiveModel, PortLiveModel.key: PortLiveModel}
+
 # module -> list of (label, mode, controller class or None when planned). Labels are plain text (Qt tree). Mode
 # "tool" entries open their own window instead of loading a model.
 TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
@@ -34,11 +50,11 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
                ("Feed network transient", "run", FeedTransientModel), ("Pump-fed cycles", "run", CycleModel),
                ("Chugging & L* stability", "run", ChuggingModel), ("Cycle sandbox", "tool", CycleSandboxTool)],
     "Hybrid": [("Nozzle thrust coefficient", "live", NozzleLiveModel), ("Regression laws", "live", RegressionLiveModel),
-               ("Port & grain", "live", PortLiveModel),
+               ("Grain designer", "tool", GrainDesignerHybridTool),
                ("Core flow fields", "live", FlowLiveModel), ("Fuel & oxidizer", "live", FuelLiveModel),
                ("Instability & scaling", "live", StabilityLiveModel), ("0-D burn", "run", HybridBurnModel),
                ("Quasi-1D burn", "run", HybridBurn1DModel), ("N₂O blowdown", "run", N2OBlowdownModel), ("ILFI stability", "run", None)],
-    "Solid": [("Grain designer", "live", SolidGrainLiveModel), ("Burn rate & K_n", "live", BurnRateLiveModel),
+    "Solid": [("Grain designer", "tool", GrainDesignerSolidTool), ("Burn rate & K_n", "live", BurnRateLiveModel),
               ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel),
               ("CP motor (quasi-steady)", "run", CPMotorModel), ("CP motor (US units)", "run", CPMotorUSModel)],
     "Electric": [("Mission & power trades", "live", TradesLiveModel), ("Electrothermal thrusters", "live", ThermalLiveModel),
@@ -63,5 +79,8 @@ def get(key: str) -> ModelController:
                 if cls is not None and cls.key == key:
                     _CACHE[key] = cls()
                     return _CACHE[key]
+        if key in EXTRA:
+            _CACHE[key] = EXTRA[key]()
+            return _CACHE[key]
         raise KeyError(key)
     return _CACHE[key]

@@ -763,7 +763,10 @@ class CycleSandbox(QMainWindow):
         from .component_view import ComponentView
         self.view3d = ComponentView()
         self.dock_3d = self._dock("Model3D", "3D Model", self.view3d)
-        self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim, self.dock_3d]
+        from .cycle_guide import CycleGuide
+        self.guide = CycleGuide(self)
+        self.dock_guide = self._dock("Guide", "Build Guide", self.guide)
+        self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim, self.dock_3d, self.dock_guide]
         self.default_layout()
         self._toolbar()
         self.canvas.selected.connect(self.inspect)
@@ -773,6 +776,11 @@ class CycleSandbox(QMainWindow):
         self._style()
         theme.changed.connect(lambda *_: self._style())
         self.load_template("gg_kerolox")
+
+    def _show_guide(self) -> None:
+        self.dock_guide.show()
+        self.dock_guide.raise_()
+        self.guide.go(0)
 
     def _play_flow(self, on: bool) -> None:
         self.play_btn.setText("Pause Flow" if on else "Play Flow")
@@ -798,6 +806,8 @@ class CycleSandbox(QMainWindow):
         self.splitDockWidget(self.dock_res, self.dock_3d, Qt.Horizontal)      # selected part's 3D model beside it
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_anim)
         self.tabifyDockWidget(self.dock_insp, self.dock_anim)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock_guide)
+        self.tabifyDockWidget(self.dock_insp, self.dock_guide)
         self.dock_insp.raise_()
         for d in self.docks:
             d.show()
@@ -859,6 +869,9 @@ class CycleSandbox(QMainWindow):
         self.solve_btn.setShortcut("Ctrl+R")
         self.solve_btn.clicked.connect(self.solve)
         tb.addWidget(self.solve_btn)
+        guide = QPushButton("Build Guide")
+        guide.clicked.connect(self._show_guide)
+        tb.addWidget(guide)
         self.play_btn = QPushButton("Play Flow")
         self.play_btn.setCheckable(True)
         self.play_btn.toggled.connect(self._play_flow)

@@ -147,3 +147,25 @@ def test_3d_panel_follows_selection_and_solution(box):
     box.canvas.nodes["mov"].setSelected(True)
     QApplication.processEvents()
     assert v.model.title == "Butterfly valve" and not v.model.fields
+
+
+def test_build_guide_lists_required_and_optional_components(qapp):
+    from propsim.ui.cycle_guide import CYCLES, checklist
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.new_doc()
+    g = w.guide
+    g._pick("expander")
+    req, opt = checklist(w.doc["graph"], "expander")
+    assert any(t == "regen_jacket" and need == 1 for t, _, need, _ in req) and opt
+    assert all(have == 0 for _, have, _, _ in req)
+    g.go(1)
+    assert not g.next.isEnabled()                              # required parts are missing
+    for t, _, need, _ in req:
+        for _ in range(need):
+            w.canvas.add_component(t)
+    g.refresh()
+    assert g.next.isEnabled() and not g.missing
+    g.go(2)
+    assert "Ports still open" in g.page_conn.text()
+    assert set(CYCLES) == {"pressure_fed", "gas_generator", "expander", "staged"}

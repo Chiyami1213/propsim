@@ -33,7 +33,7 @@ def _wait(win, limit=90):
 def test_all_hybrid_models_are_in_the_tree():
     live = {c.key for entries in registry.TREE.values() for _, m, c in entries if c is not None and m == "live"}
     run = {c.key for entries in registry.TREE.values() for _, m, c in entries if c is not None and m == "run"}
-    assert set(LIVE) <= live
+    assert set(LIVE) <= live | set(registry.EXTRA)                # Port & grain lives in the grain designer window
     assert {"hybrid.burn0d", "hybrid.burn1d", "hybrid.n2o"} <= run
 
 
@@ -128,3 +128,17 @@ def test_custom_port_and_fuel_stack_editor(win):
     m = form.values().to_si()
     assert len(m.grains) == 2 and m.grains[1].rho_f == 900.0 and m.grains[1].law == "power"
     assert json.loads(text)[1]["prop"]["law"] == "power"
+
+
+def test_grain_designer_window_for_both_motor_types(qapp, tmp_path):
+    from propsim.ui.main_window import MainWindow
+    win = MainWindow(home=tmp_path, use_settings=False)
+    win.open_grain_designer("solid")
+    gw = win.grain_win
+    assert gw.mode == "solid" and gw.ctrl.key == "solid.grain" and gw.plots.count() >= 1
+    win.open_grain_designer("hybrid")
+    assert gw.mode == "hybrid" and gw.ctrl.key == "hybrid.port"
+    gw.open_in_main()
+    assert win.ctrl.key == "hybrid.port"
+    keys = [c.key for entries in registry.TREE.values() for _, m, c in entries if m == "tool"]
+    assert {"grain.solid", "grain.hybrid", "liquid.sandbox"} <= set(keys)
