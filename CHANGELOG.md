@@ -4,6 +4,16 @@ New changes go above this line, newest first.
 
 ## Unreleased
 
+- Solid motors: grain design and internal ballistics extended. New sections: moon burner, C-slot, D-grain, X-core and
+  end burner (no port, burns its aft face); any section can be repeated as identical segments with inhibited or
+  burning end faces (a BATES motor is a circular bore with both ends burning), also in the 3D burnback. The Grain
+  Designer now plots the burning area and K_n with segments and end faces. The burn rate can follow pressure bands
+  (your own table, or Nakka's 1999 KNSB and KNDX bands, now in the library under `solid/`). Internal Ballistics adds
+  c* efficiency, the conical divergence loss, other C_F losses, ambient pressure, a two-phase gamma for the nozzle,
+  throat erosion, Isp(t), C_F(t), design checks (port-to-throat ratio, peak mass flux, volumetric loading, L/D),
+  the motor impulse class, and a *File, Export Thrust Curve (.eng)* export. Validated against Nakka's Kappa-SB static
+  test KSB-002 (burn time, C_F and total impulse within 6 %) and the Shuttle RSRM burn law (AIAA 2000-3803).
+
 - Cycle sandbox: a *3D Model* panel shows the selected component, sized from its parameters (lines, valves at their
   solved position, pumps by impeller kind and stages, turbines by arrangement, tanks with their fill, chamber and Rao
   nozzle contour, jacket channels, injectors, manifolds). Cutaway, a readout of the solved state, and wall

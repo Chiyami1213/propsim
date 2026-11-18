@@ -1,0 +1,25 @@
+test_id,quantity,value,unit,quality,source_id,location,note,formula
+KSB-002,propellant,KNSB,1,published,NAKKA-KSB002,report title,KN/sorbitol 65/35 in a 4-segment BATES grain (Kappa-SB motor),
+KSB-002,n_segments,4,1,published,NAKKA-KSB002,grain section,four propellant segments,
+KSB-002,grain_od,0.05588,m,published,NAKKA-KSB002,grain section,O.D. 2.20 in (55.9 mm),2.20 in to m
+KSB-002,core_d,0.01905,m,published,NAKKA-KSB002,grain section,core 0.75 in (19.05 mm),0.75 in to m
+KSB-002,segment_length,0.1016,m,published,NAKKA-KSB002,grain section,average segment length 4.00 in (102 mm),4.00 in to m
+KSB-002,ends,both,1,published,NAKKA-KAPPA,Propellant Grain section,outer surface inhibited; core and segment ends burn,
+KSB-002,grain_mass,1.487,kg,published,NAKKA-KSB002,grain section,total of four segments excluding inhibitor liners,1487 g to kg
+KSB-002,throat_d_pre,0.012573,m,published,NAKKA-KSB002,nozzle section,0.495 in before the test (the report gives 0.495 to 0.500 in),0.495 in to m
+KSB-002,throat_d_post,0.0127,m,published,NAKKA-KSB002,nozzle section,0.500 in after the test,0.500 in to m
+KSB-002,expansion_ratio,11,1,published,NAKKA-KAPPA,nozzle section,Kappa nozzle expansion ratio 11:1,
+KSB-002,divergence_half_angle,0.20944,1,published,NAKKA-KAPPA,nozzle section,12 deg divergence half-angle (value in rad),12 deg to rad
+KSB-002,total_impulse,1821,N s,published,NAKKA-KSB002,results,410 lb-s,
+KSB-002,isp_delivered,125.0,s,published,NAKKA-KSB002,results,delivered specific impulse,
+KSB-002,cf_avg,1.53,1,published,NAKKA-KSB002,results,average thrust coefficient as plotted,
+KSB-002,burn_time,2,s,published,NAKKA-KSB002,results,"'forceful thrusting continued for about two seconds' (approximate, read as +-0.4 s)",
+KSB-002,ambient_temperature,273.15,K,published,NAKKA-KSB002,test conditions,0 degC (grain temperature not reported),0 degC to K
+RSRM,head_end_pressure,6301808,Pa,published,AIAA-2000-3803,RSRM CFD model results,target nominal head-end pressure 914 psi at about 1 s,914 psia to Pa
+RSRM,aft_rate_high,0.0101854,m/s,published,AIAA-2000-3803,Motor Performance Impact,aft-segment burn rate 0.401 in/s before the 50 psi lower aft pressure,0.401 in/s to m/s
+RSRM,aft_rate_low,0.0099568,m/s,published,AIAA-2000-3803,Motor Performance Impact,aft-segment burn rate 0.392 in/s with the 50 psi lower aft pressure,0.392 in/s to m/s
+RSRM,aft_pressure_drop,344738,Pa,published,AIAA-2000-3803,Motor Performance Impact,the 50 psi lower aft pressure behind the rate drop,50 psi to Pa
+RSRM,burn_time,123,s,published,AIAA-2000-3803,Motor Performance Impact,'123 seconds of motor operation',
+RSRM,expansion_ratio,7.79,1,published,NSTS-1988,Solid Rocket Boosters,"text reads '7-to-79' (scan); 7.79 since STS-8",
+RSRM,propellant_mass,498952,kg,published,NSTS-1988,Solid Rocket Boosters,approximately 1100000 lb per motor,1.1e6 lb to kg
+RSRM,thrust_sl_liftoff,14679131,N,published,NSTS-1988,Solid Rocket Boosters,approximately 3300000 lbf at sea level at launch,3.3e6 lbf to N

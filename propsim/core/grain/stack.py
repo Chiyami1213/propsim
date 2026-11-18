@@ -9,7 +9,8 @@ Stored as the text of a JSON list, one object per grain from the head end to the
 
 ``L`` is in m.  A grain without ``section`` uses the motor's section; a grain without ``prop`` uses the motor's
 propellant, and a partial ``prop`` overrides only the fields it names (same names as the propellant parameters:
-``rho_p``, ``a_mm``, ``n``, ``sigma_p``, ``T_i``, ``cstar``, ``Tc``, ``gamma``, ``alpha``, ``beta``).  End faces are
+``rho_p``, ``a_mm``, ``n``, ``sigma_p``, ``T_i``, ``cstar``, ``Tc``, ``gamma``, ``gamma_noz``, ``alpha``, ``beta``,
+and ``law``: ``single`` for a and n, or a library pressure-band law such as ``KNSB``).  End faces are
 inhibited unless ``burn_head`` / ``burn_aft`` is true.
 """
 from __future__ import annotations
@@ -17,7 +18,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-PROP_KEYS = ("rho_p", "a_mm", "n", "sigma_p", "T_i", "cstar", "Tc", "gamma", "alpha", "beta")
+PROP_KEYS = ("rho_p", "a_mm", "n", "sigma_p", "T_i", "cstar", "Tc", "gamma", "alpha", "beta", "law", "gamma_noz")
 # hybrid fuel grains: density, regression law and its constants (a in mm/s with G in kg/m²/s), and the chemistry:
 # "pair" = another CEA pair, or "chem" = {"of": [...], "cstar": [...], "Tc": [...], "gamma": [...]}
 FUEL_KEYS = ("rho_f", "law", "a", "n", "B", "pair", "chem")

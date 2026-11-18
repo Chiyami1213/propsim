@@ -126,3 +126,20 @@ design run.
 4. **Mass and geometry**: thruster, PPU and feed-system masses and the gimbal envelope are not in the library.
 5. **NASA/TM-2002-211892** (Oleson et al.) Table 2 has a further NEXT throttle set, but the power column's unit is
    not legible in the text layer, so it was not transcribed.
+
+## Solid propellants and motors (`solid/`)
+
+1. **KNSB thermochemistry** (c*, Tc, gamma, two-phase gamma, molar mass): Nakka's KNSB pages give only the ideal
+   density and say the Isp is within 1 % of KN/sucrose. The Kappa-SB validation therefore uses the delivered c* from
+   the test (Isp g0 / C_F) and Nakka's KNSU gammas as a stand-in. Better: a CEA or PROPEP run for KNSB 65/35 from
+   published heats of formation (sorbitol, KNO3), or Nakka's KNSB performance page if its tables can be read.
+2. **AP/HTPB/Al and PBAN (RSRM TP-H1148) thermochemistry**: no c*, Tc or gamma sourced yet. The shipped CEA tables
+   cover liquid and hybrid pairs only; a solid composite needs condensed-phase CEA (Al2O3) runs.
+3. **RSRM grain and nozzle**: only the burn law, head-end pressure, burn time, expansion ratio, propellant mass and
+   liftoff thrust are sourced. The forward 11-point star and the tapered aft bores need dimensions (Thiokol TWR
+   reports on NTRS are scanned; candidates: NTRS 19740024184, 19890019196) before a full RSRM trace can be checked.
+4. **NASA SP-8076 (Solid Propellant Grain Design and Internal Ballistics, 1972, NTRS 19730007077)**: the NTRS copy is
+   a scan without a usable text layer, so its design criteria (port-to-throat ratio, mass-flux and erosive-burning
+   limits) are not yet tabulated; the code reports these quantities without pass/fail limits.
+5. **Measured pressure and thrust traces** for KSB-002 and KDX-002 exist only as figures; digitizing them would allow
+   a trace comparison instead of the integral checks.

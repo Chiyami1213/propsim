@@ -44,13 +44,16 @@ def summary(editor: str, text: str) -> str:
     if not text.strip():
         return "default"
     try:
+        if editor == "bands":
+            rows = json.loads(text)
+            return f"{len(rows)} band(s), {rows[0][0]:g}-{rows[-1][1]:g} MPa"
         if editor == "section":
             sp = gb.spec_from_json(text)
             n_in = sum(s.inhibited for s in sp.shapes)
             return f"{len(sp.shapes)} shape(s)" + (f", {n_in} inhibited" if n_in else "")
         defs = gs.parse_stack(text, gs.FUEL_KEYS if editor == "hstack" else gs.PROP_KEYS)
         return f"{len(defs)} grain(s), {sum(d.L for d in defs) * 1e3:.0f} mm"
-    except ValueError:
+    except (ValueError, TypeError, IndexError):
         return "invalid"
 
 
@@ -199,7 +202,8 @@ class StackEditor(QDialog):
     keys = gs.PROP_KEYS
     HELP = ("Grains from the head end to the aft end.  Overrides change only the named propellant values and are "
             "separated by ;  e.g.  a_mm=9; cstar=1400; gamma=1.25; rho_p=1650.\nFields: rho_p, a_mm, n, sigma_p, T_i, "
-            "cstar, Tc, gamma, alpha, beta (same units as the propellant parameters).  Empty = the motor's propellant.")
+            "cstar, Tc, gamma, gamma_noz, alpha, beta (same units as the propellant parameters), and law (single, "
+            "bands, KNSB or KNDX).  Empty = the motor's propellant.")
 
     def __init__(self, text: str, ctx: dict, parent=None) -> None:
         super().__init__(parent)
@@ -351,7 +355,101 @@ class HybridStackEditor(StackEditor):
             "in K).  Empty = the motor's fuel.  With several fuels the gas properties are mixed by fuel mass flow.")
 
 
-EDITORS = {"section": SectionEditor, "stack": StackEditor, "hstack": HybridStackEditor}
+class BandsEditor(QDialog):
+    """Pressure-band burn-rate law: one row per pressure range with its own a' and n (r in mm/s, p in MPa)."""
+
+    COLS = ["p low (MPa)", "p high (MPa)", "a' (mm/s)", "n"]
+
+    def __init__(self, text: str, ctx: dict, parent=None) -> None:
+        from .. import data as lib
+        super().__init__(parent)
+        self.setWindowTitle("Burn rate by pressure band")
+        self.table = QTableWidget(0, 4)
+        self.table.setHorizontalHeaderLabels(self.COLS)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.info = QLabel()
+        self.info.setWordWrap(True)
+        self.preset = QComboBox()
+        self.preset.addItem("Load a library law…", "")
+        self._laws = {k: v for k, v in lib.solid_burn_laws().items() if v[0]["p_lo"] != ""}
+        for k, rows in self._laws.items():
+            self.preset.addItem(f"{k} ({rows[0]['source_id']})", k)
+        self.preset.currentIndexChanged.connect(self._load_preset)
+        add, rm = QPushButton("Add band"), QPushButton("Remove band")
+        add.clicked.connect(self._add_after)
+        rm.clicked.connect(self._remove)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        bar = QHBoxLayout()
+        for w in (add, rm, self.preset):
+            bar.addWidget(w)
+        bar.addStretch(1)
+        lay = QVBoxLayout(self)
+        help_lbl = QLabel("In each band r (mm/s) = a' p (MPa)^n.  Bands must be contiguous: each starts where the "
+                          "previous one ends.  Below the first band the first law is used, above the last band the "
+                          "last law.  Choose 'Pressure bands' as the burn-rate law to use this table.")
+        help_lbl.setWordWrap(True)
+        lay.addWidget(help_lbl)
+        lay.addWidget(self.table, 1)
+        lay.addLayout(bar)
+        lay.addWidget(self.info)
+        lay.addWidget(self.buttons)
+        self.resize(560, 360)
+        rows = json.loads(text) if text.strip() else [[0.1, 10.0, float(ctx.get("a_mm", 5.0)), float(ctx.get("n", 0.35))]]
+        self._set_rows(rows)
+        self.table.cellChanged.connect(lambda *_: self.refresh())
+
+    def _set_rows(self, rows) -> None:
+        self.table.blockSignals(True)
+        self.table.setRowCount(0)
+        for row in rows:
+            r = self.table.rowCount()
+            self.table.insertRow(r)
+            for c, v in enumerate(row):
+                self.table.setItem(r, c, QTableWidgetItem(f"{float(v):g}"))
+        self.table.blockSignals(False)
+        self.refresh()
+
+    def _load_preset(self) -> None:
+        k = self.preset.currentData()
+        if k:
+            self._set_rows([[float(r["p_lo"]) / 1e6, float(r["p_hi"]) / 1e6, float(r["a_source"]), float(r["n"])]
+                            for r in self._laws[k]])
+
+    def _add_after(self) -> None:
+        rows = self.rows_raw()
+        hi = rows[-1][1] if rows else 0.1
+        self._set_rows(rows + [[hi, hi * 2.0, rows[-1][2] if rows else 5.0, rows[-1][3] if rows else 0.35]])
+
+    def _remove(self) -> None:
+        r = self.table.currentRow()
+        if r >= 0 and self.table.rowCount() > 1:
+            self.table.removeRow(r)
+            self.refresh()
+
+    def rows_raw(self) -> list[list[float]]:
+        return [[float(self.table.item(r, c).text()) for c in range(4)] for r in range(self.table.rowCount())]
+
+    def text(self) -> str:
+        return json.dumps(self.rows_raw())
+
+    def refresh(self) -> None:
+        from ..core.ballistics import solid as sol
+        ok = self.buttons.button(QDialogButtonBox.Ok)
+        try:
+            bands = sol.bands_from_mm_MPa(self.rows_raw())
+            r_lo = sol.SolidProp(bands=bands).rate(bands[0][0]) * 1e3
+            r_hi = sol.SolidProp(bands=bands).rate(bands[-1][1] * 0.999) * 1e3
+            self.info.setText(f"{len(bands)} band(s): r = {r_lo:.2f} (mm/s) at {bands[0][0] / 1e6:g} MPa, "
+                              f"{r_hi:.2f} (mm/s) at {bands[-1][1] / 1e6:g} MPa.")
+            ok.setEnabled(True)
+        except (ValueError, TypeError, AttributeError) as e:
+            self.info.setText(f"Cannot use these bands: {e}")
+            ok.setEnabled(False)
+
+
+EDITORS = {"section": SectionEditor, "stack": StackEditor, "hstack": HybridStackEditor, "bands": BandsEditor}
 
 
 def edit(editor: str, text: str, ctx: dict, parent=None) -> str | None:

@@ -42,7 +42,7 @@ propsim = ["assets/*", "core/thermo/data/*.npz", "data/library/*.csv", "data/lib
            "data/library/engines/*.csv", "data/library/cycles/*.csv", "data/library/cycles/*.json",
            "data/library/examples/*.json", "data/library/dashboards/*.json",
            "data/library/materials/*.csv", "data/library/hybrid/*.csv",
-           "data/library/electric/*.csv"]
+           "data/library/electric/*.csv", "data/library/solid/*.csv"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

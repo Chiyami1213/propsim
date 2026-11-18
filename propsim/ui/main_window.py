@@ -228,6 +228,7 @@ class MainWindow(QMainWindow):
         self._act(rp, "HTML report (.html)", lambda: self.export_report("html"))
         self._act(rp, "PDF report (.pdf)", lambda: self.export_report("pdf"))
         self._act(rp, "LaTeX tables and figures (.tex)", lambda: self.export_report("tex"))
+        self._act(f, "Export thrust curve (.eng)", lambda: self.export(".eng"))
         x = f.addMenu(apa("Export code"))
         self._act(x, "Python script (.py)", lambda: self.export(".py"))
         self._act(x, "MATLAB script (.m)", lambda: self.export(".m"))
@@ -662,7 +663,10 @@ class MainWindow(QMainWindow):
             self._log("nothing to export yet — run the simulation first")
             return
         p = self.form.values() if live else self.result_params
-        ext = {"PNG": ".png", "CSV": ".csv", ".mat": ".mat", ".h5": ".h5", ".py": ".py", ".m": ".m"}[kind]
+        if kind == ".eng" and not hasattr(self.ctrl, "export_eng"):
+            self._log("a thrust curve (.eng) can be exported from Solid, Internal ballistics after a run")
+            return
+        ext = {"PNG": ".png", "CSV": ".csv", ".mat": ".mat", ".h5": ".h5", ".py": ".py", ".m": ".m", ".eng": ".eng"}[kind]
         default = re.sub(r"[^A-Za-z0-9]+", "_", self.ctrl.title.lower()).strip("_") if kind in (".py", ".m") else "export"
         if not path:
             path = QFileDialog.getSaveFileName(self, f"Export {kind}", str(self.home / "exports" / f"{default}{ext}"),
@@ -673,6 +677,10 @@ class MainWindow(QMainWindow):
             from ..export_code import export as export_code
             files = export_code(self.ctrl.key, p.model_dump(), path, tabs=self.ctrl.tabs(p, r))
             self._log("exported code " + ", ".join(f.name for f in files))
+            return
+        if kind == ".eng":
+            Path(path).write_text(self.ctrl.export_eng(p, r), encoding="utf-8")
+            self._log(f"exported {Path(path).name}")
             return
         data = self.ctrl.export_data(p, r)
         if kind == "PNG":
