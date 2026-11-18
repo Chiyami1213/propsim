@@ -37,6 +37,9 @@ New changes go above this line, newest first.
   coefficients compared with the Borda-Carnot and Benedict-fit equations of Rennels and Hudson, Pipe Flow (2012);
   `propsim.data.closure.sudden_expansion_K` and `sharp_contraction_K`; one enlargement value and the contraction
   values disagree and are recorded in `conflicts.md`.
+- Component library, heat-transfer validation: PropSim's Bartz film coefficient and property-variation factor
+  reproduce the Huzel & Huang A-1 and A-2 throat values (Sample Calculation 4-3) within 4 %; inputs are in
+  `components/tables/bartz_validation.csv`, checked in `checks.md` section 12 and by a test.
 
 - Solid: quasi-steady CP motor (SI and US customary units) with optional end-face burning, constant-rate and
   pressure-dependent throat erosion, and one-parameter sweeps drawn on all plots.
