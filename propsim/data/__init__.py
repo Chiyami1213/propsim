@@ -25,6 +25,7 @@ CONDITIONS = {"sl", "vac", "n/a", "unstated"}
 EXAMPLES = LIBRARY / "examples"
 DASHBOARDS = LIBRARY / "dashboards"
 MATERIALS = LIBRARY / "materials"
+HYBRID = LIBRARY / "hybrid"
 FIT_FORMS = {"log10_poly", "poly_floor", "cu_rational"}
 MATERIAL_UNITS = {
     "k": "W/(m K)",
@@ -239,6 +240,45 @@ def material_points(material_id: str | None = None) -> list[dict[str, str]]:
     return [
         r for r in _read_csv(MATERIALS / "material_points.csv") if material_id in (None, r["material_id"])
     ]
+
+
+def hybrid_fuels() -> dict[str, dict[str, str]]:
+    """``fuel_id`` -> row of ``hybrid/hybrid_fuels.csv``."""
+    return {r["fuel_id"]: r for r in _read_csv(HYBRID / "hybrid_fuels.csv")}
+
+
+def regression_laws() -> dict[str, dict[str, str]]:
+    """``law_id`` -> row of ``hybrid/regression_laws.csv``; ``a`` is SI (r in m/s with G in kg/(m2 s))."""
+    return {r["law_id"]: r for r in _read_csv(HYBRID / "regression_laws.csv")}
+
+
+def regression_rate(law_id: str, G_ox: float) -> float:
+    """Fuel regression rate (m/s) from a library law at oxidizer mass flux ``G_ox`` (kg/(m2 s))."""
+    r = regression_laws()[law_id]
+    return float(r["a"]) * G_ox ** float(r["n"])
+
+
+def hotfire_cases() -> list[dict[str, str]]:
+    """Rows of ``hybrid/hotfire_cases.csv`` (published hybrid motor tests, SI)."""
+    return _read_csv(HYBRID / "hotfire_cases.csv")
+
+
+def _check_hybrid(problems: list[str]) -> None:
+    fuels = hybrid_fuels()
+    oxid = set(fluids()) | {"GOX"}
+    for name, rows in (
+        ("regression_laws.csv", list(regression_laws().values())),
+        ("hotfire_cases.csv", hotfire_cases()),
+    ):
+        _check_provenance(rows, f"hybrid/{name}", problems, unit_col=None, value_col=None)
+        for i, r in enumerate(rows, start=2):
+            if r["fuel"] not in fuels:
+                problems.append(f"hybrid/{name}:{i}: unknown fuel {r['fuel']!r}")
+            if r["oxidizer"] not in oxid:
+                problems.append(f"hybrid/{name}:{i}: unknown oxidizer {r['oxidizer']!r}")
+    for fid, f in fuels.items():
+        if f["source_id"] not in sources():
+            problems.append(f"hybrid/hybrid_fuels.csv {fid}: unknown source {f['source_id']!r}")
 
 
 def _check_materials(problems: list[str]) -> None:
@@ -565,6 +605,7 @@ def validate() -> list[str]:
         _check_graph(g, problems)
     _check_panels(problems)
     _check_materials(problems)
+    _check_hybrid(problems)
 
     for p in LIBRARY.rglob("*.json"):
         try:
