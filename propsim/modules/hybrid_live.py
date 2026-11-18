@@ -339,26 +339,36 @@ class PortLiveModel(ModelController):
     def update_scene(self, vp, p, r, frame) -> None:
         b = r["b"]
         first = self._built is None
-        draw_section_slab(vp, b["dist"], b["inside"], b["h"], b["web_max"], r["d_now"], p.R_out)
+        draw_section_slab(vp, b["dist"], b["inside"], b["h"], b["web_max"], r["d_now"], p.R_out, L=p.L_g)
         if first:
             self._built = True
 
 
 def draw_section_slab(vp, dist: np.ndarray, inside: np.ndarray, h: float, web_max: float, d_now: float,
-                      R_out: float, cmap: str | None = None) -> None:
-    """Extruded grain slice (thin slab) with the burned-out port removed, colored by burn distance / web."""
+                      R_out: float, cmap: str | None = None, L: float | None = None) -> None:
+    """The grain as a full-length extrusion of its cross-section with the burned-out port removed, colored by burn
+    distance / web.  The Cutaway button halves it along its axis (side view of the port); with no cutaway the whole
+    grain can be turned with the mouse, inside a faint case."""
     cmap = cmap or CMAPS.get("temperature", "plasma")
     n = dist.shape[0]
     hm = h * 1e-3
-    thick = 0.5 * R_out * 1e-3                                  # display thickness: a slice, not the full grain length
-    g = pv.ImageData(dimensions=(n + 1, n + 1, 2), spacing=(hm, hm, thick), origin=(-R_out * 1e-3,) * 2 + (0.0,))
+    R = R_out * 1e-3
+    L = float(L) if L else 4.0 * R                              # grain length (m); a short slice when unknown
+    nz = 24
+    g = pv.ImageData(dimensions=(nz + 1, n + 1, n + 1), spacing=(L / nz, hm, hm), origin=(0.0, -R, -R))   # axis along x
     keep = inside & (dist > d_now)
     field = np.full((n, n), -1.0)
     field[keep] = dist[keep] / max(web_max, 1e-9)
-    g.cell_data["w"] = field.ravel()                            # cell order: x fastest, then y
-    vp.plotter.add_mesh(g.threshold(0.0, scalars="w"), scalars="w", cmap=cmap, clim=(0.0, 1.0),
-                        show_scalar_bar=False, name="grain")
-    vp.reset_view(position="iso", zoom=1.0) if not getattr(vp, "_slab_view_set", False) else None
+    g.cell_data["w"] = np.repeat(field[:, :, None], nz, axis=2).ravel()   # cell order: length fastest, then y, then z
+    body = g.threshold(0.0, scalars="w")
+    cut = vp.cutaway > 0
+    if cut:
+        body = body.clip(normal=(0.0, 0.0, 1.0), origin=(0.0, 0.0, 0.0))        # side view: the z > 0 half removed
+    vp.plotter.add_mesh(body, scalars="w", cmap=cmap, clim=(0.0, 1.0), show_scalar_bar=False, name="grain")
+    case = pv.Cylinder(center=(L / 2, 0.0, 0.0), direction=(1.0, 0.0, 0.0), radius=R * 1.01, height=L, resolution=72)
+    vp.plotter.add_mesh(case, color="#6b768a", opacity=0.0 if cut else 0.12, name="grain_case")
+    if not getattr(vp, "_slab_view_set", False):
+        vp.reset_view(position="iso", zoom=1.0)
     vp._slab_view_set = True
-    vp.set_colorbar(cmap, 0.0, 1.0, r"$\frac{d}{w_{max}}$ (–)")
+    vp.set_colorbar(cmap, 0.0, 1.0, r"$rac{d}{w_{max}}$ (–)")
     vp.render()

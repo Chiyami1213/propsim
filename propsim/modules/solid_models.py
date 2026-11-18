@@ -83,6 +83,8 @@ class SolidGrainLiveModel(ModelController):
         return {"burn_distance_mm": b.d, "port_area_mm2": b.area, "perimeter_mm": b.perim, "remaining": b.remain,
                 "Kn": r["Kn"], "Pc_eq_MPa": r["pc"], "rate_mmps": r["rate"]}
 
+    legend_labels = {"grain": "Propellant (burn distance)", "case": "Motor case"}
+
     def build_scene(self, vp, p, r=None) -> None:
         vp.plotter.clear()
         vp._slab_view_set = False
@@ -90,7 +92,7 @@ class SolidGrainLiveModel(ModelController):
 
     def update_scene(self, vp, p, r, frame) -> None:
         b = r["b"]
-        draw_section_slab(vp, np.maximum(b.sdf, 0.0), b.inside, b.h, b.web, r["d_now"], p.R_out)
+        draw_section_slab(vp, np.maximum(b.sdf, 0.0), b.inside, b.h, b.web, r["d_now"], p.R_out, L=p.L_g)
 
 
 # ====================================================================================== burn rate & equilibrium (Live)

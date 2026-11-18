@@ -32,6 +32,11 @@ New changes go above this line, newest first.
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
   3-D burnback accepts custom sections.
+- Cycle sandbox: ANSI/ISA-5.1 P&ID symbols (valves, pumps, turbines, vessels, instrument bubbles with tags), a
+  connection-line legend, draggable panels, and an animated cycle panel (moving flow, rotating machinery) that exports a
+  looping GIF or a PNG for every cycle.
+- Grain designer and Port & grain: the grain is shown as a full-length 3D extrusion you can turn with the mouse, and the
+  Cutaway button gives a side view of the port.
 - F2 saves a screenshot of the window to the data folder (`screenshots`); F11 toggles full screen; a Legend button in the 3D view shows a color key for the solid-color blocks (bottom right);
   the Spring-mass toy draws a real helical spring; the combo box arrow is a plain chevron; the Next Color Theme command
   (Ctrl+T) is removed, themes are picked in View, Color Theme.

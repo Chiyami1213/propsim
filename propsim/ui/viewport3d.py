@@ -79,7 +79,7 @@ class ColorBar(QWidget):
 
 # names of the solid-color meshes the models add (``name=`` of ``add_mesh``) and what the legend calls them
 LEGEND_LABELS = {
-    "case": "Motor case", "wall": "Wall", "nozzle": "Nozzle", "plume": "Exhaust plume", "tracers": "Oxidizer flow",
+    "case": "Motor case", "grain_case": "Motor case", "wall": "Wall", "nozzle": "Nozzle", "plume": "Exhaust plume", "tracers": "Oxidizer flow",
     "tank": "Oxidizer tank", "tank_liquid": "Liquid N₂O", "cut": "Grain (cut face)", "heater": "Heater coil",
     "anode": "Anode", "field_lines": "Magnetic field lines", "exb": "E×B drift ring", "ions": "Ions",
     "tracks": "Ion tracks", "craft": "Spacecraft", "flown": "Flown path", "ground": "Ground", "horizon": "Horizon",

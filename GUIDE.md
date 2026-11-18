@@ -64,6 +64,11 @@ for an output (for example chamber pressure and mixture ratio) and free a parame
 size it, as an engine controller would. The templates include the Huzel & Huang pressure-fed, gas-generator and
 expander engines and an RS-25 style staged-combustion cycle. Save and open diagrams as `.json` files.
 
+The diagram follows ANSI/ISA-5.1 symbols: process lines are solid (colored by propellant), the shaft link is dash-dot,
+and the bubbles (PT, TT, ST, FT, PDT) are field instruments with their tag numbers. The *Cycle Animation* panel shows
+the flow moving through the cycle and exports it as a GIF or PNG. Every sandbox panel can be dragged; *Panels* brings
+back a closed one.
+
 The sandbox is steady state only; start-up and shutdown transients are not modelled.
 
 ### Compare designs

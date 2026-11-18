@@ -67,3 +67,28 @@ def test_save_load_round_trip(box, tmp_path):
     with pytest.raises(ValueError):
         (tmp_path / "bad.json").write_text('{"format": "other"}')
         E.load(tmp_path / "bad.json")
+
+
+def test_every_component_has_an_isa_symbol(qapp):
+    from PySide6.QtCore import QRectF
+    from PySide6.QtGui import QColor, QImage, QPainter
+    from propsim.core.engine_graph import edit as E
+    from propsim.ui.pid import draw_symbol
+    img = QImage(80, 60, QImage.Format_RGB32)
+    for ntype in E.library():
+        img.fill(0)
+        p = QPainter(img)
+        draw_symbol(p, ntype, QRectF(10, 8, 60, 44), QColor("white"), QColor("black"), phase=0.3, command=True)
+        p.end()
+        assert any(img.pixelColor(x, y).red() > 100 for x in range(80) for y in range(60)), ntype
+
+
+def test_panels_are_dockable_and_animation_exports(qapp, tmp_path):
+    from PySide6.QtWidgets import QDockWidget
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    for d in w.docks:
+        assert d.features() & QDockWidget.DockWidgetMovable and d.features() & QDockWidget.DockWidgetFloatable
+    gif = w.anim.export_gif(str(tmp_path / "c.gif"), frames=4)
+    png = w.anim.save_image(str(tmp_path / "c.png"))
+    assert gif.stat().st_size > 1000 and png.stat().st_size > 1000

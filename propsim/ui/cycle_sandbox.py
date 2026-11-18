@@ -20,10 +20,12 @@ from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDoubleSpinBox, QFi
                                QGraphicsItem, QGraphicsPathItem, QGraphicsScene, QGraphicsView, QHBoxLayout,
                                QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
                                QPushButton, QSplitter, QTableWidget, QTableWidgetItem, QTabWidget, QToolBar,
-                               QStyle, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+                               QDockWidget, QStyle, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from ..core.engine_graph import edit as E
-from .panels import draw_guide
+from .pid import INSTRUMENTS, draw_bubble, draw_symbol, mechanical_pen, tag_for
+from .panels import PAD, PanelTitle, draw_guide
+from .text import apa
 from .theme import theme
 
 NODE_W = 168
@@ -150,34 +152,52 @@ class NodeItem(QGraphicsItem):
         return QRectF(-PORT_R - 3, -PORT_R - 3, NODE_W + 2 * PORT_R + 6, self.h + 2 * PORT_R + 6)
 
     def paint(self, p: QPainter, *_):
+        """ANSI/ISA-5.1 P&ID presentation: the component's process symbol, its tag, instrument bubbles, short stubs to
+        the ports and a faint outline only while selected."""
         t = theme.t
         r = QRectF(0, 0, NODE_W, self.h)
+        ink, bg = QColor(t["text"]), QColor(t["viewport_bg"])
         cat = QColor(CAT_COLORS.get(self.spec["category"], "#888888"))
         p.setRenderHint(QPainter.Antialiasing)
-        sel = self.isSelected()
-        p.setPen(QPen(QColor(t["accent"] if sel else ("#ff5a3c" if self.alert else t["edge"])), 2.2 if sel else 1.2))
-        p.setBrush(QBrush(QColor(t["card"])))
-        p.drawRoundedRect(r, 7, 7)
-        head = QPainterPath()
-        head.addRoundedRect(QRectF(0, 0, NODE_W, 22), 7, 7)
-        p.fillPath(head, QBrush(cat.darker(130)))
-        p.fillRect(QRectF(0, 14, NODE_W, 8), cat.darker(130))
-        p.setPen(QColor("#ffffff"))
-        f = QFont(p.font())
-        f.setPointSizeF(8.6)
-        f.setBold(True)
-        p.setFont(f)
-        p.drawText(QRectF(8, 2, NODE_W - 16, 18), Qt.AlignVCenter | Qt.AlignLeft,
-                   self.node.get("label") or self.node["id"])
-        f.setBold(False)
-        f.setPointSizeF(7.6)
-        p.setFont(f)
-        p.setPen(QColor(t["dim"]))
-        p.drawText(QRectF(10, 24, NODE_W - 20, 14), Qt.AlignLeft, self.node["id"])
-        for name, it in self.ports.items():
+        if self.isSelected() or self.alert:
+            p.setPen(QPen(QColor("#ff5a3c" if self.alert else t["accent"]), 1.2, Qt.DotLine))
+            p.setBrush(Qt.NoBrush)
+            p.drawRoundedRect(r, 6, 6)
+        sym = QRectF(NODE_W / 2 - 24, 32, 48, 44)
+        for name, it in self.ports.items():                       # process connections: solid line to the symbol
             if it.spec["kind"] == "fluid":
                 left = it.spec["direction"] == "in"
-                p.drawText(QRectF(10 if left else NODE_W / 2, it.pos().y() - 7, NODE_W / 2 - 14, 14),
+                y = it.pos().y()
+                p.setPen(QPen(ink, 1.4))
+                p.drawLine(QPointF(0 if left else NODE_W, y), QPointF(sym.left() if left else sym.right(), y))
+        draw_symbol(p, self.node["type"], sym, ink, bg, phase=getattr(self, "phase", 0.0),
+                    command=any(q["kind"] == "signal" for q in self.spec["ports"]))
+        idx = self.view.graph["nodes"].index(self.node) if self.node in self.view.graph["nodes"] else 0
+        f = QFont(p.font())
+        f.setPointSizeF(8.2)
+        f.setBold(True)
+        p.setFont(f)
+        p.setPen(ink)
+        p.drawText(QRectF(6, 2, NODE_W - 70, 18), Qt.AlignVCenter | Qt.AlignLeft,
+                   self.node.get("label") or self.node["id"])
+        f.setBold(False)
+        f.setPointSizeF(7.4)
+        p.setFont(f)
+        p.setPen(QColor(t["dim"]))
+        p.drawText(QRectF(sym.left() - 20, sym.bottom() + 3, sym.width() + 40, 12), Qt.AlignCenter,
+                   tag_for(self.node["type"], idx))
+        for k, letters in enumerate(INSTRUMENTS.get(self.node["type"], [])[:2]):     # ISA-5.1 bubbles, top right
+            c = QPointF(NODE_W - 13 - 26 * k, 14)
+            p.setPen(QPen(ink, 0.9))
+            p.drawLine(QPointF(c.x(), c.y() + 12), QPointF(sym.center().x() + 8 * (1 - 2 * k), sym.top() + 4))
+            draw_bubble(p, c, letters, str(100 + idx), ink, bg)
+        p.setPen(QColor(t["dim"]))
+        f.setPointSizeF(6.8)
+        p.setFont(f)
+        for name, it in self.ports.items():
+            if it.spec["kind"] == "fluid" and len(self.spec["ports"]) > 3:
+                left = it.spec["direction"] == "in"
+                p.drawText(QRectF(4 if left else NODE_W / 2 + 26, it.pos().y() + 3, NODE_W / 2 - 30, 11),
                            (Qt.AlignLeft if left else Qt.AlignRight) | Qt.AlignVCenter, name.replace("_", " "))
         if self.state:
             p.setPen(QColor(t["text"]))
@@ -208,6 +228,16 @@ class EdgeItem(QGraphicsPathItem):
     def paint(self, p, option, widget=None) -> None:
         option.state &= ~QStyle.State_Selected          # a selected connection is drawn thicker, never with a box
         super().paint(p, option, widget)
+        if self.edge["kind"] == "fluid":                # P&ID flow arrow at mid-line
+            path = self.path()
+            pt, ang = path.pointAtPercent(0.5), path.angleAtPercent(0.5)
+            p.save()
+            p.translate(pt)
+            p.rotate(-ang)
+            p.setPen(Qt.NoPen)
+            p.setBrush(self.pen().color())
+            p.drawPolygon([QPointF(6, 0), QPointF(-4, -4), QPointF(-4, 4)])
+            p.restore()
 
     def update_path(self) -> None:
         p1, p2 = self.a.scene_center(), self.b.scene_center()
@@ -240,7 +270,7 @@ class EdgeItem(QGraphicsPathItem):
         pen = QPen(col, self.width + (1.5 if self.isSelected() else 0.0))
         pen.setCapStyle(Qt.RoundCap)
         if self.edge["kind"] == "shaft":
-            pen.setStyle(Qt.DashLine)
+            pen.setStyle(Qt.DashDotLine)                    # ISA mechanical link
         elif self.edge["kind"] == "thermal":
             pen.setStyle(Qt.DotLine)
         self.setPen(pen)
@@ -397,6 +427,49 @@ class Canvas(QGraphicsView):
                 e.width = 2.4 if color_by != "mdot" else 1.5 + 6.0 * t
             e._restyle()
         self.viewport().update()
+
+    LEGEND = [("Oxidizer line", "ox", Qt.SolidLine), ("Fuel line", "fuel", Qt.SolidLine),
+              ("Combustion gas line", "gas", Qt.SolidLine), ("Mechanical link (shaft)", "shaft", Qt.DashDotLine),
+              ("Heat transfer (wall)", "heat", Qt.DotLine)]
+    BUBBLES = "PT pressure · TT temperature · ST speed · FT flow · PDT differential pressure (ISA-5.1)"
+
+    def paintEvent(self, e) -> None:
+        super().paintEvent(e)
+        p = QPainter(self.viewport())
+        try:
+            p.setRenderHint(QPainter.Antialiasing)
+            t = theme.t
+            f = QFont(p.font())
+            f.setPointSizeF(8.0)
+            p.setFont(f)
+            rows = len(self.LEGEND) + 1
+            w, h = 250, 10 + 18 * rows + 8
+            box = QRectF(self.viewport().width() - w - 12, self.viewport().height() - h - 12, w, h)
+            c = QColor(t["card"])
+            c.setAlpha(225)
+            p.setBrush(c)
+            p.setPen(QColor(t["edge"]))
+            p.drawRoundedRect(box, 6, 6)
+            for i, (name, key, style) in enumerate(self.LEGEND):
+                y = box.top() + 14 + 18 * i
+                pen = QPen(QColor(MEDIUM_COLORS[key]), 2.4, style)
+                p.setPen(pen)
+                p.drawLine(QPointF(box.left() + 10, y), QPointF(box.left() + 52, y))
+                if style == Qt.SolidLine:                               # flow direction arrow
+                    p.setPen(Qt.NoPen)
+                    p.setBrush(QColor(MEDIUM_COLORS[key]))
+                    p.drawPolygon([QPointF(box.left() + 36, y), QPointF(box.left() + 29, y - 3.5),
+                                   QPointF(box.left() + 29, y + 3.5)])
+                p.setPen(QColor(t["text"]))
+                p.drawText(QRectF(box.left() + 60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, name)
+            y = box.top() + 14 + 18 * len(self.LEGEND)
+            p.setPen(QPen(QColor(t["dim"]), 1.0))
+            p.setBrush(Qt.NoBrush)
+            p.drawEllipse(QPointF(box.left() + 31, y), 7, 7)
+            p.setPen(QColor(t["text"]))
+            p.drawText(QRectF(box.left() + 60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, "Instrument bubble")
+        finally:
+            p.end()
 
     def drawForeground(self, p: QPainter, rect: QRectF) -> None:
         if not self.legend:
@@ -616,25 +689,21 @@ class CycleSandbox(QMainWindow):
             self.tabs.addTab(w, name)
         left = QWidget()
         ll = QVBoxLayout(left)
-        ll.setContentsMargins(4, 4, 4, 4)
-        lab = QLabel("Components")
-        lab.setObjectName("heading")
-        ll.addWidget(lab)
+        ll.setContentsMargins(PAD, 0, PAD, PAD)
         ll.addWidget(self.palette_tree)
         hint = QLabel("Double-click or drag a part onto the diagram. Drag from port to port to connect.")
         hint.setWordWrap(True)
         hint.setObjectName("hint")
         ll.addWidget(hint)
-        centre = QSplitter(Qt.Vertical)
-        centre.addWidget(self.canvas)
-        centre.addWidget(self.tabs)
-        centre.setSizes([620, 280])
-        split = QSplitter(Qt.Horizontal)
-        split.addWidget(left)
-        split.addWidget(centre)
-        split.addWidget(self.inspector)
-        split.setSizes([230, 900, 370])
-        self.setCentralWidget(split)
+        self.setCentralWidget(self.canvas)
+        self.dock_parts = self._dock("Parts", "Components", left)
+        self.dock_insp = self._dock("Inspector", "Inspector", self.inspector)
+        self.dock_res = self._dock("Results", "Results", self.tabs)
+        from .cycle_animation import CycleAnimation
+        self.anim = CycleAnimation(self.canvas, lambda: self.doc.get("title") or self.doc["graph"].get("title") or self.doc["graph"].get("name") or self.windowTitle())
+        self.dock_anim = self._dock("Animation", "Cycle Animation", self.anim)
+        self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim]
+        self.default_layout()
         self._toolbar()
         self.canvas.selected.connect(self.inspect)
         self.canvas.changed.connect(self._changed)
@@ -643,6 +712,30 @@ class CycleSandbox(QMainWindow):
         self._style()
         theme.changed.connect(lambda *_: self._style())
         self.load_template("gg_kerolox")
+
+    def _dock(self, name: str, title: str, widget: QWidget) -> QDockWidget:
+        d = QDockWidget(apa(title), self)
+        d.setObjectName("sb" + name)
+        d.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetClosable)
+        d.setTitleBarWidget(PanelTitle(d, title))               # drag grip top left, close button top right
+        d.setWidget(widget)
+        return d
+
+    def default_layout(self) -> None:
+        """Components | diagram | Inspector, with the results under the diagram; every panel can be dragged."""
+        for d in self.docks:
+            d.setFloating(False)
+            self.removeDockWidget(d)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_parts)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock_insp)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_res)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock_anim)
+        self.tabifyDockWidget(self.dock_insp, self.dock_anim)
+        self.dock_insp.raise_()
+        for d in self.docks:
+            d.show()
+        self.resizeDocks([self.dock_parts, self.dock_insp], [230, 370], Qt.Horizontal)
+        self.resizeDocks([self.dock_res], [280], Qt.Vertical)
 
     def _style(self) -> None:
         t = theme.t
@@ -698,6 +791,14 @@ class CycleSandbox(QMainWindow):
         self.solve_btn.setShortcut("Ctrl+R")
         self.solve_btn.clicked.connect(self.solve)
         tb.addWidget(self.solve_btn)
+        panels = QPushButton("Panels")                                 # the way back after a panel was closed
+        pm = QMenu(panels)
+        for d in self.docks:
+            pm.addAction(d.toggleViewAction())
+        pm.addSeparator()
+        pm.addAction("Restore Default Layout", self.default_layout)
+        panels.setMenu(pm)
+        tb.addWidget(panels)
         tb.addWidget(QLabel(" Color by "))
         self.color_box = QComboBox()
         self.color_box.addItems(list(COLOR_BY))
