@@ -237,17 +237,16 @@ class Schematic:
         if self.regen:                                          # regenerative cooling tubes hugging the nozzle wall
             self._line(p, [(x - 1.4, y) for x, y in left], QColor(FUEL), 1.4)
             self._line(p, [(100 - x + 1.4, y) for x, y in left], QColor(FUEL), 1.4)
-        # exhaust: plain bands that move down the nozzle
-        p.setBrush(Qt.NoBrush)
+        # exhaust: fixed plain lines across the nozzle, an arrow on each that moves to the right
         for i in range(6):
-            f = ((i + phase) % 6) / 6.0
-            y = 100 + f * 24
+            y = 103.0 + i * 4.2
             half = 50.0 - self._wall_x(y + 1.2) - 1.5          # half width of the bell at that height
             p.setPen(QPen(QColor("#ff6a2a"), 0.7))
             p.drawLine(QPointF(50 - half, y), QPointF(50 + half, y))
+            x = 50 - half + ((phase + i / 6.0) % 1.0) * 2 * half
             p.setPen(Qt.NoPen)
             p.setBrush(QColor("#ff6a2a"))
-            p.drawPolygon(QPolygonF([QPointF(50 + 3, y), QPointF(50 - 1.2, y - 1.6), QPointF(50 - 1.2, y + 1.6)]))
+            p.drawPolygon(QPolygonF([QPointF(x + 1.6, y), QPointF(x - 1.2, y - 1.6), QPointF(x - 1.2, y + 1.6)]))
             p.setBrush(Qt.NoBrush)
 
     def _labels(self, p, ink, labels) -> None:
