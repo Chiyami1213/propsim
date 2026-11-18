@@ -1,0 +1,14 @@
+engine_id,name,class,cycle,oxidizer,fuel,cycle_source_id,cycle_location
+HH_A1,Huzel & Huang A-1 stage engine (750K),textbook_example,gas_generator,LOX,RP1,HH-SP125,section 3.2 and Fig. 2-10
+HH_A2,Huzel & Huang A-2 stage engine (150K),textbook_example,tap_off,LOX,LH2,HH-SP125,p.70 and Fig. 3-3
+HH_A3,Huzel & Huang A-3 stage engine (16K),textbook_example,pressure_fed,LF2,LH2,HH-SP125,Table 3-4 p.74
+HH_A4,Huzel & Huang A-4 stage engine (7.5K),textbook_example,pressure_fed,N2O4,N2H4,HH-SP125,Table 3-5 p.77
+RL10A_4_2,RL10A-4-2,flight,,LOX,LH2,,
+RL10B_2,RL10B-2 / RL10C-2-1,flight,,LOX,LH2,,
+RL10C_1,RL10C-1,flight,,LOX,LH2,,
+RL10C_1_1,RL10C-1-1,flight,,LOX,LH2,,
+RL10C_X,RL10C-X,flight,,LOX,LH2,,
+RL10C_3,RL10C-3,flight,,LOX,LH2,,
+RS25,RS-25,flight,staged_combustion_fuel_rich,LOX,LH2,L3HARRIS-RS25-2024,spec sheet L26301: cycle printed as stage-combustion
+F1,F-1,flight,gas_generator,LOX,RP1,NASA-SP-2009-4545,"ch. 1 (R. Biggs), pp.20-21"
+J2,J-2,flight,gas_generator,LOX,LH2,NASA-SP-2009-4545,"ch. 2 (P. Coffman), p.30"

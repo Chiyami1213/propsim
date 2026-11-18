@@ -1,0 +1,307 @@
+engine_id,subsystem,property,value,unit,quality,source_id,location,uncertainty,condition,note,formula,preferred
+HH_A1,engine,thrust,3336166.2,N,published,HH-SP125,Table 3-2 p.65,,sl,,750000 lbf to N,1
+HH_A1,engine,burn_time,165,s,published,HH-SP125,Table 3-2 p.65,,sl,nominal single-firing duration,,1
+HH_A1,engine,Isp,262.4,s,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,engine,mdot_ox,892.53371,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,1967.7 lb/s to kg/s,1
+HH_A1,engine,mdot_fuel,404.74047,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,892.3 lb/s to kg/s,1
+HH_A1,engine,rho_ox,1143.3979,kg/m3,published,HH-SP125,Table 3-2 p.65,,sl,,71.38 lb/ft3 to kg/m3,1
+HH_A1,engine,rho_fuel,808.13148,kg/m3,published,HH-SP125,Table 3-2 p.65,,sl,,50.45 lb/ft3 to kg/m3,1
+HH_A1,engine,MR,2.2,1,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,thrust_chamber,thrust,3322821.5,N,published,HH-SP125,Table 3-2 p.65,,sl,,747000 lbf to N,1
+HH_A1,thrust_chamber,Isp,270,s,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,thrust_chamber,p_injector_end,7549759.2,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,1095 psia to Pa,1
+HH_A1,thrust_chamber,pc_ns,6894757.3,Pa,published,HH-SP125,Table 3-2 p.65,,sl,nozzle stagnation pressure,1000 psia to Pa,1
+HH_A1,thrust_chamber,mdot_ox,880.42279,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,1941 lb/s to kg/s,1
+HH_A1,thrust_chamber,mdot_fuel,375.12089,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,827 lb/s to kg/s,1
+HH_A1,thrust_chamber,MR,2.35,1,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,thrust_chamber,eta_cstar,0.975,1,published,HH-SP125,Table 3-2 p.65,,sl,,97.5 percent / 100,1
+HH_A1,thrust_chamber,cstar,1725.168,m/s,published,HH-SP125,Table 3-2 p.65,,sl,,5660 ft/s to m/s,1
+HH_A1,thrust_chamber,eta_CF,0.98,1,published,HH-SP125,Table 3-2 p.65,,sl,,98 percent / 100,1
+HH_A1,thrust_chamber,CF,1.532,1,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,thrust_chamber,contraction_ratio,1.6,1,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,thrust_chamber,expansion_ratio,14,1,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,thrust_chamber,At,0.31419292,m2,published,HH-SP125,Table 3-2 p.65,,sl,,487 in2 to m2,1
+HH_A1,thrust_chamber,Lstar,1.143,m,published,HH-SP125,Table 3-2 p.65,,sl,,45 in to m,1
+HH_A1,thrust_chamber,bell_fraction,0.8,1,published,HH-SP125,Table 3-2 p.65,,sl,80 percent bell contour,80 percent / 100,1
+HH_A1,ox_feed,dp_injector,1378951.5,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,200 psi to Pa,1
+HH_A1,ox_feed,dp_dome,1034213.6,Pa,published,HH-SP125,Table 3-2 p.65,,sl,torus dome,150 psi to Pa,1
+HH_A1,ox_feed,dp_line,172368.93,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,25 psi to Pa,1
+HH_A1,ox_feed,dp_main_valve,241316.51,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,35 psi to Pa,1
+HH_A1,ox_pump,p_inlet,379211.65,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,55 psia to Pa,1
+HH_A1,ox_pump,p_discharge,10376610,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,1505 psia to Pa,1
+HH_A1,ox_pump,head,893.064,m,published,HH-SP125,Table 3-2 p.65,,sl,,2930 ft to m,1
+HH_A1,ox_pump,mdot,894.03056,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,1971 lb/s to kg/s,1
+HH_A1,ox_pump,power,11073643,W,published,HH-SP125,Table 3-2 p.65,,sl,,14850 bhp to W,1
+HH_A1,ox_pump,efficiency,0.707,1,published,HH-SP125,Table 3-2 p.65,,sl,,70.7 percent / 100,1
+HH_A1,ox_pump,speed,733.03829,rad/s,published,HH-SP125,Table 3-2 p.65,,sl,,7000 rpm to rad/s,1
+HH_A1,ox_feed,mdot_heat_exchanger,1.3607771,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,oxidizer bleed to tank pressurization heat exchanger,3 lb/s to kg/s,1
+HH_A1,fuel_feed,dp_injector,1378951.5,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,200 psi to Pa,1
+HH_A1,fuel_feed,dp_jacket_manifold,1999479.6,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,290 psi to Pa,1
+HH_A1,fuel_feed,dp_line,68947.573,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,10 psi to Pa,1
+HH_A1,fuel_feed,dp_main_valve,103421.36,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,15 psi to Pa,1
+HH_A1,fuel_feed,dp_calibration_orifice,758423.3,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,110 psi to Pa,1
+HH_A1,fuel_pump,p_inlet,310264.08,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,45 psia to Pa,1
+HH_A1,fuel_pump,p_discharge,11858983,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,1720 psia to Pa,1
+HH_A1,fuel_pump,head,1459.992,m,published,HH-SP125,Table 3-2 p.65,,sl,,4790 ft to m,1
+HH_A1,fuel_pump,mdot,404.60439,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,892 lb/s to kg/s,1
+HH_A1,fuel_pump,power,8791801.5,W,published,HH-SP125,Table 3-2 p.65,,sl,,11790 bhp to W,1
+HH_A1,fuel_pump,efficiency,0.658,1,published,HH-SP125,Table 3-2 p.65,,sl,,65.8 percent / 100,1
+HH_A1,fuel_pump,speed,733.03829,rad/s,published,HH-SP125,Table 3-2 p.65,,sl,,7000 rpm to rad/s,1
+HH_A1,turbine,p_inlet,4412644.7,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,640 psia to Pa,1
+HH_A1,turbine,T_inlet,1033.15,K,published,HH-SP125,Table 3-2 p.65,,sl,,1400 degF to K,1
+HH_A1,turbine,pressure_ratio,23.7,1,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,turbine,mdot,41.730498,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,92 lb/s to kg/s,1
+HH_A1,turbine,power,20238295,W,published,HH-SP125,Table 3-2 p.65,,sl,,27140 bhp to W,1
+HH_A1,turbine,efficiency,0.582,1,published,HH-SP125,Table 3-2 p.65,,sl,,58.2 percent / 100,1
+HH_A1,turbine,speed,733.03829,rad/s,published,HH-SP125,Table 3-2 p.65,,sl,,7000 rpm to rad/s,1
+HH_A1,shaft,aux_power,372849.94,W,published,HH-SP125,Table 3-2 p.65,,sl,auxiliary drive,500 bhp to W,1
+HH_A1,gg_ox_feed,mdot,12.110916,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,26.7 lb/s to kg/s,1
+HH_A1,gg_ox_feed,dp_entrance,172368.93,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,25 psi to Pa,1
+HH_A1,gg_ox_feed,dp_line,172368.93,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,25 psi to Pa,1
+HH_A1,gg_ox_feed,dp_control_orifice,4240275.7,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,615 psi to Pa,1
+HH_A1,gg_ox_feed,dp_valve,68947.573,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,10 psi to Pa,1
+HH_A1,gg_ox_feed,dp_injector,827370.88,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,120 psi to Pa,1
+HH_A1,gg_fuel_feed,mdot,29.619582,kg/s,published,HH-SP125,Table 3-2 p.65,,sl,,65.3 lb/s to kg/s,1
+HH_A1,gg_fuel_feed,dp_entrance,172368.93,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,25 psi to Pa,1
+HH_A1,gg_fuel_feed,dp_line,172368.93,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,25 psi to Pa,1
+HH_A1,gg_fuel_feed,dp_control_orifice,5515805.8,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,800 psi to Pa,1
+HH_A1,gg_fuel_feed,dp_valve,137895.15,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,20 psi to Pa,1
+HH_A1,gg_fuel_feed,dp_injector,965266.02,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,140 psi to Pa,1
+HH_A1,gas_generator,MR,0.408,1,published,HH-SP125,Table 3-2 p.65,,sl,,,1
+HH_A1,gas_generator,p_injector_end,4895277.7,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,710 psia to Pa,1
+HH_A1,gas_generator,dp_combustor,482633.01,Pa,published,HH-SP125,Table 3-2 p.65,,sl,,70 psi to Pa,1
+HH_A1,turbine,torque,27631.57,N m,published,HH-SP125,Sample Calculation (6-5) p.199,,sl,unit as in the sample calculation; consistent with power and speed,20380 ft-lbf to N m,1
+HH_A1,turbine,torque,2302.6308,N m,published,HH-SP125,Table 3-2 p.65,,sl,"unit printed in-lb; inconsistent with 27140 bhp at 7000 rpm, see conflicts.md",20380 in-lbf to N m,0
+HH_A1,turbine,p_exhaust,186158.45,Pa,published,HH-SP125,Sample Calculation (6-5) p.199,,sl,static pressure at turbine exhaust,27 psia to Pa,1
+HH_A1,turbine_exhaust,thrust,12010.198,N,published,HH-SP125,Sample Calculation (6-6) p.201,,sl,thrust generated by turbine exhaust,2700 lbf to N,1
+HH_A1,thrust_chamber,thrust,3324156,N,published,HH-SP125,Sample Calculation (6-6) p.201,,sl,test value used in the sample calculation; Table 3-2 gives 747000,747300 lbf to N,0
+HH_A2,engine,thrust,667233.24,N,published,HH-SP125,Table 3-3 p.69,,vac,,150000 lbf to N,1
+HH_A2,engine,burn_time,250,s,published,HH-SP125,Table 3-3 p.69,,vac,nominal single-firing duration,,1
+HH_A2,engine,Isp,434,s,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,engine,mdot_ox,130.6346,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,288 lb/s to kg/s,1
+HH_A2,engine,rho_ox,1143.3979,kg/m3,published,HH-SP125,Table 3-3 p.69,,vac,,71.38 lb/ft3 to kg/m3,1
+HH_A2,engine,mdot_fuel,26.126921,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,57.6 lb/s to kg/s,1
+HH_A2,engine,rho_fuel,70.801608,kg/m3,published,HH-SP125,Table 3-3 p.69,,vac,,4.42 lb/ft3 to kg/m3,1
+HH_A2,engine,MR,5,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,thrust_chamber,thrust,665009.13,N,published,HH-SP125,Table 3-3 p.69,,vac,,149500 lbf to N,1
+HH_A2,thrust_chamber,Isp,440,s,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,thrust_chamber,p_injector_end,6032912.6,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,875 psia to Pa,1
+HH_A2,thrust_chamber,pc_ns,5515805.8,Pa,published,HH-SP125,Table 3-3 p.69,,vac,nozzle stagnation pressure,800 psia to Pa,1
+HH_A2,thrust_chamber,mdot_ox,129.36454,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,285.2 lb/s to kg/s,1
+HH_A2,thrust_chamber,mdot_fuel,24.720784,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,54.5 lb/s to kg/s,1
+HH_A2,thrust_chamber,MR,5.22,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,thrust_chamber,eta_cstar,0.975,1,published,HH-SP125,Table 3-3 p.69,,vac,,97.5 percent / 100,1
+HH_A2,thrust_chamber,cstar,2279.904,m/s,published,HH-SP125,Table 3-3 p.69,,vac,,7480 ft/s to m/s,1
+HH_A2,thrust_chamber,eta_CF,1.01,1,published,HH-SP125,Table 3-3 p.69,,vac,,101 percent / 100,1
+HH_A2,thrust_chamber,CF,1.895,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,thrust_chamber,contraction_ratio,1.6,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,thrust_chamber,expansion_ratio,40,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,thrust_chamber,At,0.063612776,m2,published,HH-SP125,Table 3-3 p.69,,vac,,98.6 in2 to m2,1
+HH_A2,thrust_chamber,Lstar,0.6604,m,published,HH-SP125,Table 3-3 p.69,,vac,,26 in to m,1
+HH_A2,thrust_chamber,bell_fraction,0.75,1,published,HH-SP125,Table 3-3 p.69,,vac,75 percent bell contour,75 percent / 100,1
+HH_A2,ox_feed,dp_injector,1103161.2,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,160 psi to Pa,1
+HH_A2,ox_feed,dp_dome,275790.29,Pa,published,HH-SP125,Table 3-3 p.69,,vac,torus dome,40 psi to Pa,1
+HH_A2,ox_feed,dp_line,137895.15,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,20 psi to Pa,1
+HH_A2,ox_feed,dp_main_valve,137895.15,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,20 psi to Pa,1
+HH_A2,ox_feed,dp_calibration_orifice,413685.44,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,60 psi to Pa,1
+HH_A2,ox_pump,p_inlet,241316.51,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,35 psia to Pa,1
+HH_A2,ox_pump,p_discharge,8101339.8,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,1175 psia to Pa,1
+HH_A2,ox_pump,head,702.564,m,published,HH-SP125,Table 3-3 p.69,,vac,,2305 ft to m,1
+HH_A2,ox_pump,mdot,131.76858,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,290.5 lb/s to kg/s,1
+HH_A2,ox_pump,Q,0.11545506,m3/s,published,HH-SP125,Table 3-3 p.69,,vac,,1830 gpm to m3/s,1
+HH_A2,ox_feed,mdot_heat_exchanger,1.1339809,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,bleed for oxidizer tank pressurization,2.5 lb/s to kg/s,1
+HH_A2,ox_pump,power,1424286.8,W,published,HH-SP125,Table 3-3 p.69,,vac,,1910 bhp to W,1
+HH_A2,ox_pump,efficiency,0.64,1,published,HH-SP125,Table 3-3 p.69,,vac,,64 percent / 100,1
+HH_A2,ox_pump,speed,900.58989,rad/s,published,HH-SP125,Table 3-3 p.69,,vac,,8600 rpm to rad/s,1
+HH_A2,ox_turbine,p_inlet,4826330.1,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,700 psia to Pa,1
+HH_A2,ox_turbine,T_inlet,922.03889,K,published,HH-SP125,Table 3-3 p.69,,vac,,1200 degF to K,1
+HH_A2,ox_turbine,pressure_ratio,16,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,ox_turbine,mdot,0.71667594,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,1.58 lb/s to kg/s,1
+HH_A2,ox_turbine,power,1446657.8,W,published,HH-SP125,Table 3-3 p.69,,vac,,1940 bhp to W,1
+HH_A2,ox_turbine,efficiency,0.543,1,published,HH-SP125,Table 3-3 p.69,,vac,,54.3 percent / 100,1
+HH_A2,ox_turbine,speed,900.58989,rad/s,published,HH-SP125,Table 3-3 p.69,,vac,,8600 rpm to rad/s,1
+HH_A2,ox_turbine,torque,1604.3846,N m,published,HH-SP125,Table 3-3 p.69,,vac,,14200 in-lbf to N m,1
+HH_A2,fuel_feed,dp_injector,689475.73,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,100 psi to Pa,1
+HH_A2,fuel_feed,dp_jacket_manifold,2240796.1,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,325 psi to Pa,1
+HH_A2,fuel_feed,dp_line,137895.15,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,20 psi to Pa,1
+HH_A2,fuel_feed,dp_main_valve,137895.15,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,20 psi to Pa,1
+HH_A2,fuel_feed,dp_calibration_orifice,413685.44,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,60 psi to Pa,1
+HH_A2,fuel_pump,p_inlet,172368.93,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,25 psia to Pa,1
+HH_A2,fuel_pump,p_discharge,9652660.2,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,1400 psia to Pa,1
+HH_A2,fuel_pump,head,13655.04,m,published,HH-SP125,Table 3-3 p.69,,vac,,44800 ft to m,1
+HH_A2,fuel_pump,mdot,27.124824,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,59.8 lb/s to kg/s,1
+HH_A2,fuel_pump,Q,0.38358839,m3/s,published,HH-SP125,Table 3-3 p.69,,vac,,6080 gpm to m3/s,1
+HH_A2,fuel_feed,mdot_heat_exchanger,0.99790321,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,heat exchanger bleed,2.2 lb/s to kg/s,1
+HH_A2,fuel_pump,power,4548769.2,W,published,HH-SP125,Table 3-3 p.69,,vac,,6100 bhp to W,1
+HH_A2,fuel_pump,efficiency,0.8,1,published,HH-SP125,Table 3-3 p.69,,vac,,80 percent / 100,1
+HH_A2,fuel_pump,speed,2827.4334,rad/s,published,HH-SP125,Table 3-3 p.69,,vac,,27000 rpm to rad/s,1
+HH_A2,fuel_feed,mdot_tank_press_bleed,0.99790321,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,chamber coolant passage bleed for fuel tank pressurization,2.2 lb/s to kg/s,1
+HH_A2,fuel_turbine,p_inlet,4826330.1,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,700 psia to Pa,1
+HH_A2,fuel_turbine,T_inlet,922.03889,K,published,HH-SP125,Table 3-3 p.69,,vac,,1200 degF to K,1
+HH_A2,fuel_turbine,pressure_ratio,16,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,fuel_turbine,mdot,1.959519,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,4.32 lb/s to kg/s,1
+HH_A2,fuel_turbine,power,4548769.2,W,published,HH-SP125,Table 3-3 p.69,,vac,,6100 bhp to W,1
+HH_A2,fuel_turbine,efficiency,0.625,1,published,HH-SP125,Table 3-3 p.69,,vac,,62.5 percent / 100,1
+HH_A2,fuel_turbine,speed,2827.4334,rad/s,published,HH-SP125,Table 3-3 p.69,,vac,,27000 rpm to rad/s,1
+HH_A2,fuel_turbine,torque,1610.0338,N m,published,HH-SP125,Table 3-3 p.69,,vac,,14250 in-lbf to N m,1
+HH_A2,tapoff,p,5171068,Pa,published,HH-SP125,Table 3-3 p.69,,vac,,750 psia to Pa,1
+HH_A2,tapoff,T,922.03889,K,published,HH-SP125,Table 3-3 p.69,,vac,,1200 degF to K,1
+HH_A2,tapoff,mdot,2.676195,kg/s,published,HH-SP125,Table 3-3 p.69,,vac,,5.9 lb/s to kg/s,1
+HH_A2,tapoff,MR,0.9,1,published,HH-SP125,Table 3-3 p.69,,vac,,,1
+HH_A2,engine,dry_mass,989.28496,kg,published,HH-SP125,"p.70, text of section 3.3",,n/a,,2181 lb to kg,1
+HH_A3,engine,thrust,71171.546,N,published,HH-SP125,Table 3-4 p.74,,vac,,16000 lbf to N,1
+HH_A3,engine,burn_time,300,s,published,HH-SP125,Table 3-4 p.74,,vac,nominal total multiple-firing duration,,1
+HH_A3,engine,Isp,446,s,published,HH-SP125,Table 3-4 p.74,,vac,,,1
+HH_A3,engine,rho_ox,1508.2985,kg/m3,published,HH-SP125,Table 3-4 p.74,,vac,,94.16 lb/ft3 to kg/m3,1
+HH_A3,engine,mdot_ox,13.961573,kg/s,published,HH-SP125,Table 3-4 p.74,,vac,,30.78 lb/s to kg/s,1
+HH_A3,engine,rho_fuel,70.801608,kg/m3,published,HH-SP125,Table 3-4 p.74,,vac,,4.42 lb/ft3 to kg/m3,1
+HH_A3,engine,mdot_fuel,2.3269289,kg/s,published,HH-SP125,Table 3-4 p.74,,vac,,5.13 lb/s to kg/s,1
+HH_A3,engine,MR,6,1,published,HH-SP125,Table 3-4 p.74,,vac,,,1
+HH_A3,thrust_chamber,thrust,71171.546,N,published,HH-SP125,Table 3-4 p.74,,vac,,16000 lbf to N,1
+HH_A3,thrust_chamber,Isp,446,s,published,HH-SP125,Table 3-4 p.74,,vac,,,1
+HH_A3,thrust_chamber,p_injector_end,758423.3,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,110 psia to Pa,1
+HH_A3,thrust_chamber,pc_ns,689475.73,Pa,published,HH-SP125,Table 3-4 p.74,,vac,nozzle stagnation pressure,100 psia to Pa,1
+HH_A3,thrust_chamber,mdot_ox,13.961573,kg/s,published,HH-SP125,Table 3-4 p.74,,vac,,30.78 lb/s to kg/s,1
+HH_A3,thrust_chamber,mdot_fuel,2.3269289,kg/s,published,HH-SP125,Table 3-4 p.74,,vac,,5.13 lb/s to kg/s,1
+HH_A3,thrust_chamber,MR,6,1,published,HH-SP125,Table 3-4 p.74,,vac,,,1
+HH_A3,thrust_chamber,eta_cstar,0.98,1,published,HH-SP125,Table 3-4 p.74,,vac,,98 percent / 100,1
+HH_A3,thrust_chamber,cstar,2410.968,m/s,published,HH-SP125,Table 3-4 p.74,,vac,,7910 ft/s to m/s,1
+HH_A3,thrust_chamber,eta_CF,1.02,1,published,HH-SP125,Table 3-4 p.74,,vac,,102 percent / 100,1
+HH_A3,thrust_chamber,CF,1.817,1,published,HH-SP125,Table 3-4 p.74,,vac,,,1
+HH_A3,thrust_chamber,contraction_ratio,2,1,published,HH-SP125,Table 3-4 p.74,,vac,,,1
+HH_A3,thrust_chamber,expansion_ratio,35,1,published,HH-SP125,Table 3-4 p.74,,vac,,,1
+HH_A3,thrust_chamber,At,0.05677408,m2,published,HH-SP125,Table 3-4 p.74,,vac,,88 in2 to m2,1
+HH_A3,thrust_chamber,Lstar,0.7112,m,published,HH-SP125,Table 3-4 p.74,,vac,,28 in to m,1
+HH_A3,thrust_chamber,bell_fraction,0.7,1,published,HH-SP125,Table 3-4 p.74,,vac,70 percent bell contour,70 percent / 100,1
+HH_A3,ox_feed,dp_injector,172368.93,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,25 psi to Pa,1
+HH_A3,ox_feed,dp_dome,34473.786,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,5 psi to Pa,1
+HH_A3,ox_feed,dp_main_valve,55158.058,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,8 psi to Pa,1
+HH_A3,ox_feed,dp_line,34473.786,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,5 psi to Pa,1
+HH_A3,ox_feed,dp_calibration_orifice,117210.87,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,17 psi to Pa,1
+HH_A3,ox_tank,p,1172108.7,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,170 psia to Pa,1
+HH_A3,ox_tank,propellant_mass,12677.907,kg,published,HH-SP125,Table 3-4 p.74,,vac,300 s for 3 engines plus 1 percent residual,27950 lb to kg,1
+HH_A3,ox_tank,volume,8.6366382,m3,published,HH-SP125,Table 3-4 p.74,,vac,including 3 percent ullage,305 ft3 to m3,1
+HH_A3,ox_tank,mdot_pressurant,0.070533614,kg/s,published,HH-SP125,Table 3-4 p.74,,vac,"helium, tank gas at 400 degR",0.1555 lb/s to kg/s,1
+HH_A3,ox_pressurant,mass,27.215542,kg,published,HH-SP125,Table 3-4 p.74,,vac,"helium; bottle final pressure 350 psi, 2 percent reserve",60 lb to kg,1
+HH_A3,ox_pressurant,volume,0.20812882,m3,published,HH-SP125,Table 3-4 p.74,,vac,"200 degR storage, 3 percent ullage",7.35 ft3 to m3,1
+HH_A3,ox_pressurant,p_initial,31026408,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,4500 psia to Pa,1
+HH_A3,fuel_feed,dp_injector,172368.93,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,25 psi to Pa,1
+HH_A3,fuel_feed,dp_inlet_manifold,68947.573,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,10 psi to Pa,1
+HH_A3,fuel_feed,dp_main_valve,68947.573,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,10 psi to Pa,1
+HH_A3,fuel_feed,dp_line,34473.786,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,5 psi to Pa,1
+HH_A3,fuel_tank,p,1103161.2,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,160 psia to Pa,1
+HH_A3,fuel_tank,propellant_mass,2113.7404,kg,published,HH-SP125,Table 3-4 p.74,,vac,300 s for 3 engines plus 1 percent residual,4660 lb to kg,1
+HH_A3,fuel_tank,volume,30.780412,m3,published,HH-SP125,Table 3-4 p.74,,vac,including 3 percent ullage,1087 ft3 to m3,1
+HH_A3,fuel_tank,mdot_pressurant,0.15694296,kg/s,published,HH-SP125,Table 3-4 p.74,,vac,"hydrogen, tank vapor at 300 degR",0.346 lb/s to kg/s,1
+HH_A3,fuel_pressurant,mass,48.987976,kg,published,HH-SP125,Table 3-4 p.74,,vac,"hydrogen; bottle final pressure 350 psia, 4 percent reserve",108 lb to kg,1
+HH_A3,fuel_pressurant,volume,0.71358453,m3,published,HH-SP125,Table 3-4 p.74,,vac,"liquid hydrogen, 3 percent ullage",25.2 ft3 to m3,1
+HH_A3,fuel_pressurant,p,2413165.1,Pa,published,HH-SP125,Table 3-4 p.74,,vac,,350 psia to Pa,1
+HH_A4,engine,thrust,33361.662,N,published,HH-SP125,Table 3-5 p.77,,vac,,7500 lbf to N,1
+HH_A4,engine,burn_time,410,s,published,HH-SP125,Table 3-5 p.77,,vac,nominal total multiple-firing duration at full thrust,,1
+HH_A4,engine,Isp,320,s,published,HH-SP125,Table 3-5 p.77,,vac,,,1
+HH_A4,engine,rho_ox,1455.758,kg/m3,published,HH-SP125,Table 3-5 p.77,,vac,,90.88 lb/ft3 to kg/m3,1
+HH_A4,engine,mdot_ox,5.7969105,kg/s,published,HH-SP125,Table 3-5 p.77,,vac,,12.78 lb/s to kg/s,1
+HH_A4,engine,rho_fuel,1013.1678,kg/m3,published,HH-SP125,Table 3-5 p.77,,vac,,63.25 lb/ft3 to kg/m3,1
+HH_A4,engine,mdot_fuel,4.8307587,kg/s,published,HH-SP125,Table 3-5 p.77,,vac,,10.65 lb/s to kg/s,1
+HH_A4,engine,MR,1.2,1,published,HH-SP125,Table 3-5 p.77,,vac,,,1
+HH_A4,thrust_chamber,thrust,33361.662,N,published,HH-SP125,Table 3-5 p.77,,vac,,7500 lbf to N,1
+HH_A4,thrust_chamber,Isp,320,s,published,HH-SP125,Table 3-5 p.77,,vac,,,1
+HH_A4,thrust_chamber,p_injector_end,758423.3,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,110 psia to Pa,1
+HH_A4,thrust_chamber,pc_ns,689475.73,Pa,published,HH-SP125,Table 3-5 p.77,,vac,nozzle stagnation pressure,100 psia to Pa,1
+HH_A4,thrust_chamber,mdot_ox,5.7969105,kg/s,published,HH-SP125,Table 3-5 p.77,,vac,,12.78 lb/s to kg/s,1
+HH_A4,thrust_chamber,mdot_fuel,4.8307587,kg/s,published,HH-SP125,Table 3-5 p.77,,vac,,10.65 lb/s to kg/s,1
+HH_A4,thrust_chamber,MR,1.2,1,published,HH-SP125,Table 3-5 p.77,,vac,,,1
+HH_A4,thrust_chamber,eta_cstar,0.98,1,published,HH-SP125,Table 3-5 p.77,,vac,,98 percent / 100,1
+HH_A4,thrust_chamber,cstar,1688.592,m/s,published,HH-SP125,Table 3-5 p.77,,vac,,5540 ft/s to m/s,1
+HH_A4,thrust_chamber,eta_CF,1.01,1,published,HH-SP125,Table 3-5 p.77,,vac,,101 percent / 100,1
+HH_A4,thrust_chamber,CF,1.858,1,published,HH-SP125,Table 3-5 p.77,,vac,,,1
+HH_A4,thrust_chamber,contraction_ratio,2,1,published,HH-SP125,Table 3-5 p.77,,vac,,,1
+HH_A4,thrust_chamber,expansion_ratio,35,1,published,HH-SP125,Table 3-5 p.77,,vac,,,1
+HH_A4,thrust_chamber,At,0.026064464,m2,published,HH-SP125,Table 3-5 p.77,,vac,,40.4 in2 to m2,1
+HH_A4,thrust_chamber,Lstar,0.8128,m,published,HH-SP125,Table 3-5 p.77,,vac,,32 in to m,1
+HH_A4,thrust_chamber,bell_fraction,0.7,1,published,HH-SP125,Table 3-5 p.77,,vac,70 percent bell contour,70 percent / 100,1
+HH_A4,ox_feed,dp_injector,172368.93,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,25 psi to Pa,1
+HH_A4,ox_feed,dp_dome,20684.272,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,3 psi to Pa,1
+HH_A4,ox_feed,dp_line,34473.786,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,5 psi to Pa,1
+HH_A4,ox_feed,dp_main_valve,27579.029,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,4 psi to Pa,1
+HH_A4,ox_feed,dp_calibration_orifice,55158.058,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,8 psi to Pa,1
+HH_A4,ox_feed,dp_mr_control_reserve,68947.573,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,10 psi to Pa,1
+HH_A4,ox_tank,p,1137635,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,165 psia to Pa,1
+HH_A4,ox_tank,propellant_mass,4789.9354,kg,published,HH-SP125,Table 3-5 p.77,,vac,410 s for 2 engines plus 0.8 percent residual,10560 lb to kg,1
+HH_A4,ox_tank,volume,3.3980216,m3,published,HH-SP125,Table 3-5 p.77,,vac,including 2.5 percent ullage,120 ft3 to m3,1
+HH_A4,ox_tank,mdot_pressurant,0.010205828,kg/s,published,HH-SP125,Table 3-5 p.77,,vac,"helium, ullage at 700 degR",0.0225 lb/s to kg/s,1
+HH_A4,ox_pressurant,mass,5.8740212,kg,published,HH-SP125,Table 3-5 p.77,,vac,"helium; bottle final 191 degR and 400 psia, 2 percent reserve",12.95 lb to kg,1
+HH_A4,ox_pressurant,volume,0.12176244,m3,published,HH-SP125,Table 3-5 p.77,,vac,,4.3 ft3 to m3,1
+HH_A4,ox_pressurant,p_initial,31026408,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,4500 psia to Pa,1
+HH_A4,ox_pressurant,T_max,311.11111,K,published,HH-SP125,Table 3-5 p.77,,vac,,560 degR to K,1
+HH_A4,fuel_feed,dp_injector,172368.93,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,25 psi to Pa,1
+HH_A4,fuel_feed,dp_inlet_manifold,27579.029,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,4 psi to Pa,1
+HH_A4,fuel_feed,dp_line,27579.029,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,4 psi to Pa,1
+HH_A4,fuel_feed,dp_main_valve,27579.029,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,4 psi to Pa,1
+HH_A4,fuel_feed,dp_calibration_orifice,55158.058,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,8 psi to Pa,1
+HH_A4,fuel_tank,p,1068687.4,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,155 psia to Pa,1
+HH_A4,fuel_tank,propellant_mass,4009.7566,kg,published,HH-SP125,Table 3-5 p.77,,vac,410 s for 2 engines plus 1.2 percent residual,8840 lb to kg,1
+HH_A4,fuel_tank,volume,4.0634675,m3,published,HH-SP125,Table 3-5 p.77,,vac,including 2.5 percent ullage,143.5 ft3 to m3,1
+HH_A4,fuel_tank,mdot_pressurant,0.011339809,kg/s,published,HH-SP125,Table 3-5 p.77,,vac,"helium, ullage at 700 degR",0.025 lb/s to kg/s,1
+HH_A4,fuel_pressurant,mass,6.5317301,kg,published,HH-SP125,Table 3-5 p.77,,vac,"helium; bottle final 191 degR and 400 psia, 2 percent reserve",14.4 lb to kg,1
+HH_A4,fuel_pressurant,volume,0.13507136,m3,published,HH-SP125,Table 3-5 p.77,,vac,,4.77 ft3 to m3,1
+HH_A4,fuel_pressurant,p_initial,31026408,Pa,published,HH-SP125,Table 3-5 p.77,,vac,,4500 psia to Pa,1
+HH_A4,fuel_pressurant,T_max,311.11111,K,published,HH-SP125,Table 3-5 p.77,,vac,,560 degR to K,1
+RL10A_4_2,engine,thrust,99195.342,N,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,22300 lbf to N,1
+RL10A_4_2,engine,Isp,451,s,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,,1
+RL10A_4_2,engine,MR,5.5,1,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nominal mixture ratio,,1
+RL10A_4_2,engine,dry_mass,167.82918,kg,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,printed as weight,370 lb to kg,1
+RL10A_4_2,engine,length,2.286,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,,90 in to m,1
+RL10A_4_2,thrust_chamber,exit_diameter,1.1684,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nozzle diameter,46 in to m,1
+RL10B_2,engine,thrust,110093.48,N,published,L3HARRIS-RL10-WEB,"RL10 engine web page, model list (RL10B-2 / RL10C-2-1)",,unstated,ambient condition not printed,24750 lbf to N,1
+RL10B_2,engine,Isp,465.5,s,published,L3HARRIS-RL10-WEB,"RL10 engine web page, model list (RL10B-2 / RL10C-2-1)",,unstated,ambient condition not printed,,1
+RL10B_2,engine,MR,5.88,1,published,L3HARRIS-RL10-WEB,"RL10 engine web page, model list (RL10B-2 / RL10C-2-1)",,n/a,nominal mixture ratio,,1
+RL10B_2,engine,dry_mass,301.18533,kg,published,L3HARRIS-RL10-WEB,"RL10 engine web page, model list (RL10B-2 / RL10C-2-1)",,n/a,printed as weight,664 lb to kg,1
+RL10C_1,engine,thrust,101819.79,N,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,22890 lbf to N,1
+RL10C_1,engine,Isp,449.7,s,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,,1
+RL10C_1,engine,MR,5.5,1,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nominal mixture ratio,,1
+RL10C_1,engine,dry_mass,190.5088,kg,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,printed as weight,420 lb to kg,1
+RL10C_1,engine,length,2.1844,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,,86 in to m,1
+RL10C_1,thrust_chamber,exit_diameter,1.4478,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nozzle diameter,57 in to m,1
+RL10C_1_1,engine,thrust,105978.88,N,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,23825 lbf to N,1
+RL10C_1_1,engine,Isp,453.8,s,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,,1
+RL10C_1_1,engine,MR,5.5,1,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nominal mixture ratio,,1
+RL10C_1_1,engine,dry_mass,188.24083,kg,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,printed as weight,415 lb to kg,1
+RL10C_1_1,engine,length,2.45618,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,,96.7 in to m,1
+RL10C_1_1,thrust_chamber,exit_diameter,1.5748,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nozzle diameter,62 in to m,1
+RL10C_X,engine,thrust,107291.11,N,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,24120 lbf to N,1
+RL10C_X,engine,Isp,460.9,s,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,,1
+RL10C_X,engine,MR,5.5,1,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nominal mixture ratio,,1
+RL10C_X,engine,dry_mass,231.33211,kg,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,printed as weight,510 lb to kg,1
+RL10C_X,engine,length,3.31216,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,,130.4 in to m,1
+RL10C_X,thrust_chamber,exit_diameter,1.87198,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nozzle diameter,73.7 in to m,1
+RL10C_3,engine,thrust,108269.71,N,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,24340 lbf to N,1
+RL10C_3,engine,Isp,460.1,s,published,L3HARRIS-RL10-DS,"data sheet, specification table",,unstated,ambient condition not printed,,1
+RL10C_3,engine,MR,5.7,1,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nominal mixture ratio,,1
+RL10C_3,engine,dry_mass,230.42492,kg,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,printed as weight,508 lb to kg,1
+RL10C_3,engine,length,3.15722,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,,124.3 in to m,1
+RL10C_3,thrust_chamber,exit_diameter,1.8542,m,published,L3HARRIS-RL10-DS,"data sheet, specification table",,n/a,nozzle diameter,73 in to m,1
+RS25,engine,thrust,1859356.6,N,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,sl,at 109 percent power level,418000 lbf to N,1
+RS25,engine,thrust,2278823.9,N,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,vac,at 109 percent power level,512300 lbf to N,1
+RS25,engine,throttle_min,0.67,1,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,of rated power level,67 percent / 100,1
+RS25,engine,throttle_max,1.09,1,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,of rated power level,109 percent / 100,1
+RS25,thrust_chamber,pc,20642903,Pa,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,power level not stated,2994 psia to Pa,1
+RS25,engine,MR,6.03,1,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,power level not stated,,1
+RS25,engine,Isp,452.3,s,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,vac,power level not stated,,1
+RS25,thrust_chamber,expansion_ratio,69,1,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,,,1
+RS25,engine,dry_mass,3526.2271,kg,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,printed as dry weight,7774 lb to kg,1
+RS25,engine,length,4.2672,m,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,,168 in to m,1
+RS25,engine,width,2.4384,m,published,L3HARRIS-RS25-2024,spec sheet L26301 (07/2024),,n/a,,96 in to m,1
+F1,engine,thrust,6770193.3,N,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.20,101553,unstated,"uprated requirement, +/-1.5 percent; ambient condition not stated",1.522e+06 lbf to N,1
+F1,engine,Isp,265,s,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.19,,unstated,ambient condition not stated,,1
+F1,thrust_chamber,pc,7584233,Pa,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.19,,n/a,"printed as 1,100 psi; station not stated",1100 psi to Pa,1
+F1,engine,MR,2.27,1,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.19,,n/a,,,1
+F1,thrust_chamber,expansion_ratio,16,1,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.20,,n/a,"tube-wall section to 10:1, extension to 16:1",,1
+F1,engine,dry_mass,8164.6627,kg,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.20,,n/a,printed as weight,18000 lb to kg,1
+F1,engine,length,5.4864,m,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.19,,n/a,eighteen feet tall,18 ft to m,1
+F1,engine,width,3.6576,m,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.19,,n/a,twelve feet wide,12 ft to m,1
+F1,engine,burn_time,165,s,published,NASA-SP-2009-4545,ch. 1 (R. Biggs) p.20,,n/a,mission duration,,1
+J2,engine,thrust,1023091,N,published,NASA-SP-2009-4545,ch. 2 (P. Coffman) p.29,,unstated,"printed as up to 230,000 pounds; ambient condition not stated",230000 lbf to N,1
+J2,engine,Isp,425,s,published,NASA-SP-2009-4545,ch. 2 (P. Coffman) p.30,,unstated,ambient condition not stated,,1
+J2,engine,MR,5.5,1,published,NASA-SP-2009-4545,ch. 2 (P. Coffman) p.30,,n/a,can also run at 4.5,,1
+J2,thrust_chamber,expansion_ratio,27.5,1,published,NASA-SP-2009-4545,ch. 2 (P. Coffman) p.30,,n/a,,,1

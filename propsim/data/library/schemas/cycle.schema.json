@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://propsim/library/schemas/cycle.schema.json",
+  "title": "Engine cycles",
+  "description": "Power cycles of pump-fed and pressure-fed engines: turbine drive, exhaust destination, typical cycle efficiency (sourced) and governing equations. SI units only.",
+  "type": "object",
+  "required": [
+    "cycles"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "cycles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cycle_id",
+          "name",
+          "flow_type",
+          "description",
+          "turbine_drive",
+          "turbine_exhaust",
+          "component_types",
+          "reference_engines",
+          "propsim_cycle",
+          "cycle_efficiency_min",
+          "cycle_efficiency_max",
+          "governing_equations",
+          "known_limitations"
+        ],
+        "properties": {
+          "cycle_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "flow_type": {
+            "enum": [
+              "none",
+              "separate",
+              "topping"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "turbine_drive": {
+            "enum": [
+              "none",
+              "gas_generator",
+              "chamber_tapoff",
+              "jacket_heated_fuel",
+              "preburner"
+            ]
+          },
+          "turbine_exhaust": {
+            "enum": [
+              "none",
+              "overboard_or_nozzle",
+              "nozzle",
+              "chamber"
+            ]
+          },
+          "component_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reference_engines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "engine_id values of engines/engines.csv"
+          },
+          "propsim_cycle": {
+            "enum": [
+              "gg",
+              "expander",
+              "staged",
+              null
+            ],
+            "description": "key of propsim.core.feed.cycles.CYCLES that implements it"
+          },
+          "cycle_efficiency_min": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "sourced_value.schema.json"
+              }
+            ]
+          },
+          "cycle_efficiency_max": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "sourced_value.schema.json"
+              }
+            ]
+          },
+          "turbine_inlet_temperature_max": {
+            "$ref": "sourced_value.schema.json"
+          },
+          "governing_equations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "form",
+                "source_id",
+                "location"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "form": {
+                  "type": "string"
+                },
+                "source_id": {
+                  "type": "string"
+                },
+                "location": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "known_limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
