@@ -1,0 +1,1644 @@
+{
+  "schema_version": "1.0",
+  "graph_id": "f1_saturn_v",
+  "name": "F-1 gas-generator kerolox engine (Saturn V first stage, scaled from A-1, estimated)",
+  "description": "LOX/RP-1 gas-generator cycle on one turbopump shaft, fuel-cooled tubular chamber: the F-1 cycle. ESTIMATE: the Huzel & Huang A-1 graph with areas scaled by 2.037 (F-1 thrust / A-1 thrust), volumes by 2.908; the F-1 published figures (thrust, chamber pressure, mixture ratio) are only validation targets.",
+  "cycle": "gas_generator",
+  "reference_engine": "F1",
+  "propellants": {
+    "oxidizer": "LOX",
+    "fuel": "RP1"
+  },
+  "nodes": [
+    {
+      "id": "ox_tank",
+      "type": "tank_regulated",
+      "label": "LOX tank",
+      "params": {
+        "p_set": {
+          "value": 379212.0,
+          "unit": "Pa",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "set to the published ox pump inlet pressure (55 psia, Table 3-2 p.65); suction line not modelled"
+        },
+        "V_tank": {
+          "value": 394.96366042763714,
+          "unit": "m3",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.908 (F-1/A-1 thrust ratio 2.0375^1.5); was pump flow 894 kg/s x burn 165 s (Table 3-2) / rho / 0.95 fill fraction; one engine's share, vehicle tank not in the source"
+        },
+        "fill_fraction": {
+          "value": 0.95,
+          "unit": "1",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "5 % ullage assumed"
+        },
+        "T_prop": {
+          "value": 90.0,
+          "unit": "K",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "LOX near normal boiling point; RP-1 at 20 degC (storage temperature not in the source)"
+        }
+      },
+      "ui": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "fuel_tank",
+      "type": "tank_regulated",
+      "label": "RP-1 tank",
+      "params": {
+        "p_set": {
+          "value": 310264.0,
+          "unit": "Pa",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "set to the published fuel pump inlet pressure (45 psia, Table 3-2 p.65); suction line not modelled"
+        },
+        "V_tank": {
+          "value": 252.900927705905,
+          "unit": "m3",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.908 (F-1/A-1 thrust ratio 2.0375^1.5); was pump flow 404.6 kg/s x burn 165 s (Table 3-2) / rho / 0.95 fill fraction; one engine's share, vehicle tank not in the source"
+        },
+        "fill_fraction": {
+          "value": 0.95,
+          "unit": "1",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "5 % ullage assumed"
+        },
+        "T_prop": {
+          "value": 293.15,
+          "unit": "K",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "LOX near normal boiling point; RP-1 at 20 degC (storage temperature not in the source)"
+        }
+      },
+      "ui": {
+        "x": 0,
+        "y": 400
+      }
+    },
+    {
+      "id": "ox_pump",
+      "type": "pump_centrifugal",
+      "label": "ox pump",
+      "params": {
+        "D_tip": {
+          "value": 0.5365899797794563,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was 14.8 in to m"
+        },
+        "psi_design": {
+          "value": 0.46,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (6-7) p.217"
+        },
+        "eta_design": {
+          "value": 0.707,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.ox_pump.efficiency"
+        },
+        "N_design": {
+          "value": 513.546013425855,
+          "unit": "rad/s",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 0.7006 (F-1/A-1 thrust ratio 2.0375^-0.5); was engines/engine_params.csv HH_A1.ox_pump.speed"
+        },
+        "Q_design": {
+          "value": 1.5931231702659487,
+          "unit": "m3/s",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.037 (F-1/A-1 thrust ratio 2.0375^1.0); was pump mdot 894.03 kg/s / rho 1143.4 kg/m3"
+        }
+      },
+      "ui": {
+        "x": 150,
+        "y": 0
+      }
+    },
+    {
+      "id": "fuel_pump",
+      "type": "pump_centrifugal",
+      "label": "fuel pump",
+      "params": {
+        "D_tip": {
+          "value": 0.6870798312855437,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was D = 2 sqrt(g0 H / psi) / omega with psi = 0.46 (estimated)"
+        },
+        "psi_design": {
+          "value": 0.46,
+          "unit": "1",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "same head coefficient as the A-1 oxidizer pump (Sample Calculation (6-7))"
+        },
+        "eta_design": {
+          "value": 0.658,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.fuel_pump.efficiency"
+        },
+        "N_design": {
+          "value": 513.546013425855,
+          "unit": "rad/s",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 0.7006 (F-1/A-1 thrust ratio 2.0375^-0.5); was engines/engine_params.csv HH_A1.fuel_pump.speed"
+        },
+        "Q_design": {
+          "value": 1.0201011095789418,
+          "unit": "m3/s",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.037 (F-1/A-1 thrust ratio 2.0375^1.0); was pump mdot 404.6 kg/s / rho 808.13 kg/m3"
+        }
+      },
+      "ui": {
+        "x": 150,
+        "y": 400
+      }
+    },
+    {
+      "id": "turbine",
+      "type": "turbine_impulse",
+      "label": "turbine",
+      "params": {
+        "D_mean": {
+          "value": 1.0550519197014987,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was 29.1 in to m"
+        },
+        "eta_design": {
+          "value": 0.582,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.turbine.efficiency"
+        },
+        "pressure_ratio": {
+          "value": 23.7,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.turbine.pressure_ratio"
+        },
+        "T_inlet": {
+          "value": 1033.15,
+          "unit": "K",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.turbine.T_inlet"
+        }
+      },
+      "ui": {
+        "x": 300,
+        "y": 200
+      },
+      "options": {
+        "arrangement": "impulse_velocity_compounded_2row"
+      }
+    },
+    {
+      "id": "shaft",
+      "type": "shaft",
+      "label": "turbopump shaft",
+      "params": {
+        "inertia": {
+          "value": 80.61899323828789,
+          "unit": "kg m2",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 5.926 (F-1/A-1 thrust ratio 2.0375^2.5); was three solid steel discs 50 mm thick (rho 8190 kg/m3): turbine wheel d = 0.739 m (Sample Calculation (6-11)), oxidizer impeller d = 0.376 m (Sample Calculation (6-7)), fuel impeller taken equal; I = sum rho pi r^4 t / 2"
+        },
+        "aux_power": {
+          "value": 372850.0,
+          "unit": "W",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.shaft.aux_power"
+        }
+      },
+      "ui": {
+        "x": 300,
+        "y": 300
+      }
+    },
+    {
+      "id": "gas_generator",
+      "type": "gas_generator",
+      "label": "gas generator",
+      "params": {
+        "mixture_ratio": {
+          "value": 0.408,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.gas_generator.MR"
+        },
+        "p_injector_end": {
+          "value": 4895280.0,
+          "unit": "Pa",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.gas_generator.p_injector_end"
+        },
+        "T_max": {
+          "value": 1033.15,
+          "unit": "K",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "turbine inlet temperature 1400 degF (Table 3-2) used as the limit until the materials block lands"
+        }
+      },
+      "ui": {
+        "x": 300,
+        "y": 100
+      }
+    },
+    {
+      "id": "gg_ox_line",
+      "type": "line",
+      "label": "GG ox line",
+      "params": {
+        "length": {
+          "value": 1.0,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "tap-off to gas generator, layout not published"
+        },
+        "diameter": {
+          "value": 0.0713702356591105,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was chosen for about 5 m/s at 12.1 kg/s"
+        },
+        "roughness": {
+          "value": 1.5240000000000001e-05,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 7-3 p.283 (machined or commercial cold-rolled)",
+          "formula": "0.00005 ft x 0.3048"
+        },
+        "K_fittings": {
+          "value": 20.4124,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65 (entrance loss + line pressure drop)",
+          "formula": "(dp_entrance + dp_line) / (rho v^2 / 2) - f L / D with f = 0.0155 (Haaland)"
+        }
+      },
+      "ui": {
+        "x": 200,
+        "y": 120
+      }
+    },
+    {
+      "id": "gg_ox_valve",
+      "type": "valve_poppet",
+      "label": "GG ox valve",
+      "params": {
+        "diameter": {
+          "value": 0.06583161989102089,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was A = mdot sqrt(K / (2 rho dp)), K = 3.0 (Table 7-4 p.286 (poppet full open))"
+        },
+        "K_open": {
+          "value": 3.0,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 7-4 p.286 (poppet full open)",
+          "formula": "midpoint of 2.5-3.5"
+        }
+      },
+      "ui": {
+        "x": 230,
+        "y": 120
+      }
+    },
+    {
+      "id": "gg_ox_orifice",
+      "type": "orifice",
+      "label": "GG ox control orifice",
+      "params": {
+        "diameter": {
+          "value": 0.02062556988406898,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75 (p.130)"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        }
+      },
+      "ui": {
+        "x": 260,
+        "y": 120
+      }
+    },
+    {
+      "id": "gg_ox_injector",
+      "type": "injector",
+      "label": "GG ox injector",
+      "params": {
+        "A_total": {
+          "value": 0.0007563915650879073,
+          "unit": "m2",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.037 (F-1/A-1 thrust ratio 2.0375^1.0); was A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75 (p.130)"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        },
+        "dp_over_pc_design": {
+          "value": 0.169014,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "GG injector dp / GG injector-end pressure"
+        }
+      },
+      "ui": {
+        "x": 280,
+        "y": 120
+      }
+    },
+    {
+      "id": "gg_fuel_line",
+      "type": "line",
+      "label": "GG fuel line",
+      "params": {
+        "length": {
+          "value": 1.0,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "tap-off to gas generator, layout not published"
+        },
+        "diameter": {
+          "value": 0.10705535348866575,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was chosen for about 8 m/s at 29.6 kg/s"
+        },
+        "roughness": {
+          "value": 1.5240000000000001e-05,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 7-3 p.283 (machined or commercial cold-rolled)",
+          "formula": "0.00005 ft x 0.3048"
+        },
+        "K_fittings": {
+          "value": 12.1818,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65 (entrance loss + line pressure drop)",
+          "formula": "(dp_entrance + dp_line) / (rho v^2 / 2) - f L / D with f = 0.0160 (Haaland)"
+        }
+      },
+      "ui": {
+        "x": 200,
+        "y": 280
+      }
+    },
+    {
+      "id": "gg_fuel_valve",
+      "type": "valve_poppet",
+      "label": "GG fuel valve",
+      "params": {
+        "diameter": {
+          "value": 0.09441839682239232,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was A = mdot sqrt(K / (2 rho dp)), K = 3.0 (Table 7-4 p.286 (poppet full open))"
+        },
+        "K_open": {
+          "value": 3.0,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 7-4 p.286 (poppet full open)",
+          "formula": "midpoint of 2.5-3.5"
+        }
+      },
+      "ui": {
+        "x": 230,
+        "y": 280
+      }
+    },
+    {
+      "id": "gg_fuel_orifice",
+      "type": "orifice",
+      "label": "GG fuel control orifice",
+      "params": {
+        "diameter": {
+          "value": 0.0329405040470485,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75 (p.130)"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        }
+      },
+      "ui": {
+        "x": 260,
+        "y": 280
+      }
+    },
+    {
+      "id": "gg_fuel_injector",
+      "type": "injector",
+      "label": "GG fuel injector",
+      "params": {
+        "A_total": {
+          "value": 0.002037194892456227,
+          "unit": "m2",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.037 (F-1/A-1 thrust ratio 2.0375^1.0); was A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75 (p.130)"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        },
+        "dp_over_pc_design": {
+          "value": 0.197183,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "GG injector dp / GG injector-end pressure"
+        }
+      },
+      "ui": {
+        "x": 280,
+        "y": 280
+      }
+    },
+    {
+      "id": "ox_line",
+      "type": "line",
+      "label": "ox discharge line",
+      "params": {
+        "length": {
+          "value": 2.0,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "pump discharge to main valve, layout (Fig. 3-2) not dimensioned"
+        },
+        "diameter": {
+          "value": 0.2900486377186251,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was 8 in to m"
+        },
+        "roughness": {
+          "value": 1.5240000000000001e-05,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 7-3 p.283 (machined or commercial cold-rolled)",
+          "formula": "0.00005 ft x 0.3048"
+        },
+        "K_fittings": {
+          "value": 0.420205,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65 (line pressure drop)",
+          "formula": "dp_line / (rho v^2 / 2) - f L / D with v = 23.8 m/s, f = 0.0115 (Haaland)"
+        }
+      },
+      "ui": {
+        "x": 450,
+        "y": 0
+      }
+    },
+    {
+      "id": "fuel_line",
+      "type": "line",
+      "label": "fuel discharge line",
+      "params": {
+        "length": {
+          "value": 2.0,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "pump discharge to main valve, layout (Fig. 3-2) not dimensioned"
+        },
+        "diameter": {
+          "value": 0.25379255800379696,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was 7 in to m"
+        },
+        "roughness": {
+          "value": 1.5240000000000001e-05,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 7-3 p.283 (machined or commercial cold-rolled)",
+          "formula": "0.00005 ft x 0.3048"
+        },
+        "K_fittings": {
+          "value": 0.346006,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65 (line pressure drop)",
+          "formula": "dp_line / (rho v^2 / 2) - f L / D with v = 18.7 m/s, f = 0.0127 (Haaland)"
+        }
+      },
+      "ui": {
+        "x": 450,
+        "y": 400
+      }
+    },
+    {
+      "id": "mov",
+      "type": "valve_butterfly",
+      "label": "main oxidizer valve",
+      "params": {
+        "diameter": {
+          "value": 0.25616347723239263,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was 8 in x sqrt(0.78) to m"
+        },
+        "K_open": {
+          "value": 0.31,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (7-2) p.287"
+        }
+      },
+      "ui": {
+        "x": 550,
+        "y": 0
+      }
+    },
+    {
+      "id": "mfv",
+      "type": "valve_butterfly",
+      "label": "main fuel valve",
+      "params": {
+        "diameter": {
+          "value": 0.20471410175045301,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was A = mdot sqrt(K / (2 rho dp)), K = 0.31 (Table 7-4 p.286 (butterfly, 90 deg open))"
+        },
+        "K_open": {
+          "value": 0.31,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 7-4 p.286 (butterfly, 90 deg open)"
+        }
+      },
+      "ui": {
+        "x": 550,
+        "y": 400
+      }
+    },
+    {
+      "id": "fuel_orifice",
+      "type": "orifice",
+      "label": "calibration orifice",
+      "params": {
+        "diameter": {
+          "value": 0.1925097914527451,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75 (p.130); Sample Calculation (7-7) sizes a VDI orifice of 4.47 in for 100 psi with its own flow coefficient"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        }
+      },
+      "ui": {
+        "x": 600,
+        "y": 400
+      }
+    },
+    {
+      "id": "regen_jacket",
+      "type": "regen_jacket",
+      "label": "regenerative jacket",
+      "params": {
+        "n_channels": {
+          "value": 94.0,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (4-4) p.110, number of tubes N"
+        },
+        "channel_width": {
+          "value": 0.021717,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (4-4) p.110, tube diameter at the throat",
+          "formula": "0.855 in to m; round tube mapped to a square channel"
+        },
+        "channel_height": {
+          "value": 0.021717,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (4-4) p.110, tube diameter at the throat",
+          "formula": "0.855 in to m; round tube mapped to a square channel"
+        },
+        "wall_thickness": {
+          "value": 0.000508,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (4-4) p.110, tube wall thickness",
+          "formula": "0.020 in to m"
+        },
+        "k_wall": {
+          "value": 23.8509,
+          "unit": "W/(m K)",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Sample Calculation (4-4) p.110, Inconel X average at 1000-1200 degR",
+          "formula": "3.19e-4 Btu/(in s degF) to W/(m K); also materials/material_points.csv"
+        }
+      },
+      "ui": {
+        "x": 700,
+        "y": 400
+      },
+      "options": {
+        "hydraulics": "none"
+      }
+    },
+    {
+      "id": "jacket_loss",
+      "type": "orifice",
+      "label": "jacket and manifold loss",
+      "params": {
+        "diameter": {
+          "value": 0.1510779422479183,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was equivalent orifice A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75; lumps the jacket hydraulic loss until the jacket model carries its own"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        }
+      },
+      "ui": {
+        "x": 750,
+        "y": 400
+      }
+    },
+    {
+      "id": "ox_manifold",
+      "type": "manifold",
+      "label": "oxidizer dome",
+      "params": {
+        "volume": {
+          "value": 0.05816629143663888,
+          "unit": "m3",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.908 (F-1/A-1 thrust ratio 2.0375^1.5); was injector dome / fuel manifold volume, not published"
+        }
+      },
+      "ui": {
+        "x": 800,
+        "y": 0
+      }
+    },
+    {
+      "id": "ox_injector",
+      "type": "injector",
+      "label": "ox injector",
+      "params": {
+        "A_total": {
+          "value": 0.04259279252537904,
+          "unit": "m2",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.037 (F-1/A-1 thrust ratio 2.0375^1.0); was A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75 (p.130)"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        },
+        "dp_over_pc_design": {
+          "value": 0.2,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "injector dp / nozzle stagnation pressure"
+        }
+      },
+      "ui": {
+        "x": 900,
+        "y": 0
+      }
+    },
+    {
+      "id": "fuel_manifold",
+      "type": "manifold",
+      "label": "fuel manifold",
+      "params": {
+        "volume": {
+          "value": 0.02908314571831944,
+          "unit": "m3",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.908 (F-1/A-1 thrust ratio 2.0375^1.5); was injector dome / fuel manifold volume, not published"
+        }
+      },
+      "ui": {
+        "x": 800,
+        "y": 400
+      }
+    },
+    {
+      "id": "fuel_injector",
+      "type": "injector",
+      "label": "fuel injector",
+      "params": {
+        "A_total": {
+          "value": 0.021586126518093066,
+          "unit": "m2",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.037 (F-1/A-1 thrust ratio 2.0375^1.0); was A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75 (p.130)"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        },
+        "dp_over_pc_design": {
+          "value": 0.2,
+          "unit": "1",
+          "quality": "derived",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "injector dp / nozzle stagnation pressure"
+        }
+      },
+      "ui": {
+        "x": 900,
+        "y": 400
+      }
+    },
+    {
+      "id": "ox_dome_loss",
+      "type": "orifice",
+      "label": "torus dome loss",
+      "params": {
+        "diameter": {
+          "value": 0.2502411750773996,
+          "unit": "m",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 1.427 (F-1/A-1 thrust ratio 2.0375^0.5); was equivalent orifice A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75"
+        },
+        "Cd": {
+          "value": 0.75,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "p.130, sample calculation with eq. (4-40)"
+        }
+      },
+      "ui": {
+        "x": 700,
+        "y": 0
+      }
+    },
+    {
+      "id": "chamber",
+      "type": "chamber",
+      "label": "thrust chamber",
+      "params": {
+        "Lstar": {
+          "value": 1.143,
+          "unit": "m",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.thrust_chamber.Lstar"
+        },
+        "A_t": {
+          "value": 0.6401632780309797,
+          "unit": "m2",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/f1_saturn_v.graph.json (scaled from gg_kerolox)",
+          "formula": "A-1 value x 2.037 (F-1/A-1 thrust ratio 2.0375^1.0); was engines/engine_params.csv HH_A1.thrust_chamber.At"
+        },
+        "contraction_ratio": {
+          "value": 1.6,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.thrust_chamber.contraction_ratio"
+        },
+        "eta_cstar": {
+          "value": 0.975,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.thrust_chamber.eta_cstar"
+        }
+      },
+      "ui": {
+        "x": 1000,
+        "y": 200
+      }
+    },
+    {
+      "id": "nozzle",
+      "type": "nozzle_bell",
+      "label": "nozzle",
+      "params": {
+        "expansion_ratio": {
+          "value": 14.0,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.thrust_chamber.expansion_ratio"
+        },
+        "eta_CF": {
+          "value": 0.98,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.thrust_chamber.eta_CF"
+        },
+        "bell_fraction": {
+          "value": 0.8,
+          "unit": "1",
+          "quality": "published",
+          "source_id": "HH-SP125",
+          "location": "Table 3-2 p.65",
+          "formula": "engines/engine_params.csv HH_A1.thrust_chamber.bell_fraction"
+        }
+      },
+      "ui": {
+        "x": 1100,
+        "y": 200
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "ox_tank.outlet->ox_pump.inlet",
+      "from": {
+        "node": "ox_tank",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "ox_pump",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "ox_pump.outlet->ox_line.inlet",
+      "from": {
+        "node": "ox_pump",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "ox_line",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "ox_pump.outlet->gg_ox_line.inlet",
+      "from": {
+        "node": "ox_pump",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_ox_line",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "ox_line.outlet->mov.inlet",
+      "from": {
+        "node": "ox_line",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "mov",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "mov.outlet->ox_dome_loss.inlet",
+      "from": {
+        "node": "mov",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "ox_dome_loss",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "ox_dome_loss.outlet->ox_manifold.inlet",
+      "from": {
+        "node": "ox_dome_loss",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "ox_manifold",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "ox_manifold.outlet->ox_injector.inlet",
+      "from": {
+        "node": "ox_manifold",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "ox_injector",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "ox_injector.outlet->chamber.ox_in",
+      "from": {
+        "node": "ox_injector",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "chamber",
+        "port": "ox_in"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "fuel_tank.outlet->fuel_pump.inlet",
+      "from": {
+        "node": "fuel_tank",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "fuel_pump",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "fuel_pump.outlet->fuel_line.inlet",
+      "from": {
+        "node": "fuel_pump",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "fuel_line",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "fuel_pump.outlet->gg_fuel_line.inlet",
+      "from": {
+        "node": "fuel_pump",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_fuel_line",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "fuel_line.outlet->mfv.inlet",
+      "from": {
+        "node": "fuel_line",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "mfv",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "mfv.outlet->fuel_orifice.inlet",
+      "from": {
+        "node": "mfv",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "fuel_orifice",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "fuel_orifice.outlet->regen_jacket.coolant_in",
+      "from": {
+        "node": "fuel_orifice",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "regen_jacket",
+        "port": "coolant_in"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "regen_jacket.coolant_out->jacket_loss.inlet",
+      "from": {
+        "node": "regen_jacket",
+        "port": "coolant_out"
+      },
+      "to": {
+        "node": "jacket_loss",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "jacket_loss.outlet->fuel_manifold.inlet",
+      "from": {
+        "node": "jacket_loss",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "fuel_manifold",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "fuel_manifold.outlet->fuel_injector.inlet",
+      "from": {
+        "node": "fuel_manifold",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "fuel_injector",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "fuel_injector.outlet->chamber.fuel_in",
+      "from": {
+        "node": "fuel_injector",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "chamber",
+        "port": "fuel_in"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "chamber.wall->regen_jacket.wall",
+      "from": {
+        "node": "chamber",
+        "port": "wall"
+      },
+      "to": {
+        "node": "regen_jacket",
+        "port": "wall"
+      },
+      "kind": "thermal",
+      "medium": "heat"
+    },
+    {
+      "id": "chamber.throat->nozzle.inlet",
+      "from": {
+        "node": "chamber",
+        "port": "throat"
+      },
+      "to": {
+        "node": "nozzle",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "combustion_gas"
+    },
+    {
+      "id": "gg_ox_line.outlet->gg_ox_valve.inlet",
+      "from": {
+        "node": "gg_ox_line",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_ox_valve",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "gg_ox_valve.outlet->gg_ox_orifice.inlet",
+      "from": {
+        "node": "gg_ox_valve",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_ox_orifice",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "gg_ox_orifice.outlet->gg_ox_injector.inlet",
+      "from": {
+        "node": "gg_ox_orifice",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_ox_injector",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "gg_ox_injector.outlet->gas_generator.ox_in",
+      "from": {
+        "node": "gg_ox_injector",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gas_generator",
+        "port": "ox_in"
+      },
+      "kind": "fluid",
+      "medium": "LOX"
+    },
+    {
+      "id": "gg_fuel_line.outlet->gg_fuel_valve.inlet",
+      "from": {
+        "node": "gg_fuel_line",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_fuel_valve",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "gg_fuel_valve.outlet->gg_fuel_orifice.inlet",
+      "from": {
+        "node": "gg_fuel_valve",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_fuel_orifice",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "gg_fuel_orifice.outlet->gg_fuel_injector.inlet",
+      "from": {
+        "node": "gg_fuel_orifice",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gg_fuel_injector",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "gg_fuel_injector.outlet->gas_generator.fuel_in",
+      "from": {
+        "node": "gg_fuel_injector",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "gas_generator",
+        "port": "fuel_in"
+      },
+      "kind": "fluid",
+      "medium": "RP1"
+    },
+    {
+      "id": "gas_generator.outlet->turbine.inlet",
+      "from": {
+        "node": "gas_generator",
+        "port": "outlet"
+      },
+      "to": {
+        "node": "turbine",
+        "port": "inlet"
+      },
+      "kind": "fluid",
+      "medium": "combustion_gas"
+    },
+    {
+      "id": "turbine.shaft->shaft.drive",
+      "from": {
+        "node": "turbine",
+        "port": "shaft"
+      },
+      "to": {
+        "node": "shaft",
+        "port": "drive"
+      },
+      "kind": "shaft",
+      "medium": "torque"
+    },
+    {
+      "id": "shaft.load->ox_pump.shaft",
+      "from": {
+        "node": "shaft",
+        "port": "load"
+      },
+      "to": {
+        "node": "ox_pump",
+        "port": "shaft"
+      },
+      "kind": "shaft",
+      "medium": "torque"
+    },
+    {
+      "id": "shaft.load->fuel_pump.shaft",
+      "from": {
+        "node": "shaft",
+        "port": "load"
+      },
+      "to": {
+        "node": "fuel_pump",
+        "port": "shaft"
+      },
+      "kind": "shaft",
+      "medium": "torque"
+    }
+  ],
+  "boundary_conditions": [
+    {
+      "node": "turbine",
+      "port": "outlet",
+      "kind": "fixed_pressure",
+      "value": {
+        "value": 186158.0,
+        "unit": "Pa",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Sample Calculation (6-5) p.199",
+        "formula": "engines/engine_params.csv HH_A1.turbine.p_exhaust"
+      },
+      "note": "turbine exhaust static pressure; exhaust duct and its 2700 lb thrust not modelled"
+    },
+    {
+      "node": "nozzle",
+      "port": "inlet",
+      "kind": "ambient_pressure",
+      "value": {
+        "value": 101325.0,
+        "unit": "Pa",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "sea-level standard pressure; Table 3-2 is at sea-level conditions"
+      }
+    }
+  ],
+  "sequence": [
+    {
+      "t": {
+        "value": 0.0,
+        "unit": "s",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "start signal defines t = 0"
+      },
+      "node": "gas_generator",
+      "command": "ignite",
+      "note": "GG dual spark plugs activated (pp.67-68)"
+    },
+    {
+      "t": {
+        "value": 0.0,
+        "unit": "s",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "start signal defines t = 0"
+      },
+      "node": "gg_ox_valve",
+      "command": "open",
+      "ramp": {
+        "value": 0.1,
+        "unit": "s",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "poppet stroke time, not published"
+      },
+      "note": "four-way control valve admits fuel pump outlet pressure to the GG valve actuators (p.67)"
+    },
+    {
+      "t": {
+        "value": 0.0,
+        "unit": "s",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "start signal defines t = 0"
+      },
+      "node": "gg_fuel_valve",
+      "command": "open",
+      "ramp": {
+        "value": 0.1,
+        "unit": "s",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "poppet stroke time, not published"
+      }
+    },
+    {
+      "when": {
+        "node": "fuel_pump",
+        "output": "dp",
+        "op": ">=",
+        "value": {
+          "value": 5774360.0,
+          "unit": "Pa",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "half the design fuel pump pressure rise; the valve-spring setting is not published"
+        }
+      },
+      "node": "mov",
+      "command": "open",
+      "ramp": {
+        "value": 0.5,
+        "unit": "s",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "butterfly stroke time, not published"
+      },
+      "note": "main oxidizer valve opens at a fuel pump outlet pressure set by its spring (p.67)"
+    },
+    {
+      "when": {
+        "node": "mov",
+        "output": "opening",
+        "op": ">=",
+        "value": {
+          "value": 0.05,
+          "unit": "1",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "igniter sequence valve linked to the first part of the MOV stroke"
+        }
+      },
+      "node": "chamber",
+      "command": "ignite",
+      "note": "hypergol igniter cartridge (p.67)"
+    },
+    {
+      "when": {
+        "node": "chamber",
+        "output": "p_c",
+        "op": ">=",
+        "value": {
+          "value": 344738.0,
+          "unit": "Pa",
+          "quality": "estimated",
+          "source_id": "PROPSIM-EST",
+          "location": "examples/gg_kerolox.graph.json",
+          "formula": "ignition monitor valve threshold, not published"
+        }
+      },
+      "node": "mfv",
+      "command": "open",
+      "ramp": {
+        "value": 0.5,
+        "unit": "s",
+        "quality": "estimated",
+        "source_id": "PROPSIM-EST",
+        "location": "examples/gg_kerolox.graph.json",
+        "formula": "butterfly stroke time, not published"
+      },
+      "note": "ignition monitor valve admits fuel pressure to the main fuel valve; last start step (p.68)"
+    },
+    {
+      "t": {
+        "value": 165.0,
+        "unit": "s",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65",
+        "formula": "nominal single-firing duration"
+      },
+      "node": "*",
+      "command": "cutoff",
+      "note": "four-way valve de-energized; all valves close (p.68)"
+    }
+  ],
+  "dashboard": "dashboards/default_panels.json",
+  "validation_targets": [
+    {
+      "node": "chamber",
+      "output": "p_c",
+      "value": {
+        "value": 7584233.0,
+        "unit": "Pa",
+        "quality": "published",
+        "source_id": "NASA-SP-2009-4545",
+        "location": "ch. 1 (R. Biggs) p.19",
+        "formula": "engines/engine_params.csv F1.thrust_chamber.pc"
+      }
+    },
+    {
+      "node": "nozzle",
+      "output": "thrust",
+      "value": {
+        "value": 6770193.3,
+        "unit": "N",
+        "quality": "published",
+        "source_id": "NASA-SP-2009-4545",
+        "location": "ch. 1 (R. Biggs) p.20",
+        "formula": "engines/engine_params.csv F1.engine.thrust"
+      }
+    }
+  ],
+  "known_limitations": [
+    "Estimated, not published: every area and volume is the A-1 value scaled by the thrust ratio. The F-1's turbopump (5,500 rpm class), injector and valve data are not in the library.",
+    "Published F-1 figures used only as targets: thrust 6.77e+06 N (NASA-SP-2009-4545), chamber pressure 7.584e+06 Pa, Isp 265 s, mixture ratio 2.27, expansion ratio 16.",
+    "Suction lines and vehicle tanks are not modelled: tank pressure is the published pump inlet pressure.",
+    "Jacket and dome hydraulic losses are lumped into equivalent orifices sized from the published drops.",
+    "Turbine exhaust duct and its thrust (2700 lb, Sample Calculation (6-6)) are not modelled.",
+    "Valve stroke times and sequence thresholds are estimated; the book gives the order, not the timing.",
+    "Table 3-2 main oxidizer valve drop is 35 psi; the valve geometry of Sample Calculation (7-2) gives 24.6 psi. The sample-calculation geometry is used."
+  ]
+}

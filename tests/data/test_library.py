@@ -212,7 +212,7 @@ def _validator(name: str):
 def test_example_graphs_match_schema():
     v = _validator("graph.schema.json")
     gs = data.graphs()
-    assert set(gs) == {"gg_kerolox", "pressure_fed_kerolox", "expander_hydrolox", "ssme_staged_combustion"}
+    assert set(gs) == {"gg_kerolox", "pressure_fed_kerolox", "expander_hydrolox", "ssme_staged_combustion", "f1_saturn_v"}
     for gid, g in gs.items():
         errors = sorted(v.iter_errors(g), key=str)
         assert not errors, f"{gid}: {errors[0].message}"

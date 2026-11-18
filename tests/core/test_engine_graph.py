@@ -71,3 +71,17 @@ def test_unconnected_port_is_reported():
     g = dict(g, edges=[e for e in g["edges"] if e["to"]["node"] != "chamber" or e["to"]["port"] != "fuel_in"])
     with pytest.raises(GraphError, match="unconnected"):
         solve(g)
+
+
+def test_f1_template_solves_near_the_published_figures():
+    """The F-1 graph is an A-1 scale-up (estimated): it must converge and land within 15 % of the published thrust and
+    chamber pressure (NASA SP-2009-4545), with a mixture ratio near 2.27."""
+    from propsim import data
+    from propsim.core.engine_graph import solve
+    g = data.graphs()["f1_saturn_v"]
+    assert g["reference_engine"] == "F1"
+    s = solve(g, None, None)
+    assert s.converged
+    assert abs(s.components["nozzle"]["thrust"] / 6770193.3 - 1) < 0.15
+    assert abs(s.components["chamber"]["p_c"] / 7584233 - 1) < 0.15
+    assert 2.0 < s.components["chamber"]["mixture_ratio"] < 2.6

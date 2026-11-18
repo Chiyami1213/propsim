@@ -36,6 +36,9 @@ New changes go above this line, newest first.
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
   3-D burnback accepts custom sections.
+- Cycle sandbox template: F-1 (Saturn V first stage) gas-generator engine, an ESTIMATE scaled from the A-1 graph to the F-1
+  thrust (library holds only its top-level figures); solves to about 7.4 MN, 7.3 MPa, O/F 2.43 against the published
+  6.77 MN, 7.58 MPa, 2.27. `tools/build_f1_graph.py` regenerates it.
 - Grain designer is now a window of its own (Simulation > Grain designer, Ctrl+G, or the Solid and Hybrid tree entries), for
   solid and hybrid motors, with Open in Main Window.
 - Cycle sandbox: a Build Guide panel walks through choosing the cycle type, adding the required and optional components,
