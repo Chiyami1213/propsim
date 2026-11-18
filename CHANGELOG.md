@@ -32,6 +32,10 @@ New changes go above this line, newest first.
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
   3-D burnback accepts custom sections.
+- Cycle sandbox: a Play Flow button animates the flow diagram itself; the Cycle Animation panel redraws the engine as a
+  textbook-style schematic (pumps, turbine and shaft, gas generator or preburner, valves, chamber, nozzle and regenerative
+  cooling tubes) for pressure-fed, gas-generator, expander and staged-combustion cycles, and falls back to the diagram for
+  custom cycles.
 - Cycle sandbox: ANSI/ISA-5.1 P&ID symbols (valves, pumps, turbines, vessels, instrument bubbles with tags), a
   connection-line legend, draggable panels, and an animated cycle panel (moving flow, rotating machinery) that exports a
   looping GIF or a PNG for every cycle.

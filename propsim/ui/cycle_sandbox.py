@@ -14,7 +14,7 @@ import copy
 import math
 
 import numpy as np
-from PySide6.QtCore import QObject, QPointF, QRectF, Qt, QThread, Signal
+from PySide6.QtCore import QTimer, QObject, QPointF, QRectF, Qt, QThread, Signal
 from PySide6.QtGui import QAction, QBrush, QColor, QFont, QKeySequence, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QGraphicsItem, QGraphicsPathItem, QGraphicsScene, QGraphicsView, QHBoxLayout,
@@ -228,16 +228,19 @@ class EdgeItem(QGraphicsPathItem):
     def paint(self, p, option, widget=None) -> None:
         option.state &= ~QStyle.State_Selected          # a selected connection is drawn thicker, never with a box
         super().paint(p, option, widget)
-        if self.edge["kind"] == "fluid":                # P&ID flow arrow at mid-line
+        if self.edge["kind"] == "fluid":                # P&ID flow arrows: one at mid-line, or a moving train when playing
             path = self.path()
-            pt, ang = path.pointAtPercent(0.5), path.angleAtPercent(0.5)
-            p.save()
-            p.translate(pt)
-            p.rotate(-ang)
+            play = self.view.playing
+            n = max(1, int(path.length() // 70)) if play else 1
             p.setPen(Qt.NoPen)
-            p.setBrush(self.pen().color())
-            p.drawPolygon([QPointF(6, 0), QPointF(-4, -4), QPointF(-4, 4)])
-            p.restore()
+            p.setBrush(self.pen().color().lighter(150) if play else self.pen().color())
+            for i in range(n):
+                f = ((i + self.view.flow_phase) / n) if play else 0.5
+                p.save()
+                p.translate(path.pointAtPercent(f))
+                p.rotate(-path.angleAtPercent(f))
+                p.drawPolygon([QPointF(6, 0), QPointF(-4, -4), QPointF(-4, 4)])
+                p.restore()
 
     def update_path(self) -> None:
         p1, p2 = self.a.scene_center(), self.b.scene_center()
@@ -285,6 +288,8 @@ class Canvas(QGraphicsView):
     """The flow diagram: nodes, port-to-port edges, drag-to-connect, coloring by the solved stations."""
 
     selected = Signal(object)            # node id or None
+    playing = False                      # flow animation (the Play Flow button)
+    flow_phase = 0.0
     changed = Signal()
     message = Signal(str)
 
@@ -334,6 +339,33 @@ class Canvas(QGraphicsView):
                 self.scale(k, k)
                 vw = self.viewport().width() / k
                 self.centerOn(QPointF(r.left() + vw / 2, r.center().y()))
+
+    def set_playing(self, on: bool) -> None:
+        """Play or pause the flow animation: arrows move along every process line, links and rotors turn."""
+        self.playing = on
+        if on:
+            if getattr(self, "_flow_timer", None) is None:
+                self._flow_timer = QTimer(self)
+                self._flow_timer.setInterval(40)
+                self._flow_timer.timeout.connect(self._flow_tick)
+            self._flow_timer.start()
+        elif getattr(self, "_flow_timer", None) is not None:
+            self._flow_timer.stop()
+        for it in self.scene().items():
+            if isinstance(it, NodeItem):
+                it.phase = 0.0
+        self.scene().update()
+
+    def _flow_tick(self) -> None:
+        self.flow_phase = (self.flow_phase + 0.03) % 1.0
+        for it in self.scene().items():
+            if isinstance(it, NodeItem):
+                it.phase = self.flow_phase
+            elif isinstance(it, EdgeItem) and it.edge["kind"] != "fluid":
+                pen = QPen(it.pen())
+                pen.setDashOffset(-self.flow_phase * 10.0)
+                it.setPen(pen)
+        self.scene().update()
 
     def _add_item(self, n: dict) -> NodeItem:
         it = NodeItem(self, n)
@@ -713,6 +745,10 @@ class CycleSandbox(QMainWindow):
         theme.changed.connect(lambda *_: self._style())
         self.load_template("gg_kerolox")
 
+    def _play_flow(self, on: bool) -> None:
+        self.play_btn.setText("Pause Flow" if on else "Play Flow")
+        self.canvas.set_playing(on)
+
     def _dock(self, name: str, title: str, widget: QWidget) -> QDockWidget:
         d = QDockWidget(apa(title), self)
         d.setObjectName("sb" + name)
@@ -791,6 +827,10 @@ class CycleSandbox(QMainWindow):
         self.solve_btn.setShortcut("Ctrl+R")
         self.solve_btn.clicked.connect(self.solve)
         tb.addWidget(self.solve_btn)
+        self.play_btn = QPushButton("Play Flow")
+        self.play_btn.setCheckable(True)
+        self.play_btn.toggled.connect(self._play_flow)
+        tb.addWidget(self.play_btn)
         panels = QPushButton("Panels")                                 # the way back after a panel was closed
         pm = QMenu(panels)
         for d in self.docks:

@@ -63,6 +63,11 @@ class CycleAnimation(QWidget):
     # ------------------------------------------------------------------ drawing
     def draw(self, p: QPainter, size: QRectF, phase: float) -> None:
         """Paint the cycle into ``size`` at animation phase ``phase`` (0..1, one loop)."""
+        from .cycle_schematic import Schematic
+        sch = Schematic(self.canvas.graph)
+        if sch.kind != "custom":                                # a known cycle: the textbook-style schematic
+            sch.draw(p, size, phase)
+            return
         from .cycle_sandbox import NODE_W, EdgeItem, NodeItem
         t = theme.t
         items = self.canvas.scene().items()

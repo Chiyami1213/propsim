@@ -92,3 +92,22 @@ def test_panels_are_dockable_and_animation_exports(qapp, tmp_path):
     gif = w.anim.export_gif(str(tmp_path / "c.gif"), frames=4)
     png = w.anim.save_image(str(tmp_path / "c.png"))
     assert gif.stat().st_size > 1000 and png.stat().st_size > 1000
+
+
+def test_cycles_are_identified_and_flow_plays(qapp):
+    from propsim.core.engine_graph import edit as E
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    from propsim.ui.cycle_schematic import identify_cycle
+    w = CycleSandbox()
+    want = {"gg_kerolox": "gas_generator", "expander_hydrolox": "expander", "pressure_fed_kerolox": "pressure_fed",
+            "ssme_staged_combustion": "staged"}
+    for gid, kind in want.items():
+        w.load_template(gid)
+        assert identify_cycle(w.doc["graph"]) == kind
+    w.play_btn.setChecked(True)
+    w.canvas._flow_tick()
+    assert w.canvas.playing and w.canvas.flow_phase > 0
+    w.play_btn.setChecked(False)
+    assert not w.canvas.playing
+    g = E.new_document()["graph"]
+    assert identify_cycle(g) == "custom"
