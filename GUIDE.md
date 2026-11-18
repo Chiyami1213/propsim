@@ -78,6 +78,15 @@ temperature, heat flux or coolant temperature from the jacket march (*Field*). S
 (casings, flanges, actuators, blade counts, injector element pattern, gas generator and shaft size) are drawn to
 illustrative proportions, and the caption says which.
 
+The *Trade Study* panel (a tab beside *Results*) runs trades on the engine in the diagram. *Sweep* varies one input
+over a range: any numeric part parameter (a line bore, a pump tip diameter, a turbine pressure ratio, the nozzle area
+ratio), a valve position, or a design target such as chamber pressure, in which case the free parameters are re-sized
+at every point. The sweep starts from the design's own value and steps outward, each point starting from its
+neighbour's answer. Plot any engine number (thrust, Isp, pump and turbine power, peak wall temperature, lowest NPSH)
+or any part output against the swept input, read the table, or *Export CSV*. *Compare Designs* keeps snapshots of
+designs (the diagram, propellants and targets at the time you add them, or a template) and solves them side by side,
+so you can compare cycles or propellant pairs.
+
 The sandbox is steady state only; start-up and shutdown transients are not modelled.
 
 ### Compare designs

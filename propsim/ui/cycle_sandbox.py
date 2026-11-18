@@ -766,7 +766,12 @@ class CycleSandbox(QMainWindow):
         from .cycle_guide import CycleGuide
         self.guide = CycleGuide(self)
         self.dock_guide = self._dock("Guide", "Build Guide", self.guide)
-        self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim, self.dock_3d, self.dock_guide]
+        from .trade_panel import TradePanel
+        self.trade = TradePanel(lambda: self.doc)
+        self.trade.message.connect(lambda m: self.log(m))
+        self.dock_trade = self._dock("Trade", "Trade Study", self.trade)
+        self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim, self.dock_3d, self.dock_guide,
+                      self.dock_trade]
         self.default_layout()
         self._toolbar()
         self.canvas.selected.connect(self.inspect)
@@ -804,11 +809,14 @@ class CycleSandbox(QMainWindow):
         self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_res)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_3d)
         self.splitDockWidget(self.dock_res, self.dock_3d, Qt.Horizontal)      # selected part's 3D model beside it
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_trade)
+        self.tabifyDockWidget(self.dock_res, self.dock_trade)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_anim)
         self.tabifyDockWidget(self.dock_insp, self.dock_anim)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_guide)
         self.tabifyDockWidget(self.dock_insp, self.dock_guide)
         self.dock_insp.raise_()
+        self.dock_res.raise_()
         for d in self.docks:
             d.show()
         self.resizeDocks([self.dock_parts, self.dock_insp], [230, 520], Qt.Horizontal)       # wide enough for the cycle schematic
@@ -824,7 +832,9 @@ class CycleSandbox(QMainWindow):
             f"QHeaderView::section {{ background: {t['card']}; color: {t['dim']}; border: none; "
             f"border-bottom: 1px solid {t['edge']}; padding: 3px 6px; }}"
             f"QPlainTextEdit {{ background: {t['panel']}; color: {t['text']}; }}"
-            f"QLineEdit, QDoubleSpinBox {{ background: {t['panel']}; color: {t['text']}; "
+            f"QHeaderView {{ background: {t['card']}; }} QTableCornerButton::section {{ background: {t['card']}; "
+            f"border: none; }}"
+            f"QLineEdit, QDoubleSpinBox, QSpinBox {{ background: {t['panel']}; color: {t['text']}; "
             f"border: 1px solid {t['edge']}; border-radius: 3px; padding: 2px 4px; }}"
             f"QLabel#hint {{ color: {t['dim']}; }}")
 
@@ -938,6 +948,8 @@ class CycleSandbox(QMainWindow):
             self._fill_targets()
             self._fill_results()
             self.inspect(None)
+            if hasattr(self, "trade"):
+                self.trade.refresh_inputs()
         finally:
             self._loading = False
 
@@ -996,6 +1008,7 @@ class CycleSandbox(QMainWindow):
             self.status.setText("changed: press Solve")
         if self.view3d.nid is not None:
             self.view3d.show_component(self.doc["graph"], self.view3d.nid, None)
+        self.trade.refresh_inputs()
         sel = [i for i in self.canvas.scene().selectedItems() if isinstance(i, NodeItem)]
         self.inspect(sel[0].node["id"] if len(sel) == 1 else None)
 

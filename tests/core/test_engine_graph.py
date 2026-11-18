@@ -85,3 +85,34 @@ def test_f1_template_solves_near_the_published_figures():
     assert abs(s.components["nozzle"]["thrust"] / 6770193.3 - 1) < 0.15
     assert abs(s.components["chamber"]["p_c"] / 7584233 - 1) < 0.15
     assert 2.0 < s.components["chamber"]["mixture_ratio"] < 2.6
+
+
+def test_sweep_marches_from_the_design_point_and_reports_every_point():
+    import numpy as np
+    from propsim.core.engine_graph import edit as E
+    from propsim.core.engine_graph.trade import compare, current_value, inputs, sweep, to_csv
+    d = E.template("gg_kerolox")
+    assert ("param", "nozzle", "expansion_ratio", "1") in inputs(d)
+    eps0 = current_value(d, "param", "nozzle", "expansion_ratio")
+    vals = np.linspace(0.8 * eps0, 1.2 * eps0, 5)
+    seen = []
+    r = sweep(d, "param", "nozzle", "expansion_ratio", vals, progress=lambda a, b: seen.append(a))
+    assert all(r["converged"]) and seen == [1, 2, 3, 4, 5]
+    isp_vac = r["summary"]["isp_vac"]
+    assert all(b > a for a, b in zip(isp_vac, isp_vac[1:]))       # vacuum Isp grows with area ratio
+    thrust = r["summary"]["thrust"]
+    assert all(b < a for a, b in zip(thrust, thrust[1:]))         # at sea level the larger nozzles overexpand
+    mid = compare({"base": d})["base"]
+    assert abs(mid["thrust"] - thrust[2]) / thrust[2] < 1e-4      # the middle point is the design as it stands
+    csv = to_csv(r)
+    assert csv.splitlines()[0].startswith("nozzle.expansion_ratio,converged,thrust") and len(csv.splitlines()) == 6
+    assert d["graph"]["nodes"] == E.template("gg_kerolox")["graph"]["nodes"]   # the document is not changed
+
+
+def test_sweep_of_a_target_resizes_the_free_parameters():
+    from propsim.core.engine_graph import edit as E
+    from propsim.core.engine_graph.trade import sweep
+    d = E.template("ssme_staged_combustion")
+    r = sweep(d, "target", "chamber", "p_c", [19e6, 20.4774e6])
+    assert all(r["converged"])
+    assert abs(r["summary"]["p_c"][0] - 19e6) < 2e3 and r["outputs"]["opov.position"][0] < r["outputs"]["opov.position"][1]
