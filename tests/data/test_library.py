@@ -281,3 +281,27 @@ def test_high_temperature_points():
     assert float(e70["T_min"]) == pytest.approx(294.26, abs=0.01)
     gr = [r for r in data.material_points("GRCOP84") if r["property"] == "yield_strength"]
     assert {round(float(r["T_max"])) for r in gr} == {294, 811}
+
+
+def test_regression_laws_convert_to_si():
+    # SP-1a/GOX: r = 0.488 G^0.62 in mm/s with G in g/(cm2 s); 30 g/(cm2 s) = 300 kg/(m2 s)
+    assert data.regression_rate("SP1A_GOX", 300.0) == pytest.approx(0.488e-3 * 30.0**0.62, rel=1e-5)
+    # Kibbey 18 % Al: in/s with lbm/(in2 s)
+    G_us = 0.2
+    G_si = G_us * 0.45359237 / 0.0254**2
+    assert data.regression_rate("HTPB_AL18_GOX", G_si) == pytest.approx(
+        0.1262 * G_us**0.7121 * 0.0254, rel=1e-5
+    )
+
+
+def test_hotfire_flux_columns_are_aligned():
+    """Initial oxidizer flux equals mdot / initial port area within 10 % (throttled test excepted)."""
+    import math
+
+    cases = data.hotfire_cases()
+    assert len(cases) >= 20
+    for c in cases:
+        if "Thr" in c["case_id"]:
+            continue
+        g = float(c["mdot_ox"]) / (math.pi * float(c["D_port0"]) ** 2 / 4)
+        assert g == pytest.approx(float(c["G_ox0"]), rel=0.10), c["case_id"]

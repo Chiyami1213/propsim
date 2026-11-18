@@ -24,6 +24,9 @@ New changes go above this line, newest first.
   Huzel & Huang Inconel X points at chamber-wall temperatures, evaluated by `propsim.data.matprops`.
 - Component library, block E part 2: Inconel 718 properties to 2000 degF (Special Metals bulletin) and GRCop-84
   strength and conductivity (NASA/TM-2005-213566), with trend checks on the transcribed tables.
+- Component library, block F part 1 (hybrid): regression-rate laws (SP-1a paraffin, HTPB, aluminized HTPB with
+  GOX) in SI and 22 published SP-1a/GOX hot-fire cases, read by `propsim.data.regression_rate` and
+  `propsim.data.hotfire_cases`.
 
 - Vehicle stages can be filled from the library's reference engines (RS-25, J-2 and the RL10 variants) with one
   choice; values the library does not have stay empty or are labelled as assumed or derived.

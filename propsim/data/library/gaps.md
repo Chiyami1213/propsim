@@ -96,6 +96,17 @@ design run.
    char/erosion data from NASA SP-8xxx monographs.
 5. **Missing NIST properties**: Inconel 718 and Ti-6Al-4V specific heat and modulus, copper modulus.
 
+## Hybrid (block F)
+
+1. **More regression laws**: HTPB/N2O, paraffin/N2O, HDPE, PMMA and ABS with N2O and LOX, including G^n x^m
+   forms with a length exponent. Public candidates: NASA/NTRS reports, university theses and AIAA papers.
+2. **SP-1a O/F-corrected law** (Karabeyoglu 2003 eq. 3): its layout could not be read from the PDF text layer.
+3. **Hot-fire cases**: only SP-1a/GOX so far; per-test grain length and fuel mass are not tabulated, and the
+   chamber pressure is not marked gauge or absolute. Test 4L-12 is left out: its initial flux disagrees with its
+   flow rate and port by a factor of 2.3. N2O cases with thrust and pressure histories are still needed.
+4. **Fuel properties**: density, heat of gasification and melt-layer properties of paraffin and HTPB blends.
+5. **Graphite nozzle erosion rates** and post-combustion chamber guidance.
+
 ## Later blocks
 
-Hybrid and electric arrive in later PRs; their gaps will be listed here.
+Electric propulsion arrives in a later PR; its gaps will be listed here.

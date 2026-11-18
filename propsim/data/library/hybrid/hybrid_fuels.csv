@@ -1,0 +1,4 @@
+fuel_id,name,description,source_id,location
+SP1A,SP-1a paraffin-based fuel,Stanford/NASA Ames liquefying paraffin blend used in the HCF scale-up tests,KARABEYOGLU-2003,section 6
+HTPB,HTPB,hydroxyl-terminated polybutadiene,KARABEYOGLU-2003,section 2 p.3
+HTPB_AL18,HTPB with 18 % aluminum,aluminized HTPB (18 % Al by mass),KIBBEY-2017,Figure 4
