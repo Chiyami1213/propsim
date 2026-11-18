@@ -258,7 +258,7 @@ class Turbine(Through):
         m = self.opt.get("flow_model", "auto")
         if m == "auto":
             return "choked" if self.par("A_nozzle") else "pressure_ratio"
-        return m
+        return m          # "orifice" (flow from the pressure drop, K_turb) is set by the transient for liquid turbines
 
     def residuals(self, x, ev):
         p1, p2 = ev.p(self.id, self.pin), ev.p(self.id, self.pout)
@@ -272,10 +272,24 @@ class Turbine(Through):
                 R = p1 / (a["rho"] * T)
             m_n = self.par("A_nozzle") * p1 * Gamma(g) / np.sqrt(R * T)
             return [(x[0] - m_n) / ev.m_ref]
+        if self.model() == "orifice":
+            rho = density(ev.inlet(self.id, self.pin), p1)
+            return [(p1 - p2 - self.par("K_turb") * x[0] * abs(x[0]) / rho) / ev.p_ref]
         return [(p1 - self.par("pressure_ratio") * p2) / ev.p_ref]
 
     def eta(self) -> float:
         return self.par("eta_design")
+
+    def eta_at(self, ev, w_s: float) -> float:
+        """Efficiency at the present blade-speed ratio.  Steady solves hold the design value; a transient sets
+        ``nu_design`` (the design u/c0) and the efficiency follows the parabola through zero at standstill and at
+        twice that ratio, peaking at it (PROPSIM-EST: the usual impulse-turbine approximation), which gives a finite
+        starting torque."""
+        nu_d = self.par("nu_design", None)
+        if not nu_d:
+            return self.eta()
+        nu = ev.speed(self.id) * self.par("D_mean") / 2.0 / np.sqrt(2.0 * max(w_s, 1e-9))
+        return self.eta() * max(1.0 - (1.0 - nu / nu_d) ** 2, 0.0)
 
     def specific_work(self, ev) -> tuple[float, float]:
         """Isentropic and actual specific work (J/kg) from inlet to outlet pressure."""
@@ -294,7 +308,7 @@ class Turbine(Through):
                     w_s = s.h - pp.h_ps(p2, a["s"])
                 except ValueError:
                     w_s = max(p1 - p2, 0.0) / a["rho"]
-        return w_s, self.eta() * w_s
+        return w_s, self.eta_at(ev, w_s) * w_s
 
     def shaft_power(self, x, ev):
         return x[0] * self.specific_work(ev)[1]

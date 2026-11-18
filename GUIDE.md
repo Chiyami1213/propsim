@@ -104,7 +104,26 @@ or any part output against the swept input, read the table, or *Export CSV*. *Co
 designs (the diagram, propellants and targets at the time you add them, or a template) and solves them side by side,
 so you can compare cycles or propellant pairs.
 
-The sandbox is steady state only; start-up and shutdown transients are not modelled.
+The *Start-up* panel (a tab beside *Results*) runs the engine up from the closed, pre-start state: the valves open on
+a schedule (*Sequence*: open time, ramp, optional close time and ramp, and whether the throttle scales the valve),
+the shafts spin up under the torque their turbines make against the pumps, and chamber pressure and every station's
+pressure, temperature and flow follow. *Throttle* is a list of (time, fraction) points, *Load* is the propellant mass
+in each tank (a run stops with a message when a tank runs dry; blowdown tanks lose pressure as the ullage grows),
+and *Starter* adds spin-up power to a shaft for a set time. Valves the design targets size (an engine-controller
+valve) hold chamber pressure and mixture ratio from mainstage, scaled by the throttle. Press *Run Start-up*; the
+plots (Pressure, Temperature, Speed, Flow, Tanks and Valves) can be scrubbed or played, and the diagram, inspector
+and 3D model show the engine at the time on the slider. *Export CSV* writes every series.
+
+The transient is quasi-steady: at each time step the network is solved at the current valve positions, shaft
+speeds and tank states, and only the shaft speeds and tank masses are integrated (shaft inertia, I N dN/dt = turbine
+power - pump power - accessory load + starter, and propellant mass). Line and volume filling, fluid inertia and
+wall thermal lag are not modelled, so the first fraction of a second after a valve cracks open is idealised. Shaft
+inertia defaults to steel disks sized from the wheel diameters (PROPSIM-EST; enter the real value on the *Shaft*
+if known); the accessory load falls with speed cubed (PROPSIM-EST); a turbine's efficiency follows
+max(1 - (1 - nu/nu_design)^2, 0) about its design blade-speed ratio (PROPSIM-EST), which gives it a finite starting
+torque. A staged-combustion engine may stay below its design speed in a short run: give it a starter or a longer
+run. The transient equation set follows Seymour (2003) and Binder et al., NASA TM-107318; start-up data to compare
+against are in Bradley, AIAA 97-2687, and Szuch, NASA TN D-3136 (cited, not reproduced).
 
 ### Compare designs
 Run a model, change a parameter, Run again, then tick *Compare Overlay*: the *Compare* tab overlays the saved runs.

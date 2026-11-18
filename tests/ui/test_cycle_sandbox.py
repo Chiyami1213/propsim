@@ -188,3 +188,21 @@ def test_trade_study_sweeps_and_compares(box):
     assert tp.cmp_table.columnCount() == 2
     assert all(tp.compared[n]["converged"] for n in tp.designs)
     assert tp.cmp_table.item(0, 0).text().replace(",", "").replace(".", "").isdigit()
+
+
+def test_startup_panel_runs_and_scrubs(box):
+    box.load_template("pressure_fed_kerolox")
+    sp = box.startup
+    assert sp.valve_table.rowCount() == 2 and sp.load_table.rowCount() == 2     # two valves, two tanks
+    sp.t_end.setValue(1.0)
+    sp.run()
+    sp.wait()
+    r = sp.result
+    assert r is not None and r.message.startswith("ran to") and len(r.t) > 5
+    assert sp.slider.maximum() == len(r.t) - 1 and set(sp.plots) >= {"Pressure", "Speed", "Tanks and Valves"}
+    sp._scrub(0)
+    p0 = box.sol.components["chamber"]["p_c"]
+    sp._scrub(len(r.t) - 1)
+    assert box.sol.components["chamber"]["p_c"] > 3 * p0                        # the diagram follows the scrubber
+    sp.slider.setValue(2)
+    assert "t = " in sp.time_lbl.text()

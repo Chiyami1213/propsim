@@ -770,8 +770,12 @@ class CycleSandbox(QMainWindow):
         self.trade = TradePanel(lambda: self.doc)
         self.trade.message.connect(lambda m: self.log(m))
         self.dock_trade = self._dock("Trade", "Trade Study", self.trade)
+        from .startup_panel import StartupPanel
+        self.startup = StartupPanel(lambda: self.doc, self.show_transient_point)
+        self.startup.message.connect(lambda m: self.log(m))
+        self.dock_startup = self._dock("Startup", "Start-up", self.startup)
         self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim, self.dock_3d, self.dock_guide,
-                      self.dock_trade]
+                      self.dock_trade, self.dock_startup]
         self.default_layout()
         self._toolbar()
         self.canvas.selected.connect(self.inspect)
@@ -811,6 +815,8 @@ class CycleSandbox(QMainWindow):
         self.splitDockWidget(self.dock_res, self.dock_3d, Qt.Horizontal)      # selected part's 3D model beside it
         self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_trade)
         self.tabifyDockWidget(self.dock_res, self.dock_trade)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_startup)
+        self.tabifyDockWidget(self.dock_res, self.dock_startup)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_anim)
         self.tabifyDockWidget(self.dock_insp, self.dock_anim)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_guide)
@@ -820,8 +826,8 @@ class CycleSandbox(QMainWindow):
         for d in self.docks:
             d.show()
         self.resizeDocks([self.dock_parts, self.dock_insp], [230, 520], Qt.Horizontal)       # wide enough for the cycle schematic
-        self.resizeDocks([self.dock_res], [330], Qt.Vertical)
-        self.resizeDocks([self.dock_res, self.dock_3d], [800, 700], Qt.Horizontal)
+        self.resizeDocks([self.dock_res], [380], Qt.Vertical)
+        self.resizeDocks([self.dock_res, self.dock_3d], [1000, 450], Qt.Horizontal)
 
     def _style(self) -> None:
         t = theme.t
@@ -950,6 +956,9 @@ class CycleSandbox(QMainWindow):
             self.inspect(None)
             if hasattr(self, "trade"):
                 self.trade.refresh_inputs()
+            if hasattr(self, "startup"):
+                self.startup.result = None
+                self.startup.refresh()
         finally:
             self._loading = False
 
@@ -1009,6 +1018,7 @@ class CycleSandbox(QMainWindow):
         if self.view3d.nid is not None:
             self.view3d.show_component(self.doc["graph"], self.view3d.nid, None)
         self.trade.refresh_inputs()
+        self.startup.refresh()
         sel = [i for i in self.canvas.scene().selectedItems() if isinstance(i, NodeItem)]
         self.inspect(sel[0].node["id"] if len(sel) == 1 else None)
 
@@ -1304,6 +1314,15 @@ class CycleSandbox(QMainWindow):
         self.canvas.show_results(sol, self._color_key())
         self._fill_results()
         self._fill_targets()
+        sel = [i for i in self.canvas.scene().selectedItems() if isinstance(i, NodeItem)]
+        self.inspect(sel[0].node["id"] if len(sel) == 1 else None)
+
+    def show_transient_point(self, sol) -> None:
+        """Paint one instant of a start-up on the diagram, the station, component and shaft tables and the
+        inspector (the start-up panel's slider and Play call this)."""
+        self.sol = sol
+        self.canvas.show_results(sol, self._color_key())
+        self._fill_results()
         sel = [i for i in self.canvas.scene().selectedItems() if isinstance(i, NodeItem)]
         self.inspect(sel[0].node["id"] if len(sel) == 1 else None)
 
