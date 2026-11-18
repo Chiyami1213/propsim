@@ -549,7 +549,7 @@ class HallLiveModel(ModelController):
 
 
 def draw_hall(vp, x, v, Ro, Ri, Lch, theta, cmap, title, x_peak, clim=None):
-    """Annular channel walls coloured by a profile along x, anode, radial field lines, E x B drift ring and plume."""
+    """Annular channel walls colored by a profile along x, anode, radial field lines, E x B drift ring and plume."""
     pl = vp.plotter
     th = thetas(vp.cutaway)
     inside = x <= Lch + 1e-12

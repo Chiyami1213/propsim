@@ -1,4 +1,4 @@
-"""3D viewport: PyVista scene host + toolbar row, readout card, colour bar and caption (Section 5.3 item 2).
+"""3D viewport: PyVista scene host + toolbar row, readout card, color bar and caption (Section 5.3 item 2).
 
 Backends: ``QtInteractor`` on a real platform; under ``QT_QPA_PLATFORM=offscreen`` (no GL context) a headless
 ``pv.Plotter(off_screen=True)`` whose frames are shown in a QLabel, so tests and screenshots still work.
@@ -77,7 +77,7 @@ class ColorBar(QWidget):
         p.drawText(x0 + w + 6, y0 + h, f"{self.lo:.4g}")
 
 
-# names of the solid-colour meshes the models add (``name=`` of ``add_mesh``) and what the legend calls them
+# names of the solid-color meshes the models add (``name=`` of ``add_mesh``) and what the legend calls them
 LEGEND_LABELS = {
     "case": "Motor case", "wall": "Wall", "nozzle": "Nozzle", "plume": "Exhaust plume", "tracers": "Oxidizer flow",
     "tank": "Oxidizer tank", "tank_liquid": "Liquid N₂O", "cut": "Grain (cut face)", "heater": "Heater coil",
@@ -88,7 +88,7 @@ LEGEND_LABELS = {
 
 
 class Legend(QWidget):
-    """Colour key for the solid-colour blocks of the 3D scene (bottom-right overlay): a swatch and a name per block."""
+    """Color key for the solid-color blocks of the 3D scene (bottom-right overlay): a swatch and a name per block."""
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -245,7 +245,7 @@ class Viewport3D(QWidget):
         self.colorbar.setVisible(on)
 
     def _legend_rows(self) -> list[tuple[str, str]]:
-        """(colour, name) of every solid-colour mesh in the scene; meshes coloured by a field are covered by the colour
+        """(color, name) of every solid-color mesh in the scene; meshes colored by a field are covered by the color
         bar, and a name that is not in ``LEGEND_LABELS`` (or the model's own ``legend_labels``) is made readable."""
         rows: list[tuple[str, str]] = []
         seen: set[str] = set()
@@ -287,7 +287,7 @@ class Viewport3D(QWidget):
         self.plotter.set_background(theme.t["viewport_bg"])
         bg = QColor(theme.t["viewport_bg"])
         # the render window is sized in whole pixels: at a fractional display scale a 1 px strip of the host widget
-        # shows along its top and right edges, so the host itself takes the view colour (and has no frame)
+        # shows along its top and right edges, so the host itself takes the view color (and has no frame)
         pal = self.host.palette()
         pal.setColor(QPalette.Window, bg)
         pal.setColor(QPalette.Base, bg)

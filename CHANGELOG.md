@@ -32,7 +32,7 @@ New changes go above this line, newest first.
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
   3-D burnback accepts custom sections.
-- F2 saves a screenshot of the window to the data folder (`screenshots`); F11 toggles full screen; a Legend button in the 3D view shows a colour key for the solid-colour blocks (bottom right);
+- F2 saves a screenshot of the window to the data folder (`screenshots`); F11 toggles full screen; a Legend button in the 3D view shows a color key for the solid-color blocks (bottom right);
   the Spring-mass toy draws a real helical spring; the combo box arrow is a plain chevron; the Next Color Theme command
   (Ctrl+T) is removed, themes are picked in View, Color Theme.
 - Edit, Preferences: appearance options and editable key bindings; double-click a slider to restore its default;

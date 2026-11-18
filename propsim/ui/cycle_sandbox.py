@@ -20,9 +20,10 @@ from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDoubleSpinBox, QFi
                                QGraphicsItem, QGraphicsPathItem, QGraphicsScene, QGraphicsView, QHBoxLayout,
                                QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
                                QPushButton, QSplitter, QTableWidget, QTableWidgetItem, QTabWidget, QToolBar,
-                               QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+                               QStyle, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from ..core.engine_graph import edit as E
+from .panels import draw_guide
 from .theme import theme
 
 NODE_W = 168
@@ -45,6 +46,17 @@ SUMMARY = {  # one-line state on the node after a solve: (output, label, factor,
     "injector": [("dp", "Δp", 1e-6, "MPa", 2), ("stiffness", "Δp/p", 100, "%", 0)],
     "shaft": [("speed", "N", 30 / math.pi, "rpm", 0), ("power", "P", 1e-6, "MW", 2)],
 }
+
+
+SI_UNITS = {"p": "Pa", "T": "K", "thrust": "N", "isp": "s", "mdot": "kg/s", "mixture_ratio": "–", "power": "W", "Q": "W",
+            "speed": "rad/s", "dp": "Pa", "dT": "K", "pressure_ratio": "–", "stiffness": "–", "cstar": "m/s"}
+
+
+def output_unit(output: str) -> str:
+    """SI unit of a design-target output (``p_c`` and ``T_wg_max`` follow their first letter)."""
+    if output in SI_UNITS:
+        return SI_UNITS[output]
+    return SI_UNITS.get(output.split("_")[0], "")
 
 
 def _fmt(v, digits=3) -> str:
@@ -126,7 +138,7 @@ class NodeItem(QGraphicsItem):
         self.ports: dict[str, PortItem] = {}
         for lst, x in ((ins, 0.0), (outs, NODE_W)):
             for i, sp in enumerate(lst):
-                self.ports[sp["name"]] = PortItem(self, sp, QPointF(x, 34.0 + 18.0 * i))
+                self.ports[sp["name"]] = PortItem(self, sp, QPointF(x, 48.0 + 18.0 * i))
         for lst, y in ((shafts, self.h), (therm, 0.0)):
             for i, sp in enumerate(lst):
                 self.ports[sp["name"]] = PortItem(self, sp, QPointF(NODE_W * (i + 1) / (len(lst) + 1), y))
@@ -193,6 +205,10 @@ class EdgeItem(QGraphicsPathItem):
         self.width = 2.4
         self.update_path()
 
+    def paint(self, p, option, widget=None) -> None:
+        option.state &= ~QStyle.State_Selected          # a selected connection is drawn thicker, never with a box
+        super().paint(p, option, widget)
+
     def update_path(self) -> None:
         p1, p2 = self.a.scene_center(), self.b.scene_center()
         path = QPainterPath(p1)
@@ -236,7 +252,7 @@ class EdgeItem(QGraphicsPathItem):
 
 
 class Canvas(QGraphicsView):
-    """The flow diagram: nodes, port-to-port edges, drag-to-connect, colouring by the solved stations."""
+    """The flow diagram: nodes, port-to-port edges, drag-to-connect, coloring by the solved stations."""
 
     selected = Signal(object)            # node id or None
     changed = Signal()
@@ -536,9 +552,14 @@ class _Solver(QObject):
 class Palette(QTreeWidget):
     add = Signal(str)
 
+    def drawRow(self, painter, option, index) -> None:
+        super().drawRow(painter, option, index)
+        draw_guide(self, painter, option, index)         # the grey guide line down each expanded group, as in the module tree
+
     def __init__(self) -> None:
         super().__init__()
         self.setHeaderHidden(True)
+        self.setIndentation(18)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
         lib = E.library()
@@ -677,7 +698,7 @@ class CycleSandbox(QMainWindow):
         self.solve_btn.setShortcut("Ctrl+R")
         self.solve_btn.clicked.connect(self.solve)
         tb.addWidget(self.solve_btn)
-        tb.addWidget(QLabel(" Colour by "))
+        tb.addWidget(QLabel(" Color by "))
         self.color_box = QComboBox()
         self.color_box.addItems(list(COLOR_BY))
         self.color_box.setCurrentText("Pressure (MPa)")
@@ -967,8 +988,8 @@ class CycleSandbox(QMainWindow):
                       "the throat area A_t). Leave empty to solve the hardware as built.")
         info.setWordWrap(True)
         lay.addWidget(info)
-        self.tg_table = QTableWidget(0, 4)
-        self.tg_table.setHorizontalHeaderLabels(["Target output (node.output)", "Value (SI)",
+        self.tg_table = QTableWidget(0, 5)
+        self.tg_table.setHorizontalHeaderLabels(["Target output (node.output)", "Value (SI)", "Unit",
                                                  "Free parameter (node.param)", "Sized value"])
         self.tg_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tg_table.itemChanged.connect(self._target_edit)
@@ -988,11 +1009,12 @@ class CycleSandbox(QMainWindow):
         tg, fr = self.doc.get("targets", []), self.doc.get("free", [])
         self.tg_table.setRowCount(len(tg))
         for i, (t, f) in enumerate(zip(tg, fr)):
-            vals = [f"{t['node']}.{t['output']}", repr(t["value"]), f"{f['node']}.{f['param']}",
+            vals = [f"{t['node']}.{t['output']}", repr(t["value"]), output_unit(t["output"]),
+                    f"{f['node']}.{f['param']}",
                     _fmt(self.sol.free.get(f"{f['node']}.{f['param']}"), 5) if self.sol else ""]
             for j, v in enumerate(vals):
                 it = QTableWidgetItem(v)
-                if j == 3:
+                if j in (2, 4):
                     it.setFlags(Qt.ItemIsEnabled)
                 self.tg_table.setItem(i, j, it)
         self._loading_t = False
@@ -1023,7 +1045,7 @@ class CycleSandbox(QMainWindow):
                 t["node"], t["output"] = txt.split(".", 1)
             elif c == 1:
                 t["value"] = float(txt)
-            elif c == 2:
+            elif c == 3:
                 f["node"], f["param"] = txt.split(".", 1)
         except ValueError:
             self.log(f"design target row {r + 1}: write node.output, a number, and node.param")

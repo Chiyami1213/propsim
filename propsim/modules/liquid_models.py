@@ -272,7 +272,7 @@ class RegenLiveModel(NozzleLiveModel):
 
 # ====================================================================================== common scene for the Run models
 class LiquidRunBase(ModelController):
-    """Engine (chamber, throat, bell) with two tanks and feed lines, coloured by pressure / state."""
+    """Engine (chamber, throat, bell) with two tanks and feed lines, colored by pressure / state."""
 
     module = "Liquid"
     mode = "run"

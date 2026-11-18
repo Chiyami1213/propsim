@@ -63,7 +63,7 @@ class FlowLiveModel(TubeLive):
         return x, np.full_like(x, self.R_in), np.pi * (z + r["uh"]), r"$u_z$ on the axis (–)"
 
     def _extra(self, vp, p, r) -> None:
-        """Streamlines (meridional planes) coloured by speed |u|."""
+        """Streamlines (meridional planes) colored by speed |u|."""
         pl = vp.plotter
         th = [0.0, np.pi / 2, np.pi, 3 * np.pi / 2]
         pts, conn, speed = [], [], []

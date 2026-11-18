@@ -1,4 +1,4 @@
-"""Edit > Preferences: an Appearance page (colour theme, 3D view and quit options) and a Key Bindings page (every menu
+"""Edit > Preferences: an Appearance page (color theme, 3D view and quit options) and a Key Bindings page (every menu
 command with an editable shortcut, conflicts refused, per-row and global reset)."""
 from __future__ import annotations
 

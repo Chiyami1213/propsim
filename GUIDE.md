@@ -59,7 +59,7 @@ the toolbar; tanks take the propellant of their side. The inspector on the right
 
 **Solve** (Ctrl+R) finds the steady operating point: every station's pressure, temperature, phase and flow, each
 part's state (pump head, power and NPSH margin, turbine work, jacket heat load and wall temperature, chamber pressure,
-thrust and Isp) and shaft speeds. Colour the diagram by pressure, temperature or flow. In *Design Targets* you can ask
+thrust and Isp) and shaft speeds. Color the diagram by pressure, temperature or flow. In *Design Targets* you can ask
 for an output (for example chamber pressure and mixture ratio) and free a parameter (for example a valve position) to
 size it, as an engine controller would. The templates include the Huzel & Huang pressure-fed, gas-generator and
 expander engines and an RS-25 style staged-combustion cycle. Save and open diagrams as `.json` files.
@@ -97,12 +97,12 @@ reopens your previous model and parameters.
 
 ## Color themes
 
-**View, Color Theme** (Ctrl+Shift+T) lists Graphite, Ocean, Forest, Plum and Light with their palettes; the picker
+**View, Color Theme** (F10) lists Graphite, Ocean, Forest, Plum and Light with their palettes; the picker
 shows only the names when its window is narrow. The choice is remembered.
 
 ## Preferences
 
-**Edit, Preferences** (Ctrl+,) has two pages. *Appearance* sets the color theme and whether the 3D view shows the
+**Edit, Preferences** (F9) has two pages. *Appearance* sets the color theme and whether the 3D view shows the
 legend and the colorbar, and whether PropSim asks before quitting. *Key Bindings* lists every menu command with its
 shortcut: click a field and press the new keys, clear it to remove the shortcut, or reset one row or all of them. Two
 commands cannot share a shortcut. Everything is remembered between sessions.
@@ -116,7 +116,7 @@ Double-click a parameter slider to put it back to its default value.
 | Ctrl+R / Esc | Run / Cancel |
 | Ctrl+O, Ctrl+S | Open case, Save case |
 | Ctrl+E | Engine cycle sandbox |
-| Ctrl+Shift+T | Color theme picker |
+| F10 | Color theme picker |
 | F12 | Restore default panel layout |
 | F11 | Full screen on and off |
 | F2 | Screenshot of the window, saved in the data folder's screenshots folder |

@@ -84,22 +84,27 @@ class PanelTitle(QWidget):
         return QSize(120, 32)
 
 
+def draw_guide(tree, painter, option, index) -> None:
+    """Grey vertical guide down the left of an expanded group's children (drawn after the row, so a selection never hides it)."""
+    depth, p = 0, index.parent()
+    while p.isValid():
+        depth, p = depth + 1, p.parent()
+    if depth >= 1:
+        x = tree.indentation() * (depth + 1) - tree.indentation() // 2
+        painter.save()
+        c = QColor(theme.t["faint"])
+        c.setAlpha(170)
+        painter.setPen(QPen(c, 1))
+        painter.drawLine(x, option.rect.top(), x, option.rect.bottom())
+        painter.restore()
+
+
 class GuideTree(QTreeView):
     """Module tree: a grey vertical guide runs down the left of each expanded group's children."""
 
     def drawRow(self, painter, option, index) -> None:
         super().drawRow(painter, option, index)
-        depth, p = 0, index.parent()
-        while p.isValid():
-            depth, p = depth + 1, p.parent()
-        if depth >= 1:                                         # drawn after the row so a selection never hides it
-            x = self.indentation() * (depth + 1) - self.indentation() // 2
-            painter.save()
-            c = QColor(theme.t["faint"])
-            c.setAlpha(170)
-            painter.setPen(QPen(c, 1))
-            painter.drawLine(x, option.rect.top(), x, option.rect.bottom())
-            painter.restore()
+        draw_guide(self, painter, option, index)
 
 
 def add_panel_menu(menu, docks) -> None:

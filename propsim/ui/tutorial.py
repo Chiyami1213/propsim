@@ -65,7 +65,7 @@ def _steps() -> list[Step]:
               "View, Panels brings it back, and F12 restores the default arrangement."],
              lambda w: [d.titleBarWidget() for d in (w.vp_dock, w.plots_dock)]),
         Step("Color Themes",
-             ["View, Color Theme (Ctrl+Shift+T) opens the picker with Graphite, Ocean, Forest, Plum and Light. "
+             ["View, Color Theme (F10) opens the picker with Graphite, Ocean, Forest, Plum and Light. "
               "Your choice is remembered."],
              lambda w: w.menuBar()),
         Step("Engine to Vehicle",

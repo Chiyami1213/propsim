@@ -1,4 +1,4 @@
-"""Theme tokens (PROPSIM_BUILD_PROMPT Section 5.2), quantity colours, and the QSS builder."""
+"""Theme tokens (PROPSIM_BUILD_PROMPT Section 5.2), quantity colors, and the QSS builder."""
 from __future__ import annotations
 
 import tempfile
@@ -37,10 +37,10 @@ THEME_NAMES = {"dark": "Graphite", "ocean": "Ocean", "forest": "Forest", "plum":
 
 
 def swatch(name: str) -> tuple[str, str, str, str]:
-    """Four representative colours of a theme: background, selection, accent, secondary accent."""
+    """Four representative colors of a theme: background, selection, accent, secondary accent."""
     t = TOKENS[name]
     return t["viewport_bg"], t["select_bg"], t["accent"], t["accent2"]
-# quantity colours (both themes)
+# quantity colors (both themes)
 QUANTITY = dict(oxidizer="#ff9d3c", fuel="#5cc97a", hot="#ff5a3c", pressure="#b07cff", thrust="#4ea1ff")
 CMAPS = dict(temperature="inferno", mach="viridis", signed="coolwarm")
 
@@ -57,7 +57,7 @@ class _Theme(QObject):
         return TOKENS[self.name]
 
     def color(self, key: str) -> str:
-        """Token or quantity colour name -> hex; hex strings pass through."""
+        """Token or quantity color name -> hex; hex strings pass through."""
         if key.startswith("#"):
             return key
         return QUANTITY.get(key) or self.t[key]
@@ -75,7 +75,7 @@ theme = _Theme()
 
 def arrow_png(color: str) -> str:
     """Path (forward slashes, for ``url()``) of a plain down-pointing chevron in ``color``: the combo box arrow, drawn
-    flat instead of the native raised button.  Written once per colour to the temporary folder."""
+    flat instead of the native raised button.  Written once per color to the temporary folder."""
     folder = Path(tempfile.gettempdir()) / "propsim_arrows"
     folder.mkdir(parents=True, exist_ok=True)
     f = folder / f"down_{color.lstrip('#')}.png"

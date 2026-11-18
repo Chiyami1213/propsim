@@ -1,7 +1,7 @@
 """Hybrid module, Run models: quasi-1D burn (axial port evolution, throttling, throat erosion) and N₂O blowdown.
 
 3D playback shows the port radius varying along the axis (aft stations burn faster because fuel adds to the local
-mass flux), coloured by the chosen field; the blowdown model adds a tank whose liquid level follows the run.
+mass flux), colored by the chosen field; the blowdown model adds a tank whose liquid level follows the run.
 """
 from __future__ import annotations
 

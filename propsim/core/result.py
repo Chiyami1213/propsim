@@ -28,7 +28,7 @@ class Result:
 class Curve:
     x: np.ndarray
     y: np.ndarray
-    color: str                      # theme quantity key ("pressure", ...) or a hex colour
+    color: str                      # theme quantity key ("pressure", ...) or a hex color
     label: str = ""
     style: str = "solid"            # "solid" | "dash"
 
@@ -39,7 +39,7 @@ class PlotSpec:
     xlabel: str
     ylabel: str
     curves: list[Curve] = field(default_factory=list)
-    markers: list[tuple[float, float, str]] = field(default_factory=list)   # (x, y, colour)
+    markers: list[tuple[float, float, str]] = field(default_factory=list)   # (x, y, color)
     cursor: bool = False            # show the playback cursor (Run mode)
     cursor_channel: str | None = None   # channel whose value marks the dot at the cursor time
     cursor_color: str = "text"

@@ -23,7 +23,7 @@ KEYS = {"htpb_gox": "HTPB / GOX", "paraffin_gox": "Paraffin / GOX"}
 
 class TubeLive(ModelController):
     legend_labels = {"cut": "Fuel grain (cut face)"}
-    """Base for Live tools whose 3D view is a cut-away grain tube coloured by a per-station field."""
+    """Base for Live tools whose 3D view is a cut-away grain tube colored by a per-station field."""
 
     module = "Hybrid"
     mode = "live"
@@ -35,7 +35,7 @@ class TubeLive(ModelController):
         self._m: dict = {}
         self._built = None
 
-    # subclasses: (x[40], R_in[40], field[40], colour-bar title)
+    # subclasses: (x[40], R_in[40], field[40], color-bar title)
     def _profile(self, p, r) -> tuple[np.ndarray, np.ndarray, np.ndarray, str]:
         raise NotImplementedError
 
@@ -346,7 +346,7 @@ class PortLiveModel(ModelController):
 
 def draw_section_slab(vp, dist: np.ndarray, inside: np.ndarray, h: float, web_max: float, d_now: float,
                       R_out: float, cmap: str | None = None) -> None:
-    """Extruded grain slice (thin slab) with the burned-out port removed, coloured by burn distance / web."""
+    """Extruded grain slice (thin slab) with the burned-out port removed, colored by burn distance / web."""
     cmap = cmap or CMAPS.get("temperature", "plasma")
     n = dist.shape[0]
     hm = h * 1e-3

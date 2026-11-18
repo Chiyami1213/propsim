@@ -177,8 +177,11 @@ class SectionEditor(QDialog):
         try:
             spec = self.spec()
             b = gb.build_section(spec, 96)
-            self.pic.setPixmap(QPixmap.fromImage(_image(spec)).scaled(300, 300, Qt.KeepAspectRatio,
-                                                                       Qt.SmoothTransformation))
+            dpr = self.devicePixelRatioF()                  # drawn large, then smoothed down to the device pixels
+            pm = QPixmap.fromImage(_image(spec, 900)).scaled(round(300 * dpr), round(300 * dpr), Qt.KeepAspectRatio,
+                                                             Qt.SmoothTransformation)
+            pm.setDevicePixelRatio(dpr)
+            self.pic.setPixmap(pm)
             self.info.setText(f"web {b.web:.1f} (mm), initial burning perimeter {b.perim[0]:.0f} (mm), port "
                               f"{100 * b.area[0] / b.A_case:.0f} % of the case area.  Blue: burning port; orange: "
                               f"inhibited; grey: propellant.")

@@ -64,7 +64,7 @@ def test_solid_scrollbar_and_tree_guide(win):
     for name in ("dark", "light", "plum"):
         q = build_qss(__import__("propsim.ui.theme", fromlist=["TOKENS"]).TOKENS[name])
         assert "QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }" in q
-        assert "QScrollBar::handle:vertical { background:" in q                    # one solid colour, no hatching
+        assert "QScrollBar::handle:vertical { background:" in q                    # one solid color, no hatching
     win.select_model("hybrid.regression")
     QApplication.processEvents()
     tree = win.tree

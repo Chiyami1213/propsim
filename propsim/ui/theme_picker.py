@@ -1,4 +1,4 @@
-"""Colour-theme picker: one card per theme showing its four-colour palette and name; when the row is too narrow for the
+"""Color-theme picker: one card per theme showing its four-color palette and name; when the row is too narrow for the
 palettes the cards shrink to the theme name only."""
 from __future__ import annotations
 

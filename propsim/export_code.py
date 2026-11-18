@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-# light-background colours for exported figures (theme quantity colours + readable neutrals)
+# light-background colors for exported figures (theme quantity colors + readable neutrals)
 EXPORT_COLORS = dict(oxidizer="#e07b12", fuel="#2e9d4f", hot="#d93a1f", pressure="#8a4fd8", thrust="#1f6fd1",
                      text="#132033", dim="#6b778a", accent="#1d6cb0", faint="#9aa5b5", ok="#2e8b57")
 

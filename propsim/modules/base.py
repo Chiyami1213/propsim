@@ -19,7 +19,7 @@ class ModelController:
     module: str = ""
     mode: str = "live"                      # "live" | "run"
     Params: type[ParamModel]
-    fields: list[str] = []                  # LaTeX captions of the selectable 3D colour fields
+    fields: list[str] = []                  # LaTeX captions of the selectable 3D color fields
     sim = None                              # Simulation for Run models
     legend_labels: dict[str, str] = {}      # mesh name -> 3D legend text (overrides the defaults)
 

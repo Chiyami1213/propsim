@@ -217,7 +217,7 @@ class NTRPerformanceModel(ModelController):
 
     @staticmethod
     def _clim(p, r) -> tuple[float, float]:
-        """Colour range with the cold nozzle exit a quarter up the map, so it stays visible on the dark viewport."""
+        """Color range with the cold nozzle exit a quarter up the map, so it stays visible on the dark viewport."""
         lo = float(r["Tn"].min())
         return lo - 0.33 * (p.T0 - lo), p.T0 + 1e-6
 
@@ -412,7 +412,7 @@ class FuelElementModel(ModelController):
     mode = "live"
     Params = ElementParams
     fields = [f[1] for f in ELEMENT_FIELDS]
-    legend_labels = {"element": "Fuel element (colour field)", "channels": "Coolant channels"}
+    legend_labels = {"element": "Fuel element (color field)", "channels": "Coolant channels"}
     AXIAL_DRAW = 0.1                       # the element is drawn at a tenth of its length
 
     def __init__(self) -> None:
@@ -659,7 +659,7 @@ class CyclesModel(ModelController):
             out[f"bleed_pct_{k}"], out[f"Isp_s_{k}"] = r["sweep"][k]
         return out
 
-    # 3D: tank -> pump -> regen jacket -> (turbine) -> core -> nozzle, pipes coloured by temperature
+    # 3D: tank -> pump -> regen jacket -> (turbine) -> core -> nozzle, pipes colored by temperature
     def build_scene(self, vp, p, r=None) -> None:
         r = r or self.evaluate(p)
         pl = vp.plotter

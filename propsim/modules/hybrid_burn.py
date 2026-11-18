@@ -65,7 +65,7 @@ class HybridBurnModel(ModelController):
                 f = cut_face(xg, self._radii(si, r, None), np.full_like(xg, si.R_out), ang)
                 pl.add_mesh(f, color=QUANTITY["fuel"], opacity=0.85, name=f"cut{k}")
                 m["cuts"].append((f, ang))
-        # nozzle coloured by Mach (viridis), joined at x = L
+        # nozzle colored by Mach (viridis), joined at x = L
         Rt = si.Dt / 2
         xc, rc = contour(Rt, si.eps, Rc=si.R_out)
         Mn = mach_along_contour(xc, rc, Rt, r.meta.get("gamma_mean", GAMMA_DEFAULT) if r is not None else GAMMA_DEFAULT)

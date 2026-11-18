@@ -87,7 +87,7 @@ def test_double_click_resets_a_slider_to_its_default(qapp, tmp_path):
     assert abs(row.value() - default) <= row.step / 2 + 1e-9 and seen
 
 
-def test_3d_legend_lists_the_solid_colour_blocks(qapp, tmp_path):
+def test_3d_legend_lists_the_solid_color_blocks(qapp, tmp_path):
     w = _win(tmp_path)
     w.show()
     w.select_model("hybrid.burn0d")
@@ -97,3 +97,15 @@ def test_3d_legend_lists_the_solid_colour_blocks(qapp, tmp_path):
     assert len(labels) == len(set(labels))
     w.vp._toggle_legend()
     assert not w.vp._legend_on and not w.vp.legend.isVisible()
+
+
+def test_f10_opens_the_color_theme_picker(qapp, tmp_path):
+    w = _win(tmp_path)
+    assert w.bindings["View: Color Theme"][1] == "F10"
+
+
+def test_preferences_is_f9_and_targets_show_units(qapp, tmp_path):
+    from propsim.ui.cycle_sandbox import output_unit
+    w = _win(tmp_path)
+    assert w.bindings["Edit: Preferences"][1] == "F9"
+    assert output_unit("p_c") == "Pa" and output_unit("thrust") == "N" and output_unit("mixture_ratio") == "–"
