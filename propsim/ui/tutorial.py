@@ -62,11 +62,11 @@ def _steps() -> list[Step]:
              lambda w: list(w.bar.export_btns.values())),
         Step("Panels",
              ["Drag a panel by the grip at its top left to move it or float it; the cross at its top right closes it. "
-              "View, Panels brings it back, and Ctrl+Shift+R restores the default arrangement."],
+              "View, Panels brings it back, and F12 restores the default arrangement."],
              lambda w: [d.titleBarWidget() for d in (w.vp_dock, w.plots_dock)]),
         Step("Color Themes",
              ["View, Color Theme (Ctrl+Shift+T) opens the picker with Graphite, Ocean, Forest, Plum and Light. "
-              "Ctrl+T steps to the next theme, and your choice is remembered."],
+              "Your choice is remembered."],
              lambda w: w.menuBar()),
         Step("Engine to Vehicle",
              ["Run a hybrid, solid or liquid model, then choose File, Send Thrust to Vehicle and a stage. The Vehicle "
@@ -77,7 +77,7 @@ def _steps() -> list[Step]:
               "it). Restore Last Session reopens your previous model and parameters."],
              None),
         Step("You Are Ready",
-             ["Help, Tutorial replays this tour and Help, Online Help (F1) opens the user guide. Press Esc or the "
+             ["Help, Tutorial replays this tour and Help, Online Help opens the user guide. Press Esc or the "
               "Done button to start."],
              None),
     ]

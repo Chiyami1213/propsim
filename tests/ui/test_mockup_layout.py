@@ -135,7 +135,7 @@ def test_panels_restore_default_layout(win):
     win.removeDockWidget(win.log_dock)
     QApplication.processEvents()
     act = next(a for a in win.findChildren(QAction) if a.text() == "Restore Default Layout")
-    assert act.shortcut().toString() == "Ctrl+Shift+R"
+    assert act.shortcut().toString() == "F12"
     act.trigger()
     for _ in range(5):
         QApplication.processEvents()

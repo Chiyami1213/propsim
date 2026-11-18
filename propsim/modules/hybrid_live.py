@@ -22,6 +22,7 @@ KEYS = {"htpb_gox": "HTPB / GOX", "paraffin_gox": "Paraffin / GOX"}
 
 
 class TubeLive(ModelController):
+    legend_labels = {"cut": "Fuel grain (cut face)"}
     """Base for Live tools whose 3D view is a cut-away grain tube coloured by a per-station field."""
 
     module = "Hybrid"

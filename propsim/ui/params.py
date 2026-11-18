@@ -17,6 +17,16 @@ def _decimals(step: float) -> int:
     return max(0, int(round(-math.log10(step))))
 
 
+class _ResetSlider(QSlider):
+    """Horizontal slider that jumps back to its parameter's default value on a double click."""
+
+    reset = Signal()
+
+    def mouseDoubleClickEvent(self, e) -> None:
+        self.reset.emit()
+        e.accept()
+
+
 class _Row(QWidget):
     changed = Signal()
 
@@ -31,7 +41,8 @@ class _Row(QWidget):
         self.value_lbl = QLabel()
         self.value_lbl.setObjectName("value")
         self.value_lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = _ResetSlider(Qt.Horizontal)
+        self.slider.reset.connect(self.reset_to_default)
         self.slider.setRange(0, self.n)
         v = QVBoxLayout(self)
         v.setContentsMargins(0, 2, 0, 2)
@@ -50,6 +61,13 @@ class _Row(QWidget):
         self.slider.setValue(int(round((x - self.lo) / self.step)))
         self.slider.blockSignals(False)
         self._show()
+
+    def reset_to_default(self) -> None:
+        """Double click on the slider: back to the schema default (and tell the model if the value moved)."""
+        before = self.slider.value()
+        self.set_value(self.meta["default"])
+        if self.slider.value() != before:
+            self.changed.emit()
 
     def value(self) -> float:
         return min(round(self.lo + self.slider.value() * self.step, 10), self.hi)   # last step may be partial
@@ -104,7 +122,7 @@ class ParamForm(QWidget):
         self.rows: dict[str, _Row | _ChoiceRow] = {}
         values = values or model_cls()
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(6, 2, 6, 6)
+        lay.setContentsMargins(6, 8, 6, 6)
         lay.setSpacing(0)
         group = None
         for meta in model_cls.fields_meta():

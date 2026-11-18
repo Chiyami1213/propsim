@@ -16,6 +16,7 @@ from PySide6.QtGui import (QColor, QFont, QFontMetricsF, QGuiApplication, QIcon,
 from PySide6.QtWidgets import (QLabel, QPushButton, QSizePolicy, QStyle, QStyleOptionButton, QStylePainter,
                                QVBoxLayout, QWidget)
 
+from .plaintext import NeedsMathtext, plain_runs
 from .text import _MATH_SPLIT, to_math
 from .theme import theme
 
@@ -37,10 +38,14 @@ def ui_family() -> str:
     return QGuiApplication.font().family() if app is not None else "Segoe UI"
 
 
-def latex_pixmap(text: str, color: str, size_pt: float = 10.0, dpr: float | None = None) -> QPixmap:
+def latex_pixmap(text: str, color: str, size_pt: float = 10.0, dpr: float | None = None, plain: bool = False) -> QPixmap:
     r"""Render mixed text and math, e.g. ``r"$\dot{m}_{ox}$ (kg·s⁻¹)"``: plain words in the UI font, ``$...$`` segments
-    through mathtext (Computer Modern), aligned on one baseline and rasterized at the screen's device pixel ratio."""
-    return _compose(text, color, float(size_pt), float(dpr or screen_dpr()), ui_family())
+    through mathtext (Computer Modern), aligned on one baseline and rasterized at the screen's device pixel ratio.
+
+    ``plain=True`` is the exemption for short names (buttons, list and menu items, combo entries such as ``N_2O``): the
+    whole label stays in the UI font with true super- and subscripts; only a segment that needs real typesetting
+    (fractions, accents, roots) is still drawn by mathtext."""
+    return _compose(text, color, float(size_pt), float(dpr or screen_dpr()), ui_family(), plain)
 
 
 def _math_raster(seg: str, size_pt: float, dpi: float):
@@ -64,7 +69,7 @@ def _whole_logical(px: int, dpr: float) -> int:
 
 
 @lru_cache(maxsize=8192)
-def _compose(text: str, color: str, size_pt: float, dpr: float, family: str) -> QPixmap:
+def _compose(text: str, color: str, size_pt: float, dpr: float, family: str, plain: bool = False) -> QPixmap:
     try:
         s = to_math(text)
     except Exception:                                      # never lose a label to a normalisation corner case
@@ -73,20 +78,35 @@ def _compose(text: str, color: str, size_pt: float, dpr: float, family: str) -> 
     font.setPixelSize(max(1, round(size_pt * 96.0 / 72.0 * dpr)))
     font.setHintingPreference(QFont.PreferNoHinting)
     fm = QFontMetricsF(font)
-    pieces = []                                            # (kind, payload, ascent, descent, width)
+    small = QFont(font)                                    # sub- and superscripts of a plain label
+    small.setPixelSize(max(1, round(font.pixelSize() * 0.72)))
+    sfm = QFontMetricsF(small)
+    pieces = []                                            # (kind, payload, ascent, descent, width, font, baseline shift)
     for part in _MATH_SPLIT.split(s or ""):
         if not part:
             continue
         if part.startswith("$") and part.endswith("$") and len(part) >= 2:
+            if plain:
+                try:
+                    for run, level in plain_runs(part[1:-1]):
+                        if level == 0:
+                            pieces.append(("t", run, fm.ascent(), fm.descent(), fm.horizontalAdvance(run), font, 0.0))
+                        else:
+                            dy = -0.42 * font.pixelSize() if level > 0 else 0.22 * font.pixelSize()
+                            pieces.append(("t", run, sfm.ascent() - dy, sfm.descent() + dy, sfm.horizontalAdvance(run),
+                                           small, dy))
+                    continue
+                except NeedsMathtext:
+                    pass                                   # real typesetting needed: draw this segment with mathtext
             try:
                 img, depth, w = _math_raster(part, size_pt, 96.0 * dpr)
-                pieces.append(("m", img, img.shape[0] - depth, depth, max(w, img.shape[1])))
+                pieces.append(("m", img, img.shape[0] - depth, depth, max(w, img.shape[1]), font, 0.0))
                 continue
             except (ValueError, RuntimeError):
                 part = part.strip("$")
-        pieces.append(("t", part, fm.ascent(), fm.descent(), fm.horizontalAdvance(part)))
+        pieces.append(("t", part, fm.ascent(), fm.descent(), fm.horizontalAdvance(part), font, 0.0))
     if not pieces:
-        pieces.append(("t", " ", fm.ascent(), fm.descent(), fm.horizontalAdvance(" ")))
+        pieces.append(("t", " ", fm.ascent(), fm.descent(), fm.horizontalAdvance(" "), font, 0.0))
     asc = max(p[2] for p in pieces)
     desc = max(p[3] for p in pieces)
     W = _whole_logical(int(np.ceil(sum(p[4] for p in pieces))) + 2, dpr)
@@ -100,9 +120,10 @@ def _compose(text: str, color: str, size_pt: float, dpr: float, family: str) -> 
     pa.setPen(c)
     x = 1.0
     base = round(asc)
-    for kind, payload, a, _, w in pieces:
+    for kind, payload, a, _, w, pfont, dy in pieces:
         if kind == "t":
-            pa.drawText(QPointF(x, base), payload)
+            pa.setFont(pfont)
+            pa.drawText(QPointF(x, base + round(dy)), payload)
         else:
             h, wi = payload.shape
             rgba = np.empty((h, wi, 4), np.uint8)
@@ -208,7 +229,8 @@ class LatexLabel(QLabel):
 
 
 class LatexButton(QPushButton):
-    """Button whose caption is mathtext. The text pixmap is rendered at this widget's own device pixel ratio and drawn on
+    """Button whose caption is a short name in the UI font with true super- and subscripts (plain label, exempt from
+    the Computer Modern rule). The text pixmap is rendered at this widget's own device pixel ratio and drawn on
     whole device pixels (never scaled), so the caption stays sharp at any display scaling (100 %, 125 %, 150 %...)."""
 
     def __init__(self, text: str, color: str = "dim", size_pt: float = 9.0, parent=None) -> None:
@@ -223,7 +245,7 @@ class LatexButton(QPushButton):
         self._render()
 
     def _render(self, *_) -> None:
-        self._pm = latex_pixmap(self._text, theme.color(self._color), self._size, self.devicePixelRatioF())
+        self._pm = latex_pixmap(self._text, theme.color(self._color), self._size, self.devicePixelRatioF(), plain=True)
         self.updateGeometry()
         self.update()
 

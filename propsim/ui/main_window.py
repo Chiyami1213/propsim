@@ -76,6 +76,8 @@ class MainWindow(QMainWindow):
         migrated = storage.migrate_legacy(self.home) if home is None else 0
         gc_guard.install(parent=self)                      # cyclic GC only between events, never inside a paint
         self.use_settings = use_settings
+        self.bindings: dict[str, tuple[QAction, str]] = {}      # command -> (action, default shortcut)
+        self.confirm_close = False                         # the app entry point turns this on
         self._layout_restored = False
         self.resize(1600, 1000)
         self.ctrl: ModelController | None = None
@@ -92,6 +94,7 @@ class MainWindow(QMainWindow):
         self.playback = PlaybackModel(self)
         self._build_ui()
         self._build_menus()
+        self.load_shortcuts()
         self._apply_theme()
         theme.changed.connect(lambda *_: self._apply_theme())
         theme.changed.connect(self._save_theme)
@@ -100,6 +103,7 @@ class MainWindow(QMainWindow):
         if use_settings:
             self._restore_theme()
             self._restore_layout()
+        self.apply_preferences()
         self._layout_on_show = not self._layout_restored    # Qt redistributes dock sizes on first show
         self._tour = None
         if use_settings:
@@ -156,6 +160,7 @@ class MainWindow(QMainWindow):
         hl.addWidget(self.hover)
         body = _panel(self.scroll, hb)
         body.layout().insertWidget(0, self.params_title)
+        self.params_title.setContentsMargins(0, PAD // 2, 0, 0)       # air between the panel title bar and the model name
         self.right_dock = self._dock("Parameters", "Parameters", body)
         # --- run log ---
         self.log = LatexLog()
@@ -209,6 +214,7 @@ class MainWindow(QMainWindow):
         self._act(f, "Open case", self.open_case, QKeySequence.Open)
         self._act(f, "Save case", self.save_case, QKeySequence.Save)
         self._act(f, "Open result", self.open_result)
+        self._act(f, "Screenshot", self.take_screenshot, "F2")
         f.addSeparator()
         self._act(f, "Restore last session", self.restore_session)
         self._act(f, "Data folder", self.choose_data_folder)
@@ -228,20 +234,22 @@ class MainWindow(QMainWindow):
         self._act(f, "Quit", self.close, QKeySequence.Quit)
         e = mb.addMenu("&Edit")
         self._act(e, "Reset parameters to defaults", self.reset_params)
+        e.addSeparator()
+        self._act(e, "Preferences", self.open_preferences, "Ctrl+,")
         v = mb.addMenu("&View")
         add_panel_menu(v.addMenu(apa("Panels")), self.docks)
         self._act(v, "Color theme", self.choose_theme, "Ctrl+Shift+T")
-        self._act(v, "Next color theme", self.toggle_theme, "Ctrl+T")
-        self._act(v, "Restore default layout", self.reset_layout, "Ctrl+Shift+R")
+        self._act(v, "Restore default layout", self.reset_layout, "F12")
+        self.full_screen_act = self._act(v, "Full screen", self.toggle_full_screen, "F11")
         s = mb.addMenu("&Simulation")
         self._act(s, "Run", self.start_run, "Ctrl+R")
         self._act(s, "Cancel", self.cancel_run, "Esc")
         va = mb.addMenu("&Validation")
         self._act(va, "Run reference + core tests", self.run_validation)
         h = mb.addMenu("&Help")
-        self._act(h, "Tutorial", self.start_tutorial, "Ctrl+F1")
+        self._act(h, "Tutorial", self.start_tutorial, "F1")
         self._act(h, "User guide", lambda: QDesktopServices.openUrl(QUrl(GUIDE_URL)))
-        self._act(h, "Online help (GitHub)", lambda: QDesktopServices.openUrl(QUrl(HELP_URL)), "F1")
+        self._act(h, "Online help (GitHub)", lambda: QDesktopServices.openUrl(QUrl(HELP_URL)))
         self._act(h, "About PropSim", lambda: QMessageBox.about(
             self, "About PropSim", f"PropSim {__version__}\nInteractive 3D Rocket Propulsion Simulator"))
 
@@ -251,7 +259,51 @@ class MainWindow(QMainWindow):
         if shortcut:
             a.setShortcut(shortcut)
         menu.addAction(a)
+        name = f"{menu.title().replace('&', '')}: {a.text()}"
+        self.bindings[name] = (a, a.shortcut().toString(QKeySequence.PortableText))
         return a
+
+    # ---- preferences: key bindings and appearance options ---------------------------------------------
+    def set_shortcut(self, name: str, seq: str) -> None:
+        """Give command ``name`` the shortcut ``seq`` (portable text, empty = none); the choice is remembered when it
+        differs from the default."""
+        action, default = self.bindings[name]
+        action.setShortcut(QKeySequence(seq, QKeySequence.PortableText) if seq else QKeySequence())
+        if self.use_settings:
+            s = self._settings()
+            if seq == default:
+                s.remove("shortcuts/" + name)
+            else:
+                s.setValue("shortcuts/" + name, seq or "none")
+
+    def load_shortcuts(self) -> None:
+        if not self.use_settings:
+            return
+        s = self._settings()
+        for name, (action, _) in self.bindings.items():
+            v = s.value("shortcuts/" + name)
+            if isinstance(v, str):
+                action.setShortcut(QKeySequence() if v == "none" else QKeySequence(v, QKeySequence.PortableText))
+
+    def pref_bool(self, name: str, default: bool) -> bool:
+        if not self.use_settings:
+            return default
+        v = self._settings().value("pref/" + name)
+        return default if v is None else v in (True, "true", "1", 1)
+
+    def set_pref(self, name: str, value: bool) -> None:
+        if self.use_settings:
+            self._settings().setValue("pref/" + name, bool(value))
+
+    def apply_preferences(self) -> None:
+        self.vp.set_legend_visible(self.pref_bool("show_legend", True))
+        self.vp.set_colorbar_visible(self.pref_bool("show_colorbar", True))
+        if getattr(self, "confirm_close_managed", False):
+            self.confirm_close = self.pref_bool("confirm_quit", True)
+
+    def open_preferences(self) -> None:
+        from .preferences import PreferencesDialog
+        PreferencesDialog(self).exec()
 
     # =================================================================== theme
     def _apply_theme(self) -> None:
@@ -260,9 +312,30 @@ class MainWindow(QMainWindow):
         for w in self.findChildren(LatexLabel):
             w._render()
 
-    def toggle_theme(self) -> None:
-        """Next color theme in the picker order."""
-        theme.cycle()
+    def take_screenshot(self) -> Path | None:
+        """F2: save the whole window as a PNG in ``<data folder>/screenshots`` (the screen pixels, so the 3D view is in
+        it too); returns the file."""
+        folder = self.home / "screenshots"
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / time.strftime("screenshot_%Y%m%d_%H%M%S.png")
+        n = 1
+        while path.exists():                                  # two shots in one second
+            path = folder / time.strftime(f"screenshot_%Y%m%d_%H%M%S_{n}.png")
+            n += 1
+        screen = self.screen()
+        pm = screen.grabWindow(self.winId()) if (screen is not None and not self.vp.headless) else self.grab()
+        if pm.isNull() or not pm.save(str(path), "PNG"):
+            self._log("screenshot failed")
+            return None
+        self._log(f"screenshot saved: {path}")
+        return path
+
+    def toggle_full_screen(self) -> None:
+        """F11: full-screen mode on and off (the window keeps its normal size and place for the way back)."""
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
 
     def start_tutorial(self) -> None:
         """Guided tour (arrow keys move between steps, Esc leaves); also offered once on the first launch."""
@@ -332,6 +405,7 @@ class MainWindow(QMainWindow):
         self.vp.plotter.clear()                  # drop the previous model's meshes (their handles are reset below)
         ctrl.reset_scene()
         self.vp.set_fields(ctrl.fields)
+        self.vp.legend_labels = ctrl.legend_labels
         self.bar.set_mode(ctrl.mode)
         self.bar.set_range(0)
         self.summary.setLatex("")
@@ -737,7 +811,27 @@ class MainWindow(QMainWindow):
         else:
             self._log("no session backup yet")
 
+    def _confirm_quit(self) -> bool:
+        """Ask before leaving: True to quit.  Mentions a run that is still going."""
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Question)
+        box.setWindowTitle(apa("Quit PropSim"))
+        box.setText("Quit PropSim?")
+        info = "Your session is backed up automatically and can be restored from File, Restore Last Session."
+        if self.worker is not None:
+            info = "A run is in progress and will be cancelled. " + info
+        box.setInformativeText(info)
+        quit_btn = box.addButton("Quit", QMessageBox.AcceptRole)
+        cancel = box.addButton("Cancel", QMessageBox.RejectRole)
+        box.setDefaultButton(cancel)
+        box.setEscapeButton(cancel)
+        box.exec()
+        return box.clickedButton() is quit_btn
+
     def closeEvent(self, ev) -> None:
+        if self.confirm_close and not self._confirm_quit():
+            ev.ignore()
+            return
         self.backup_session()
         self.cancel_run()
         if self.use_settings:

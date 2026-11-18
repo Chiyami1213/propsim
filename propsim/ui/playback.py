@@ -92,6 +92,7 @@ class PlaybackBar(QToolBar):
     def __init__(self, playback: PlaybackModel, parent=None) -> None:
         super().__init__("Playback", parent)
         self.pb = playback
+        self.setObjectName("Playback")                       # saveState() needs a name for every toolbar
         self.setMovable(False)
         self.setFloatable(False)
         self.setFixedHeight(40)

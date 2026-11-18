@@ -28,6 +28,7 @@ class HybridBurnModel(ModelController):
     Params = HybridBurnParams
     FIELDS = FIELDS
     fields = [f[2] for f in FIELDS]
+    legend_labels = {"cut": "Fuel grain (cut face)", "tracers": "Oxidizer flow"}
 
     def __init__(self) -> None:
         self.sim = HybridBurn0D()

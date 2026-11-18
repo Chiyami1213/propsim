@@ -1,7 +1,11 @@
 """Theme tokens (PROPSIM_BUILD_PROMPT Section 5.2), quantity colours, and the QSS builder."""
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Signal
+import tempfile
+from pathlib import Path
+
+from PySide6.QtCore import QObject, QPointF, Qt, Signal
+from PySide6.QtGui import QColor, QImage, QPainter, QPen
 
 TOKENS = {
     "dark": dict(bg="#14171c", panel="#1c2027", edge="#2c323c", grid_minor="#262b33", plot_bg="#11141a",
@@ -58,12 +62,6 @@ class _Theme(QObject):
             return key
         return QUANTITY.get(key) or self.t[key]
 
-    def cycle(self) -> str:
-        names = list(THEME_NAMES)
-        nxt = names[(names.index(self.name) + 1) % len(names)]
-        self.set(nxt)
-        return nxt
-
     def set(self, name: str) -> None:
         if name not in TOKENS:
             raise KeyError(f"unknown theme {name!r}")
@@ -73,6 +71,24 @@ class _Theme(QObject):
 
 
 theme = _Theme()
+
+
+def arrow_png(color: str) -> str:
+    """Path (forward slashes, for ``url()``) of a plain down-pointing chevron in ``color``: the combo box arrow, drawn
+    flat instead of the native raised button.  Written once per colour to the temporary folder."""
+    folder = Path(tempfile.gettempdir()) / "propsim_arrows"
+    folder.mkdir(parents=True, exist_ok=True)
+    f = folder / f"down_{color.lstrip('#')}.png"
+    if not f.is_file():
+        img = QImage(20, 20, QImage.Format_ARGB32)
+        img.fill(Qt.transparent)
+        p = QPainter(img)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(QPen(QColor(color), 2.0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        p.drawPolyline([QPointF(4.5, 7.0), QPointF(10.0, 12.5), QPointF(15.5, 7.0)])
+        p.end()
+        img.save(str(f))
+    return f.as_posix()
 
 
 def build_qss(t: dict[str, str]) -> str:
@@ -117,6 +133,8 @@ QLabel#badge {{ border: 1.5px solid {t['accent']}; border-radius: 6px; padding: 
 QLabel#badge[mode="run"] {{ border-color: {t['ok']}; color: {t['ok']}; background: rgba(92,201,122,0.12); }}
 QComboBox {{ background: {t['btn']}; border: 1px solid {t['edge']}; border-radius: 5px; padding: 2px 6px;
             color: {t['dim']}; }}
+QComboBox::drop-down {{ border: none; background: transparent; width: 24px; }}
+QComboBox::down-arrow {{ image: url({arrow_png(t['dim'])}); width: 10px; height: 10px; }}
 QComboBox QAbstractItemView {{ background: {t['panel']}; selection-background-color: {t['select_bg']}; }}
 QProgressBar {{ background: {t['btn']}; border: none; border-radius: 3px; height: 8px; text-align: center;
                color: transparent; max-height: 8px; }}
@@ -129,6 +147,8 @@ QTabBar::tab {{ background: {t['btn']}; color: {t['dim']}; border: 1px solid {t[
                padding: 3px 14px; margin: 3px 4px 3px 0; min-width: 90px; }}
 QTabBar::tab:selected {{ background: {t['select_bg']}; color: {t['text']}; }}
 QTabWidget::pane {{ border: none; }}
+QTabWidget, QTabBar {{ background: {t['panel']}; }}
+QTabBar::tear {{ width: 0; }}
 QScrollArea {{ border: none; background: transparent; }}
 QScrollArea > QWidget > QWidget {{ background: transparent; }}
 QScrollBar:vertical {{ background: {t['panel']}; width: 10px; margin: 0; border: none; }}

@@ -15,7 +15,7 @@ For installation and system requirements see the [README](README.md).
 | **Run Log** | Messages, warnings and the summary line of the last run. |
 
 Every panel can be dragged by the grip at its top left (to move it or float it) and closed with the cross at its top
-right. *View, Panels* shows or hides them again, and **Ctrl+Shift+R** restores the default arrangement.
+right. *View, Panels* shows or hides them again, and **F12** restores the default arrangement.
 
 ## Live and Run models
 
@@ -80,7 +80,16 @@ reopens your previous model and parameters.
 ## Color themes
 
 **View, Color Theme** (Ctrl+Shift+T) lists Graphite, Ocean, Forest, Plum and Light with their palettes; the picker
-shows only the names when its window is narrow. Ctrl+T steps to the next theme. The choice is remembered.
+shows only the names when its window is narrow. The choice is remembered.
+
+## Preferences
+
+**Edit, Preferences** (Ctrl+,) has two pages. *Appearance* sets the color theme and whether the 3D view shows the
+legend and the colorbar, and whether PropSim asks before quitting. *Key Bindings* lists every menu command with its
+shortcut: click a field and press the new keys, clear it to remove the shortcut, or reset one row or all of them. Two
+commands cannot share a shortcut. Everything is remembered between sessions.
+
+Double-click a parameter slider to put it back to its default value.
 
 ## Keyboard shortcuts
 
@@ -88,11 +97,11 @@ shows only the names when its window is narrow. Ctrl+T steps to the next theme. 
 |---|---|
 | Ctrl+R / Esc | Run / Cancel |
 | Ctrl+O, Ctrl+S | Open case, Save case |
-| Ctrl+T | Next color theme |
 | Ctrl+Shift+T | Color theme picker |
-| Ctrl+Shift+R | Restore default panel layout |
-| Ctrl+F1 | Start the tutorial (Left / Right arrows move between steps, Esc leaves) |
-| F1 | Online help (this repository) |
+| F12 | Restore default panel layout |
+| F11 | Full screen on and off |
+| F2 | Screenshot of the window, saved in the data folder's screenshots folder |
+| F1 | Start the tutorial (Left / Right arrows move between steps, Esc leaves) |
 | Ctrl+Q | Quit |
 
 ## Model notes
@@ -108,7 +117,7 @@ shows only the names when its window is narrow. Ctrl+T steps to the next theme. 
 
 - **A Run says it failed:** the Run Log shows the reason (for example a vehicle whose thrust-to-weight at lift-off is
   below 1, or a stage set to an imported profile that was never sent).
-- **A panel disappeared:** *View, Panels*, or Ctrl+Shift+R.
+- **A panel disappeared:** *View, Panels*, or F12.
 - **Everything looks tiny or blurry:** PropSim follows the Windows display scaling; restart it after changing the scale.
 - **Report or export fails:** the Run Log shows the error; make sure the target folder is writable.
 

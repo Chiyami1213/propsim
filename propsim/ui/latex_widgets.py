@@ -19,7 +19,8 @@ def _has_math(text: str) -> bool:
 
 
 class LatexItemDelegate(QStyledItemDelegate):
-    """Draws item text through mathtext when it contains math (after normalisation); plain text otherwise."""
+    """Draws item text that contains math (after normalisation) in the UI font with true super- and subscripts: names
+    of list, tree and combo items are exempt from the Computer Modern rule."""
 
     def __init__(self, size_pt: float = 9.5, normal: str = "dim", selected: str = "accent", parent=None) -> None:
         super().__init__(parent)
@@ -42,7 +43,7 @@ class LatexItemDelegate(QStyledItemDelegate):
         opt.text = ""
         style = opt.widget.style() if opt.widget else QApplication.style()
         style.drawControl(QStyle.CE_ItemViewItem, opt, painter, opt.widget)
-        pm = latex_pixmap(text, self._color(option), self.size_pt)
+        pm = latex_pixmap(text, self._color(option), self.size_pt, plain=True)
         r = style.subElementRect(QStyle.SE_ItemViewItemText, opt, opt.widget)
         h = pm.height() / pm.devicePixelRatio()
         painter.drawPixmap(QPoint(r.left() + 2, int(r.top() + (r.height() - h) / 2)), pm)
@@ -52,13 +53,14 @@ class LatexItemDelegate(QStyledItemDelegate):
         text = index.data(Qt.DisplayRole) or ""
         if not _has_math(text):
             return base
-        pm = latex_pixmap(text, self._color(option), self.size_pt)
+        pm = latex_pixmap(text, self._color(option), self.size_pt, plain=True)
         d = pm.devicePixelRatio()
         return QSize(max(base.width(), int(pm.width() / d) + 24), max(base.height(), int(pm.height() / d) + 6))
 
 
 class LatexComboBox(QComboBox):
-    """Combo box whose items and face render LaTeX (e.g. propellant pairs with chemical subscripts)."""
+    """Combo box whose items and face keep the UI font but show true sub- and superscripts (propellant pairs such as
+    ``N_2O_4 / MMH``)."""
 
     def __init__(self, size_pt: float = 9.5, parent=None) -> None:
         super().__init__(parent)
@@ -85,7 +87,7 @@ class LatexComboBox(QComboBox):
         p.drawComplexControl(QStyle.CC_ComboBox, opt)
         p.drawControl(QStyle.CE_ComboBoxLabel, opt)
         r = self.style().subControlRect(QStyle.CC_ComboBox, opt, QStyle.SC_ComboBoxEditField, self)
-        pm = latex_pixmap(text, theme.color("text"), self.size_pt)
+        pm = latex_pixmap(text, theme.color("text"), self.size_pt, plain=True)
         h = pm.height() / pm.devicePixelRatio()
         p.drawPixmap(QPoint(r.left() + 4, int(r.top() + (r.height() - h) / 2)), pm)
 

@@ -26,13 +26,17 @@ application, with live parameter studies, time-domain simulations, synchronized 
   `estimated`), plus documented gaps and source conflicts. Read with `propsim.data`; checked by
   `python tools/check_library.py`. The vehicle model uses it for stage engine presets.
 - **All math in LaTeX**: plot labels, tables, readouts and hover help; every plot has a grid.
-- **Color themes**: Graphite, Ocean, Forest, Plum and Light, chosen in *View > Color Theme* (Ctrl+Shift+T; Ctrl+T
-  steps to the next one) and remembered between sessions. The picker shows each theme's palette and falls back to the
+- **Color themes**: Graphite, Ocean, Forest, Plum and Light, chosen in *View > Color Theme* (Ctrl+Shift+T) and remembered
+  between sessions. The picker shows each theme's palette and falls back to the
   theme names alone when the window is too narrow for the palettes.
 
 - **Panels and tutorial**: every panel has a drag grip (top left) and a close button (top right); *View > Panels* and
-  Ctrl+Shift+R bring them back. *Help > Tutorial* (Ctrl+F1) is a guided tour you step through with the left and right
+  F12 bring them back. *Help > Tutorial* (F1) is a guided tour you step through with the left and right
   arrow keys, and it is offered on the first launch.
+- **Preferences and shortcuts**: *Edit > Preferences* (Ctrl+,) sets the color theme, the 3D legend and colorbar, and
+  the quit confirmation, and lets you rebind every menu command. F11 toggles full screen, F2 saves a screenshot of the
+  window to the data folder (`screenshots`), and double-clicking a slider restores its default. The 3D view has a
+  Legend button (bottom right) that names its solid-colour blocks. A loading screen shows while PropSim starts.
 - **Export**: reports (HTML, PDF, or LaTeX tables with figures) and the exports below, PNG figures, CSV, MATLAB `.mat`,
   HDF5, and runnable code:
   - *Python script* (`.py`): rebuilds the model with your parameters through the `propsim` package and redraws
@@ -132,7 +136,7 @@ The [user guide](GUIDE.md) covers the window, workflows, exports, the data folde
    **Run** (Ctrl+R).
 2. Hover over a parameter to see its meaning and dimensions.
 3. Use the 3D toolbar for cutaway, colour field, colour bar and snapshots; the plot tabs below show the results.
-4. Export from the bottom-right buttons or **File > Export Code**. **Help > Online Help** (F1) opens this page.
+4. Export from the bottom-right buttons or **File > Export Code**. **Help > Online Help** opens this page.
 
 ## Where your data is stored
 Saved runs, cases, exports and automatic backups are kept in `%APPDATA%\PropSim` by default:

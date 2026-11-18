@@ -9,6 +9,34 @@ from ..sims.toy import SpringMass, SpringMassParams
 from .base import ModelController
 
 
+WALL_X, BALL_R = -1.2, 0.09
+COILS, COIL_R, WIRE_R = 10, 0.075, 0.013            # turns, coil radius and wire radius (m)
+N_ALONG, N_AROUND = 220, 10
+
+
+def coil_surface(x_end: float) -> np.ndarray:
+    """Surface points (3, N_ALONG, N_AROUND) of a helical spring (a tube of radius ``WIRE_R`` swept along a helix) from
+    the wall to ``x_end``; the topology is fixed, so the mesh is updated by moving its points."""
+    s = np.linspace(0.0, 1.0, N_ALONG)
+    phi = 2.0 * np.pi * COILS * s
+    L = x_end - WALL_X
+    cx = WALL_X + L * s
+    c = np.stack([cx, COIL_R * np.cos(phi), COIL_R * np.sin(phi)])                         # centre line
+    t = np.stack([np.full_like(s, L), -COIL_R * 2.0 * np.pi * COILS * np.sin(phi),
+                  COIL_R * 2.0 * np.pi * COILS * np.cos(phi)])                           # d(centre)/ds
+    t /= np.linalg.norm(t, axis=0)
+    n = np.stack([np.zeros_like(s), np.cos(phi), np.sin(phi)])                           # radial direction
+    n -= t * np.sum(n * t, axis=0)
+    n /= np.linalg.norm(n, axis=0)
+    b = np.cross(t, n, axis=0)
+    a = np.linspace(0.0, 2.0 * np.pi, N_AROUND)
+    return c[:, :, None] + WIRE_R * (n[:, :, None] * np.cos(a) + b[:, :, None] * np.sin(a))
+
+
+def _flat(surf: np.ndarray) -> np.ndarray:
+    return np.c_[surf[0].ravel(order="F"), surf[1].ravel(order="F"), surf[2].ravel(order="F")]
+
+
 class SpringMassModel(ModelController):
     key = "toy.springmass"
     title = "Spring-mass"
@@ -24,10 +52,13 @@ class SpringMassModel(ModelController):
     def build_scene(self, vp, p, r=None) -> None:
         pl = vp.plotter
         pl.clear()
-        ball = pv.Sphere(radius=0.09)
-        self._m = dict(ball=ball, base=np.array(ball.points), line=pv.Line((-1.2, 0, 0), (0, 0, 0)))
-        pl.add_mesh(pv.Box(bounds=(-1.3, -1.2, -0.3, 0.3, -0.3, 0.3)), color="#6b768a", name="wall")
-        pl.add_mesh(self._m["line"], color="#ff9d3c", line_width=4, name="spring")
+        ball = pv.Sphere(radius=BALL_R)
+        x0 = p.x0 if r is None else r.channels["x"][0]
+        surf = coil_surface(x0 - BALL_R)
+        spring = pv.StructuredGrid(surf[0], surf[1], surf[2])
+        self._m = dict(ball=ball, base=np.array(ball.points), spring=spring)
+        pl.add_mesh(pv.Box(bounds=(WALL_X - 0.1, WALL_X, -0.3, 0.3, -0.3, 0.3)), color="#6b768a", name="wall")
+        pl.add_mesh(spring, color="#ff9d3c", name="spring", smooth_shading=True)
         pl.add_mesh(ball, color="#4ea1ff", name="ball", smooth_shading=True)
         vp.reset_view()
 
@@ -36,7 +67,7 @@ class SpringMassModel(ModelController):
             self.build_scene(vp, p, r)
         x = p.x0 if r is None or frame is None else r.channels["x"][frame]
         self._m["ball"].points = self._m["base"] + np.array([x, 0, 0])
-        self._m["line"].points = np.array([[-1.2, 0, 0], [x - 0.09, 0, 0]])
+        self._m["spring"].points = _flat(coil_surface(x - BALL_R))
         vp.render()
 
     def tabs(self, p, r, compare=None) -> list[TabSpec]:

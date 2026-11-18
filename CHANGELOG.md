@@ -4,6 +4,16 @@ New changes go above this line, newest first.
 
 ## Unreleased
 
+- F2 saves a screenshot of the window to the data folder (`screenshots`); F11 toggles full screen; a Legend button in the 3D view shows a colour key for the solid-colour blocks (bottom right);
+  the Spring-mass toy draws a real helical spring; the combo box arrow is a plain chevron; the Next Color Theme command
+  (Ctrl+T) is removed, themes are picked in View, Color Theme.
+- Edit, Preferences: appearance options and editable key bindings; double-click a slider to restore its default;
+  Help, Tutorial moves to F1 and Restore Default Layout to F12.
+- Loading screen (application icon, progress bar and step, shown for at least one second) and a confirmation before
+  quitting.
+- Short names (buttons, list and combo items such as `N2O Blowdown`) use the interface font with true sub- and
+  superscripts; formulas elsewhere stay in LaTeX.
+- Light theme: the plot tab strip and the 3D view edge follow the theme; more room above the parameter panel title.
 - Component library, block A (fluids and propellants): `propsim/data/library` with sourced fluid scalars, CoolProp
   property tables for 11 fluids, CEA reactant cards and published theoretical-performance cases, read by
   `propsim.data`; checks in `tools/check_library.py` and `tests/data`.

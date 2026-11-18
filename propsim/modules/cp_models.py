@@ -23,6 +23,8 @@ UNITS = {
 
 
 class CPModelBase(ModelController):
+    legend_labels = {
+        "cut": "Propellant grain (cut face)", "end_head": "Inhibited end face", "end_aft": "Inhibited end face"}
     module = "Solid"
     mode = "run"
     system = "SI"

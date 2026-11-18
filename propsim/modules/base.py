@@ -21,6 +21,7 @@ class ModelController:
     Params: type[ParamModel]
     fields: list[str] = []                  # LaTeX captions of the selectable 3D colour fields
     sim = None                              # Simulation for Run models
+    legend_labels: dict[str, str] = {}      # mesh name -> 3D legend text (overrides the defaults)
 
     # --- Live ---------------------------------------------------------------------------------
     def evaluate(self, p) -> dict:
