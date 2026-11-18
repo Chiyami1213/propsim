@@ -336,6 +336,41 @@ def hybrid_section() -> tuple[list[str], int]:
     return lines + [""], n_flag
 
 
+def electric_section() -> tuple[list[str], int]:
+    lines = [
+        "## 10. Electric thruster throttle tables",
+        "",
+        "Per point: thrust against mdot Isp g0 (1 %), thruster efficiency against F^2 / (2 mdot P_thruster) "
+        "(3 %; P_thruster = P_PPU eta_PPU where only PPU power is printed), lifetime impulse against "
+        "throughput Isp g0 (2 %) and system efficiency against eta_PPU eta_thruster (2 %). The printed "
+        "values carry two or three significant figures, so differences under about 1 % are rounding.",
+        "",
+        "| thruster | point | P_thruster (W) | thrust Δ% | eta_t Δ% | impulse Δ% | eta_sys Δ% | flag |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    n_flag = 0
+    for r in data.throttle_table():
+        m, F, isp = float(r["mdot"]), float(r["thrust"]), float(r["Isp"])
+        P = data.thruster_power(r)
+        d_F = m * isp * data.G0 / F - 1
+        d_eta = F**2 / (2 * m * P) / float(r["eta_thruster"]) - 1
+        d_I = float(r["throughput"]) * isp * data.G0 / float(r["total_impulse"]) - 1
+        d_sys = (
+            float(r["eta_ppu"]) * float(r["eta_thruster"]) / float(r["eta_system"]) - 1
+            if r["eta_system"]
+            else None
+        )
+        bad = abs(d_F) > 0.01 or abs(d_eta) > 0.03 or abs(d_I) > 0.02
+        bad = bad or (d_sys is not None and abs(d_sys) > 0.02)
+        n_flag += bad
+        sys_txt = "n/a" if d_sys is None else f"{100 * d_sys:+.1f}"
+        lines.append(
+            f"| {r['thruster_id']} | {r['point']} | {P:.0f} | {100 * d_F:+.1f} | {100 * d_eta:+.1f} | "
+            f"{100 * d_I:+.1f} | {sys_txt} | {'**check**' if bad else 'ok'} |"
+        )
+    return lines + [""], n_flag
+
+
 def main() -> int:
     problems = data.validate()
     integrity = (
@@ -353,6 +388,7 @@ def main() -> int:
     tg, n_tg = turbine_gas_section()
     mat, n_mat = material_section()
     hyb, n_hyb = hybrid_section()
+    ele, n_ele = electric_section()
     head = [
         "# Library checks",
         "",
@@ -361,16 +397,19 @@ def main() -> int:
         f"Summary: {len(problems)} integrity problems, {n_cea} theoretical-performance cases outside "
         f"{TOL_CEA:g} %, {n_sca} multi-source scalars spreading more than {TOL_SCALAR:g} %, {n_eng} engine "
         f"closure checks outside tolerance, {n_tg} turbine-gas rows flagged, {n_mat} material-fit checks "
-        f"flagged, {n_hyb} hybrid cases flagged.",
+        f"flagged, {n_hyb} hybrid cases flagged, {n_ele} electric throttle points flagged.",
         "",
     ]
     OUT.write_text(
-        "\n".join(head + integrity + cea + sca + table_section() + eng + tg + graph_section() + mat + hyb),
+        "\n".join(
+            head + integrity + cea + sca + table_section() + eng + tg + graph_section() + mat + hyb + ele
+        ),
         encoding="utf-8",
     )
     print(
         f"wrote {OUT}: {len(problems)} integrity problems, {n_cea} CEA flags, {n_sca} scalar flags, "
-        f"{n_eng} engine flags, {n_tg} turbine-gas flags, {n_mat} material flags, {n_hyb} hybrid flags"
+        f"{n_eng} engine flags, {n_tg} turbine-gas flags, {n_mat} material flags, {n_hyb} hybrid flags, "
+        f"{n_ele} electric flags"
     )
     return 1 if problems else 0
 

@@ -26,6 +26,8 @@ EXAMPLES = LIBRARY / "examples"
 DASHBOARDS = LIBRARY / "dashboards"
 MATERIALS = LIBRARY / "materials"
 HYBRID = LIBRARY / "hybrid"
+ELECTRIC = LIBRARY / "electric"
+G0 = 9.80665  # standard gravity, m/s2 (exact by definition)
 FIT_FORMS = {"log10_poly", "poly_floor", "cu_rational"}
 MATERIAL_UNITS = {
     "k": "W/(m K)",
@@ -279,6 +281,48 @@ def _check_hybrid(problems: list[str]) -> None:
     for fid, f in fuels.items():
         if f["source_id"] not in sources():
             problems.append(f"hybrid/hybrid_fuels.csv {fid}: unknown source {f['source_id']!r}")
+
+
+def thrusters() -> dict[str, dict[str, str]]:
+    """``thruster_id`` -> row of ``electric/thrusters.csv``."""
+    return {r["thruster_id"]: r for r in _read_csv(ELECTRIC / "thrusters.csv")}
+
+
+def throttle_table(thruster_id: str | None = None, table: str | None = None) -> list[dict[str, str]]:
+    """Rows of ``electric/throttle_tables.csv`` (SI), optionally for one thruster and one table."""
+    rows = _read_csv(ELECTRIC / "throttle_tables.csv")
+    return [
+        r
+        for r in rows
+        if (thruster_id is None or r["thruster_id"] == thruster_id) and (table is None or r["table"] == table)
+    ]
+
+
+def thruster_power(row: dict[str, str]) -> float:
+    """Electrical power into the thruster (W): printed, or PPU input times PPU efficiency."""
+    if row["P_in_thruster"]:
+        return float(row["P_in_thruster"])
+    return float(row["P_in_ppu"]) * float(row["eta_ppu"])
+
+
+def _check_electric(problems: list[str]) -> None:
+    th = thrusters()
+    rows = throttle_table()
+    _check_provenance(rows, "electric/throttle_tables.csv", problems, unit_col=None, value_col=None)
+    for tid, t in th.items():
+        if t["source_id"] not in sources():
+            problems.append(f"electric/thrusters.csv {tid}: unknown source {t['source_id']!r}")
+    for i, r in enumerate(rows, start=2):
+        tag = f"electric/throttle_tables.csv:{i}"
+        if r["thruster_id"] not in th:
+            problems.append(f"{tag}: unknown thruster {r['thruster_id']!r}")
+            continue
+        if not (r["P_in_thruster"] or (r["P_in_ppu"] and r["eta_ppu"])):
+            problems.append(f"{tag}: no thruster or PPU input power")
+            continue
+        m, F, isp = float(r["mdot"]), float(r["thrust"]), float(r["Isp"])
+        if abs(m * isp * G0 / F - 1) > 0.01:
+            problems.append(f"{tag}: thrust differs from mdot Isp g0 by more than 1 %")
 
 
 def _check_materials(problems: list[str]) -> None:
@@ -606,6 +650,7 @@ def validate() -> list[str]:
     _check_panels(problems)
     _check_materials(problems)
     _check_hybrid(problems)
+    _check_electric(problems)
 
     for p in LIBRARY.rglob("*.json"):
         try:

@@ -1,7 +1,7 @@
 # PropSim component library
 
 Machine-readable data for building and checking engines in PropSim: fluid and propellant properties (block A) and
-the component catalog (block B), cycles (block C), reference engines (block D), the graph/dashboard schemas with example graphs (block H) and materials (block E: cryogenic fits plus high-temperature points for Inconel 718, Inconel X and GRCop-84) and hybrid regression laws with hot-fire cases (block F, part 1) now; electric in a later block
+the component catalog (block B), cycles (block C), reference engines (block D), the graph/dashboard schemas with example graphs (block H) and materials (block E: cryogenic fits plus high-temperature points for Inconel 718, Inconel X and GRCop-84) hybrid regression laws with hot-fire cases (block F, part 1) and electric thruster throttle tables (block G: NEXT gridded ion) now
 (plan: brief blocks A to H).
 
 **Rule:** no number without a source. Every value carries `quality` (`published`, `derived` or `estimated`),
@@ -76,6 +76,8 @@ material fits are evaluated by `propsim.data.matprops.material_property`; closur
 | `hybrid/hybrid_fuels.csv` | hybrid fuel identity | `fuel_id, name, description, source_id, location` |
 | `hybrid/regression_laws.csv` | r = a G_ox^n laws; `a` converted to SI (r in m/s, G in kg/(m2 s)), the printed `a_source` and units kept | `law_id, fuel, oxidizer, form, a, n, a_source, r_unit_source, G_unit_source, G_min, G_max (kg/(m2 s)), OF_range, ...` |
 | `hybrid/hotfire_cases.csv` | published hot-fire tests (SI) for validating a hybrid motor model | `case_id, fuel, oxidizer, D_port0, D_throat, D_ox_orifice (m), t_burn (s), mdot_ox (kg/s), G_ox0, G_ox_avg (kg/(m2 s)), rdot_avg (m/s), OF, pc (Pa), eta_cstar, grain_OD (m), ...` |
+| `electric/thrusters.csv` | electric thruster identity | `thruster_id, name, class (gridded_ion), propellant, developer, source_id, location, note` |
+| `electric/throttle_tables.csv` | published throttle points, beginning of life (SI); `table` is nominal (thruster and PPU, NASA/TM-2008-214986 Table 3) or extended (thruster only, Table 4); PPU columns are empty where the source gives thruster power only | `thruster_id, table, point, mdot (kg/s), I_beam (A), V_beam (V), thrust (N), Isp (s), eta_thruster, P_in_thruster, P_in_ppu (W), eta_ppu, eta_system, life (s), throughput (kg), total_impulse (N s), ...` |
 | `checks.md` | generated sanity checks, including engine closure (c*, thrust, C_F, MR, pump and turbine power, cycle efficiency) | |
 | `gaps.md` | values no source provided yet | |
 | `conflicts.md` | disagreeing sources and the choice made | |

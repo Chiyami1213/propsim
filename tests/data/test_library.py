@@ -305,3 +305,23 @@ def test_hotfire_flux_columns_are_aligned():
             continue
         g = float(c["mdot_ox"]) / (math.pi * float(c["D_port0"]) ** 2 / 4)
         assert g == pytest.approx(float(c["G_ox0"]), rel=0.10), c["case_id"]
+
+
+def test_next_throttle_table_converts_to_si():
+    rows = data.throttle_table("NEXT")
+    assert len(rows) == 56
+    top = next(r for r in rows if r["point"] == "T3-01")  # 5.76 mg/s, 236 mN, 4190 s, 7.220 kW PPU input
+    assert float(top["mdot"]) == pytest.approx(5.76e-6)
+    assert float(top["thrust"]) == pytest.approx(0.236)
+    assert float(top["P_in_ppu"]) == pytest.approx(7220.0)
+    assert float(top["life"]) == pytest.approx(37.6 * 3.6e6)
+    assert len(data.throttle_table("NEXT", "extended")) == 16
+
+
+def test_next_throttle_points_close():
+    """Thrust = mdot Isp g0 and eta_t = F^2 / (2 mdot P_thruster) hold on every printed point."""
+    for r in data.throttle_table():
+        m, F, isp = float(r["mdot"]), float(r["thrust"]), float(r["Isp"])
+        assert m * isp * data.G0 == pytest.approx(F, rel=0.01), r["point"]
+        eta = F**2 / (2 * m * data.thruster_power(r))
+        assert eta == pytest.approx(float(r["eta_thruster"]), rel=0.03), r["point"]
