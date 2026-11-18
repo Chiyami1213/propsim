@@ -33,7 +33,10 @@ def _parse_params(text: str) -> dict:
         if "=" not in part:
             raise ValueError(f"'{part}': write name=value, separated by ;")
         k, v = part.split("=", 1)
-        out[k.strip()] = json.loads(v)
+        try:
+            out[k.strip()] = json.loads(v)
+        except json.JSONDecodeError:
+            out[k.strip()] = v.strip()                                # bare words: law=marxman, pair=LOX/HTPB
     return out
 
 
@@ -45,7 +48,7 @@ def summary(editor: str, text: str) -> str:
             sp = gb.spec_from_json(text)
             n_in = sum(s.inhibited for s in sp.shapes)
             return f"{len(sp.shapes)} shape(s)" + (f", {n_in} inhibited" if n_in else "")
-        defs = gs.parse_stack(text)
+        defs = gs.parse_stack(text, gs.FUEL_KEYS if editor == "hstack" else gs.PROP_KEYS)
         return f"{len(defs)} grain(s), {sum(d.L for d in defs) * 1e3:.0f} mm"
     except ValueError:
         return "invalid"
@@ -77,7 +80,7 @@ class SectionEditor(QDialog):
     def __init__(self, text: str, ctx: dict, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Custom grain section")
-        self.R_out = float(ctx.get("R_out", 60.0))
+        self.R_out = float(ctx["R_out"] if "R_out" in ctx else ctx.get("R_p0", 25.0) + ctx.get("web", 35.0))
         spec = gb.spec_from_json(text) if text.strip() else gb.default_spec(self.R_out)
         self.table = QTableWidget(0, 4)
         self.table.setHorizontalHeaderLabels(["Shape", "Inhibited", "Repeat", "Parameters"])
@@ -189,10 +192,15 @@ class StackEditor(QDialog):
     """One row per grain, head end first: length, end faces, section, propellant overrides."""
 
     COLS = ["Length (mm)", "Head end", "Aft end", "Section", "Propellant overrides"]
+    hybrid = False
+    keys = gs.PROP_KEYS
+    HELP = ("Grains from the head end to the aft end.  Overrides change only the named propellant values and are "
+            "separated by ;  e.g.  a_mm=9; cstar=1400; gamma=1.25; rho_p=1650.\nFields: rho_p, a_mm, n, sigma_p, T_i, "
+            "cstar, Tc, gamma, alpha, beta (same units as the propellant parameters).  Empty = the motor's propellant.")
 
     def __init__(self, text: str, ctx: dict, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Grain stack")
+        self.setWindowTitle("Fuel grain stack" if self.hybrid else "Grain stack")
         self.ctx = ctx
         self.sections: list[dict | None] = []
         self.table = QTableWidget(0, len(self.COLS))
@@ -214,16 +222,19 @@ class StackEditor(QDialog):
             bar.addWidget(b)
         bar.addStretch(1)
         lay = QVBoxLayout(self)
-        lay.addWidget(QLabel("Grains from the head end to the aft end.  Overrides change only the named propellant "
-                             "values and are separated by ;  e.g.  a_mm=9; cstar=1400; gamma=1.25; rho_p=1650.\n"
-                             "Fields: rho_p, a_mm, n, sigma_p, T_i, cstar, Tc, gamma, alpha, beta (same units as the "
-                             "propellant parameters).  Empty = the motor's propellant."))
+        help_lbl = QLabel(self.HELP)
+        help_lbl.setWordWrap(True)
+        lay.addWidget(help_lbl)
         lay.addWidget(self.table, 1)
         lay.addLayout(bar)
         lay.addWidget(self.info)
         lay.addWidget(self.buttons)
         self.resize(900, 420)
-        defs = gs.parse_stack(text)
+        if self.hybrid:
+            self.table.setHorizontalHeaderLabels(["Length (mm)", "", "", "Port", "Fuel overrides"])
+            self.table.setColumnHidden(1, True)
+            self.table.setColumnHidden(2, True)
+        defs = gs.parse_stack(text, self.keys)
         if not defs:
             defs = [gs.GrainDef(float(ctx.get("L_g", 0.6)))]
         for d in defs:
@@ -258,9 +269,9 @@ class StackEditor(QDialog):
         sp.valueChanged.connect(lambda *_: self.refresh())
         return sp
 
-    @staticmethod
-    def _label_section(btn: QPushButton, sec: dict | None) -> None:
-        btn.setText("Motor section" if sec is None else "Custom shapes…" if "shapes" in sec else f"{sec.get('kind')}")
+    def _label_section(self, btn: QPushButton, sec: dict | None) -> None:
+        own = "Motor port" if self.hybrid else "Motor section"
+        btn.setText(own if sec is None else "Custom shapes…" if "shapes" in sec else f"{sec.get('kind')}")
 
     def _row_of(self, btn) -> int:
         return next(r for r in range(self.table.rowCount()) if self.table.cellWidget(r, 3) is btn)
@@ -298,7 +309,8 @@ class StackEditor(QDialog):
         for r in range(self.table.rowCount()):
             prop = _parse_params(self.table.item(r, 4).text())
             out.append(gs.GrainDef(self.table.cellWidget(r, 0).value() * 1e-3, self.sections[r],
-                                   tuple(sorted((k, float(v)) for k, v in prop.items())),
+                                   tuple(sorted((k, gs._freeze(v) if k in gs._TEXT_KEYS else float(v))
+                                                for k, v in prop.items())),
                                    self.table.cellWidget(r, 1).currentIndex() == 1,
                                    self.table.cellWidget(r, 2).currentIndex() == 1))
         return out
@@ -307,24 +319,36 @@ class StackEditor(QDialog):
         if self._cleared:
             return ""
         text = gs.dump_stack(self.defs())
-        gs.parse_stack(text)                                          # validates field names and lengths
+        gs.parse_stack(text, self.keys)                               # validates field names and lengths
         return text
 
     def refresh(self) -> None:
         ok = self.buttons.button(QDialogButtonBox.Ok)
         try:
             d = self.defs()
-            gs.parse_stack(gs.dump_stack(d))
+            gs.parse_stack(gs.dump_stack(d), self.keys)
             n_burn = sum(x.burn_head + x.burn_aft for x in d)
-            self.info.setText(f"{len(d)} grain(s), total length {sum(x.L for x in d) * 1e3:.0f} mm, "
-                              f"{n_burn} burning end face(s).")
+            self.info.setText(f"{len(d)} grain(s), total length {sum(x.L for x in d) * 1e3:.0f} mm"
+                              + ("." if self.hybrid else f", {n_burn} burning end face(s)."))
             ok.setEnabled(True)
         except (ValueError, TypeError, json.JSONDecodeError) as e:
             self.info.setText(f"Cannot use this stack: {e}")
             ok.setEnabled(False)
 
 
-EDITORS = {"section": SectionEditor, "stack": StackEditor}
+class HybridStackEditor(StackEditor):
+    """Fuel grains of a hybrid: length, port and fuel overrides (end faces of hybrid grains are not modelled)."""
+
+    hybrid = True
+    keys = gs.FUEL_KEYS
+    HELP = ("Fuel grains from the head end to the aft end.  Overrides change only the named fuel values, separated "
+            "by ;  e.g.  rho_f=900; a=0.1171; n=0.62  or  law=marxman; B=8.\nFields: rho_f (kg/m³), law (power or "
+            "marxman), a (mm/s with G in kg/m²/s), n, B, pair (a CEA pair such as LOX/HTPB), chem (your own "
+            "chemistry: chem={\"of\": [1, 2, 3], \"cstar\": [...], \"Tc\": [...], \"gamma\": [...]}, c* in m/s, Tc "
+            "in K).  Empty = the motor's fuel.  With several fuels the gas properties are mixed by fuel mass flow.")
+
+
+EDITORS = {"section": SectionEditor, "stack": StackEditor, "hstack": HybridStackEditor}
 
 
 def edit(editor: str, text: str, ctx: dict, parent=None) -> str | None:

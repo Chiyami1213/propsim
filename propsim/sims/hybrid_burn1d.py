@@ -3,10 +3,16 @@ from __future__ import annotations
 
 import numpy as np
 
+from dataclasses import replace
+
 from ..core.ballistics import hybrid1d as h1
+from ..core.ballistics import solid as sol
+from ..core.grain import builder as gb
+from ..core.grain import stack as gstack
 from ..core.regression import POWER_LAWS
 from ..core.result import Result
-from ..core.schema import C, P, ParamModel
+from ..core.schema import C, P, ParamModel, T
+from ..core.thermo.cea import PAIRS
 from .base import Simulation
 
 LAW_LABELS = [r"Power law $\dot r=aG_{ox}^{n}$", "Marxman"]
@@ -23,6 +29,14 @@ class _MotorFields(ParamModel):
                    group="Fuel grain")
     rho_f: float = P(920.0, symbol=r"\rho_f", desc="fuel density", units="kg·m⁻³", dims="M L⁻³", lo=700.0, hi=1200.0,
                      step=5.0, group="Fuel grain")
+    kind: str = C("circle", choices=["circle", "custom"], labels=["Circular port", "Custom (shape list)"],
+                  symbol=r"\mathrm{port}", desc="port cross-section (custom: drawn as shapes, outer radius = port "
+                  "radius + web)", group="Fuel grain")
+    section_json: str = T("", label="custom port", desc="custom port drawn as a list of shapes, with optional "
+                          "inhibited surfaces (used when the port is custom)", editor="section", group="Fuel grain")
+    stack_json: str = T("", label="fuel grain stack", desc="optional stack of fuel grains, each with its own length, "
+                        "port, fuel, regression law and chemistry (empty = one grain from the parameters above)",
+                        editor="hstack", group="Fuel grain")
     law: str = C("power", choices=["power", "marxman"], labels=LAW_LABELS, symbol=r"\mathrm{regression\ law}",
                  desc="local regression law applied at every axial station (total mass flux G)", group="Regression")
     a: float = P(0.0541, symbol=r"a", desc="power-law coefficient (rdot in mm/s, G in kg/m²/s)", units="mm·s⁻¹",
@@ -40,7 +54,44 @@ class _MotorFields(ParamModel):
     eta_cstar: float = P(0.95, symbol=r"\eta_{c^*}", desc="combustion efficiency on c*", units="", dims="1", lo=0.8,
                          hi=1.0, step=0.005, group="Simulation")
 
+    @property
+    def R_out(self) -> float:
+        """Grain outer radius (mm): port radius plus web (the section editor draws inside it)."""
+        return self.R_p0 + self.web
+
+    def _table(self, spec: gb.SectionSpec) -> sol.SectionTable:
+        b = gb.cached_section(replace(spec, R_out=self.R_out).to_json())
+        return sol.SectionTable(b.d * 1e-3, b.area * 1e-6, b.perim * 1e-3, b.A_case * 1e-6)
+
+    def _default_spec(self) -> gb.SectionSpec:
+        if self.kind == "custom" and self.section_json.strip():
+            return gb.spec_from_json(self.section_json)
+        return gb.spec_from_dict({"R_out": self.R_out, "shapes": [{"kind": "circle", "r": self.R_p0}]})
+
+    def _fuel(self, table: sol.SectionTable, L: float, over: dict) -> h1.HGrain:
+        f = {"rho_f": self.rho_f, "law": self.law, "a": self.a, "n": self.n, "B": self.B, **over}
+        if f["law"] not in ("power", "marxman"):
+            raise ValueError(f"regression law {f['law']!r}: use 'power' or 'marxman'")
+        chem = None
+        if "chem" in over:
+            c = gstack._thaw(over["chem"])
+            chem = h1.ChemTable(*(tuple(float(x) for x in c[k]) for k in ("of", "cstar", "Tc", "gamma")))
+        elif "pair" in over:
+            if over["pair"] not in PAIRS:
+                raise ValueError(f"unknown CEA pair {over['pair']!r}; use one of {sorted(PAIRS)}")
+            chem = over["pair"]
+        return h1.HGrain(table, L, float(f["rho_f"]), f["law"], float(f["a"]) * 1e-3, float(f["n"]), float(f["B"]),
+                         chem)
+
     def _motor(self, pair: str) -> h1.Motor1D:
+        defs = gstack.parse_stack(self.stack_json, gstack.FUEL_KEYS)
+        if self.kind == "custom" or defs:
+            kw = dict(Dt=self.D_t * 1e-3, eps=self.eps, eta_cstar=self.eta_cstar, kt=self.kt * 1e-3, N=20)
+            if not defs:
+                defs = [gstack.GrainDef(self.L_g)]
+            grains = [self._fuel(self._table(gb.spec_from_dict(d.section) if d.section else self._default_spec()),
+                                 d.L, dict(d.prop)) for d in defs]
+            return h1.Motor1D.from_grains(grains, pair, **kw)
         return h1.Motor1D(pair=pair, L=self.L_g, R0=self.R_p0 * 1e-3, R_out=(self.R_p0 + self.web) * 1e-3,
                           rho_f=self.rho_f, law=self.law, a=self.a * 1e-3, n=self.n, B=self.B, mu=8e-5,
                           Dt=self.D_t * 1e-3, eps=self.eps, eta_cstar=self.eta_cstar, kt=self.kt * 1e-3, N=20)
@@ -76,8 +127,8 @@ class HybridBurn1D(Simulation):
         ch = h1.integrate(p, sup, params.t_burn, self.N_FRAMES, progress, cancel)
         t = np.linspace(0.0, params.t_burn, self.N_FRAMES)
         meta = h1.summary(p, t, ch)
-        meta["x_cells"] = ((np.arange(p.N) + 0.5) * p.dx).tolist()
-        log = [f"setup quasi-1D hybrid burn, {p.N} axial cells, {self.N_FRAMES} frames, {params.pair} (CEA tables)",
+        meta["x_cells"] = p.cell_x().tolist()
+        log = [f"setup quasi-1D hybrid burn, {p.nc} axial cells, {self.N_FRAMES} frames, {params.pair} (CEA tables)",
                "LSODA rtol 1e-8 (stiff chamber filling)"]
         if params.throttle < 0.999:
             log.append(f"throttle to {params.throttle:.2f} between t = {params.t_th1:.1f} and "
@@ -127,7 +178,7 @@ class N2OBlowdown(Simulation):
         ch = h1.integrate(p, sup, params.t_burn, self.N_FRAMES, progress, cancel)
         t = np.linspace(0.0, params.t_burn, self.N_FRAMES)
         meta = h1.summary(p, t, ch)
-        meta["x_cells"] = ((np.arange(p.N) + 0.5) * p.dx).tolist()
+        meta["x_cells"] = p.cell_x().tolist()
         m0 = ch["m_tank"][0]
         meta["m_ox_tank0"] = float(m0)
         meta["m_ox_used"] = float(m0 - ch["m_tank"][-1])
@@ -135,7 +186,7 @@ class N2OBlowdown(Simulation):
         meta["t_liquid_depleted"] = float(t[dry[0]]) if dry.size else float("nan")
         meta["p_tank0_MPa"] = float(ch["p_tank"][0] / 1e6)
         log = [f"setup N₂O blowdown: tank {params.V_tank:.0f} L at {params.T0:.1f} K, {m0:.2f} kg N₂O, "
-               f"p_sat {meta['p_tank0_MPa']:.2f} MPa", f"quasi-1D motor, {p.N} cells; Dyer injector, "
+               f"p_sat {meta['p_tank0_MPa']:.2f} MPa", f"quasi-1D motor, {p.nc} cells; Dyer injector, "
                f"Cd {params.Cd:.2f}, {params.n_inj:.0f} x {params.d_inj:.2f} mm",
                "regression law defaults to the HTPB/GOX power law — set your own for N₂O/HTPB"]
         if np.isfinite(meta["t_liquid_depleted"]):

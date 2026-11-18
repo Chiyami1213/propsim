@@ -18,13 +18,17 @@ import json
 from dataclasses import dataclass
 
 PROP_KEYS = ("rho_p", "a_mm", "n", "sigma_p", "T_i", "cstar", "Tc", "gamma", "alpha", "beta")
+# hybrid fuel grains: density, regression law and its constants (a in mm/s with G in kg/m²/s), and the chemistry:
+# "pair" = another CEA pair, or "chem" = {"of": [...], "cstar": [...], "Tc": [...], "gamma": [...]}
+FUEL_KEYS = ("rho_f", "law", "a", "n", "B", "pair", "chem")
+_TEXT_KEYS = ("law", "pair", "chem")
 
 
 @dataclass(frozen=True)
 class GrainDef:
     L: float
     section: dict | None = None
-    prop: tuple[tuple[str, float], ...] = ()
+    prop: tuple[tuple[str, object], ...] = ()
     burn_head: bool = False
     burn_aft: bool = False
 
@@ -33,7 +37,7 @@ class GrainDef:
         if self.section is not None:
             d["section"] = self.section
         if self.prop:
-            d["prop"] = dict(self.prop)
+            d["prop"] = {k: _thaw(v) for k, v in self.prop}
         if self.burn_head:
             d["burn_head"] = True
         if self.burn_aft:
@@ -41,7 +45,7 @@ class GrainDef:
         return d
 
 
-def parse_stack(text: str) -> list[GrainDef]:
+def parse_stack(text: str, keys: tuple[str, ...] = PROP_KEYS) -> list[GrainDef]:
     """Parse and validate a stack; an empty string means 'no stack' (one grain from the motor's own parameters)."""
     if not text or not text.strip():
         return []
@@ -59,15 +63,36 @@ def parse_stack(text: str) -> list[GrainDef]:
         if not 0.005 <= L <= 5.0:
             raise ValueError(f"grain {k}: L must be between 0.005 and 5 (m)")
         prop = g.get("prop") or {}
-        bad = [x for x in prop if x not in PROP_KEYS]
+        bad = [x for x in prop if x not in keys]
         if bad:
-            raise ValueError(f"grain {k}: unknown propellant field(s) {bad}; use {list(PROP_KEYS)}")
+            raise ValueError(f"grain {k}: unknown {'fuel' if keys is FUEL_KEYS else 'propellant'} field(s) {bad}; "
+                             f"use {list(keys)}")
         sec = g.get("section")
         if sec is not None and not isinstance(sec, dict):
             raise ValueError(f"grain {k}: 'section' must be an object")
-        out.append(GrainDef(L, sec, tuple(sorted((a, float(b)) for a, b in prop.items())), bool(g.get("burn_head")),
-                            bool(g.get("burn_aft"))))
+        try:
+            vals = tuple(sorted((a, _freeze(b) if a in _TEXT_KEYS else float(b)) for a, b in prop.items()))
+        except (TypeError, ValueError) as e:
+            raise ValueError(f"grain {k}: a propellant value is not a number ({e})") from e
+        out.append(GrainDef(L, sec, vals, bool(g.get("burn_head")), bool(g.get("burn_aft"))))
     return out
+
+
+def _freeze(v):
+    """Hashable form of a text or table value (dicts and lists become tuples)."""
+    if isinstance(v, dict):
+        return tuple(sorted((k, _freeze(x)) for k, x in v.items()))
+    if isinstance(v, list):
+        return tuple(_freeze(x) for x in v)
+    return v
+
+
+def _thaw(v):
+    if isinstance(v, tuple) and v and all(isinstance(x, tuple) and len(x) == 2 and isinstance(x[0], str) for x in v):
+        return {k: _thaw(x) for k, x in v}
+    if isinstance(v, tuple):
+        return [_thaw(x) for x in v]
+    return v
 
 
 def dump_stack(defs: list[GrainDef]) -> str:

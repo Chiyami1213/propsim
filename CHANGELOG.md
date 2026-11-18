@@ -4,6 +4,11 @@ New changes go above this line, newest first.
 
 ## Unreleased
 
+- Hybrid motors (quasi-1D burn and N2O blowdown): the port can be *Custom* (the same shape editor as the solid grain,
+  with inhibited shapes), and a *fuel grain stack* gives each grain its own length, port, fuel density, regression law
+  (power or Marxman) and chemistry: the motor's CEA pair, another CEA pair, or your own table of c*, Tc and gamma
+  versus O/F. Several fuels are mixed by fuel mass flow (frozen composition). A custom circular port reproduces the
+  circular-port solver within 0.1 %. The 3D view draws the equivalent circular port.
 - Solid motors: build your own grain. The section kind *Custom* takes a list of shapes (circle, rectangle, radial slot,
   polygon, star, with polar repeats) and any shape can be marked inhibited, so its surface is coated and does not
   regress. A new *grain stack* describes a motor as several grains, each with its own length, section, propellant
