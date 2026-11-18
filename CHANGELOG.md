@@ -22,6 +22,8 @@ New changes go above this line, newest first.
 - Component library, block E part 1 (materials): NIST cryogenic property fits (conductivity, specific heat,
   Young's modulus, thermal expansion, 4 to 300 K) for 6061-T6, OFHC copper, Inconel 718, 304, 316 and Ti-6Al-4V,
   Huzel & Huang Inconel X points at chamber-wall temperatures, evaluated by `propsim.data.matprops`.
+- Component library, block E part 2: Inconel 718 properties to 2000 degF (Special Metals bulletin) and GRCop-84
+  strength and conductivity (NASA/TM-2005-213566), with trend checks on the transcribed tables.
 
 - Vehicle stages can be filled from the library's reference engines (RS-25, J-2 and the RL10 variants) with one
   choice; values the library does not have stay empty or are labelled as assumed or derived.

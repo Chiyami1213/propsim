@@ -85,10 +85,12 @@ design run.
 
 ## Materials (block E)
 
-1. **Above 300 K**: the NIST fits stop at 300 K. Chamber and turbine materials need k, cp, E, strength and expansion
-   to 1000 K and beyond: Inconel 718 and X-750, GRCop-84 (NASA reports on NTRS), CuCrZr, OFHC copper, C-103
-   niobium, 316/304 at temperature. Candidate public source: MIL-HDBK-5J (public domain, figures need digitizing).
-2. **Strength** (yield, ultimate, versus temperature) for every material; only two Inconel X yield points so far.
+1. **Above 300 K**: Inconel 718 is covered to 1366 K (Special Metals bulletin) and GRCop-84 has room temperature
+   and 538 degC strength plus a conductivity range. Still missing: GRCop-84 conductivity, expansion and modulus
+   versus temperature (NASA/TM-2005-213566 gives them only as plots), CuCrZr, OFHC copper, C-103 niobium and
+   304/316/Ti-6Al-4V above 300 K. Candidate public source: MIL-HDBK-5J (public domain, figures need digitizing).
+2. **Strength** versus temperature for the aluminum, stainless and titanium alloys; Inconel 718, GRCop-84 and
+   Inconel X have points.
 3. **Density, melting point and service temperature** are not in the NIST pages; to come from the same sources.
 4. **Ablatives and graphite** (carbon-phenolic, silica-phenolic, carbon-carbon): density, conductivity and
    char/erosion data from NASA SP-8xxx monographs.

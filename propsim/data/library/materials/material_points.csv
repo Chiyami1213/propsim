@@ -1,11 +1,113 @@
-material_id,property,T_min,T_max,value,unit,quality,source_id,location,uncertainty,formula
-INCONEL_X,alpha,555.6,666.7,1.44e-05,1/K,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,8e-6 in/(in degF) x 1.8
-INCONEL_X,E,555.6,666.7,1.93053e+11,Pa,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,28e6 psi to Pa
-INCONEL_X,k,555.6,666.7,23.8509,W/(m K),published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,3.19e-4 Btu/(in s degF) to W/(m K)
-INCONEL_X,poisson,555.6,666.7,0.35,1,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,
-INCONEL_X,yield_strength,555.6,555.6,5.6537e+08,Pa,published,HH-SP125,"Sample Calculation (4-4) p.110, F_ty at 1000 degR",,82000 psi to Pa
-INCONEL_X,alpha,888.9,888.9,1.476e-05,1/K,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,8.2e-6 in/(in degF) x 1.8
-INCONEL_X,E,888.9,888.9,1.65474e+11,Pa,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,24e6 psi to Pa
-INCONEL_X,k,888.9,888.9,28.8603,W/(m K),published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,3.86e-4 Btu/(in s degF) to W/(m K)
-INCONEL_X,poisson,888.9,888.9,0.35,1,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,
-INCONEL_X,yield_strength,666.7,666.7,5.58475e+08,Pa,published,HH-SP125,"Sample Calculation (4-4) p.113, F_ty at 1200 degR",,81000 psi to Pa
+material_id,property,T_min,T_max,value,unit,condition,quality,source_id,location,uncertainty,formula
+INCONEL_X,alpha,555.6,666.7,1.44e-05,1/K,,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,8e-6 in/(in degF) x 1.8
+INCONEL_X,E,555.6,666.7,1.93053e+11,Pa,,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,28e6 psi to Pa
+INCONEL_X,k,555.6,666.7,23.8509,W/(m K),,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,3.19e-4 Btu/(in s degF) to W/(m K)
+INCONEL_X,poisson,555.6,666.7,0.35,1,,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,
+INCONEL_X,yield_strength,555.6,555.6,5.6537e+08,Pa,,published,HH-SP125,"Sample Calculation (4-4) p.110, F_ty at 1000 degR",,82000 psi to Pa
+INCONEL_X,alpha,888.9,888.9,1.476e-05,1/K,,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,8.2e-6 in/(in degF) x 1.8
+INCONEL_X,E,888.9,888.9,1.65474e+11,Pa,,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,24e6 psi to Pa
+INCONEL_X,k,888.9,888.9,28.8603,W/(m K),,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,3.86e-4 Btu/(in s degF) to W/(m K)
+INCONEL_X,poisson,888.9,888.9,0.35,1,,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,
+INCONEL_X,yield_strength,666.7,666.7,5.58475e+08,Pa,,published,HH-SP125,"Sample Calculation (4-4) p.113, F_ty at 1200 degR",,81000 psi to Pa
+IN718,density,294.26,294.26,8193.25,kg/m3,annealed,published,SM-IN718,Table 2,,0.296 lb/in3 x 27679.9
+IN718,density,294.26,294.26,8220.93,kg/m3,annealed and aged,published,SM-IN718,Table 2,,0.297 lb/in3 x 27679.9
+IN718,T_solidus,,,1533.15,K,,published,SM-IN718,"Table 2, melting range 2300-2437 degF",,2300 degF to K
+IN718,T_liquidus,,,1609.26,K,,published,SM-IN718,"Table 2, melting range 2300-2437 degF",,2437 degF to K
+IN718,cp,294.26,294.26,435.427,J/(kg K),,published,SM-IN718,"Table 2, specific heat at 70 degF",,0.104 Btu/(lb degF) x 4186.8 (printed 435 J/(kg C))
+IN718,E,294.26,294.26,1.99948e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 70 degF,,29.0 x 10^3 ksi to Pa
+IN718,shear_modulus,294.26,294.26,7.72213e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 70 degF,,11.2 x 10^3 ksi to Pa
+IN718,poisson,294.26,294.26,0.294,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 70 degF,,
+IN718,E,310.93,310.93,1.98569e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 100 degF,,28.8 x 10^3 ksi to Pa
+IN718,shear_modulus,310.93,310.93,7.72213e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 100 degF,,11.2 x 10^3 ksi to Pa
+IN718,poisson,310.93,310.93,0.291,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 100 degF,,
+IN718,E,366.48,366.48,1.95811e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 200 degF,,28.4 x 10^3 ksi to Pa
+IN718,shear_modulus,366.48,366.48,7.58423e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 200 degF,,11.0 x 10^3 ksi to Pa
+IN718,poisson,366.48,366.48,0.288,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 200 degF,,
+IN718,E,422.04,422.04,1.93053e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 300 degF,,28.0 x 10^3 ksi to Pa
+IN718,shear_modulus,422.04,422.04,7.51529e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 300 degF,,10.9 x 10^3 ksi to Pa
+IN718,poisson,422.04,422.04,0.28,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 300 degF,,
+IN718,E,477.59,477.59,1.90295e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 400 degF,,27.6 x 10^3 ksi to Pa
+IN718,shear_modulus,477.59,477.59,7.44634e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 400 degF,,10.8 x 10^3 ksi to Pa
+IN718,poisson,477.59,477.59,0.28,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 400 degF,,
+IN718,E,533.15,533.15,1.86848e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 500 degF,,27.1 x 10^3 ksi to Pa
+IN718,shear_modulus,533.15,533.15,7.30844e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 500 degF,,10.6 x 10^3 ksi to Pa
+IN718,poisson,533.15,533.15,0.275,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 500 degF,,
+IN718,E,588.71,588.71,1.8409e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 600 degF,,26.7 x 10^3 ksi to Pa
+IN718,shear_modulus,588.71,588.71,7.2395e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 600 degF,,10.5 x 10^3 ksi to Pa
+IN718,poisson,588.71,588.71,0.272,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 600 degF,,
+IN718,E,644.26,644.26,1.80643e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 700 degF,,26.2 x 10^3 ksi to Pa
+IN718,shear_modulus,644.26,644.26,7.1016e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 700 degF,,10.3 x 10^3 ksi to Pa
+IN718,poisson,644.26,644.26,0.273,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 700 degF,,
+IN718,E,699.82,699.82,1.77885e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 800 degF,,25.8 x 10^3 ksi to Pa
+IN718,shear_modulus,699.82,699.82,6.9637e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 800 degF,,10.1 x 10^3 ksi to Pa
+IN718,poisson,699.82,699.82,0.271,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 800 degF,,
+IN718,E,755.37,755.37,1.74437e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 900 degF,,25.3 x 10^3 ksi to Pa
+IN718,shear_modulus,755.37,755.37,6.82581e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 900 degF,,9.9 x 10^3 ksi to Pa
+IN718,poisson,755.37,755.37,0.272,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 900 degF,,
+IN718,E,810.93,810.93,1.7099e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1000 degF,,24.8 x 10^3 ksi to Pa
+IN718,shear_modulus,810.93,810.93,6.68791e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1000 degF,,9.7 x 10^3 ksi to Pa
+IN718,poisson,810.93,810.93,0.271,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1000 degF,,
+IN718,E,866.48,866.48,1.66853e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1100 degF,,24.2 x 10^3 ksi to Pa
+IN718,shear_modulus,866.48,866.48,6.55002e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1100 degF,,9.5 x 10^3 ksi to Pa
+IN718,poisson,866.48,866.48,0.276,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1100 degF,,
+IN718,E,922.04,922.04,1.63406e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1200 degF,,23.7 x 10^3 ksi to Pa
+IN718,shear_modulus,922.04,922.04,6.34318e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1200 degF,,9.2 x 10^3 ksi to Pa
+IN718,poisson,922.04,922.04,0.283,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1200 degF,,
+IN718,E,977.59,977.59,1.58579e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1300 degF,,23.0 x 10^3 ksi to Pa
+IN718,shear_modulus,977.59,977.59,6.13633e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1300 degF,,8.9 x 10^3 ksi to Pa
+IN718,poisson,977.59,977.59,0.292,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1300 degF,,
+IN718,E,1033.15,1033.15,1.53753e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1400 degF,,22.3 x 10^3 ksi to Pa
+IN718,shear_modulus,1033.15,1033.15,5.86054e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1400 degF,,8.5 x 10^3 ksi to Pa
+IN718,poisson,1033.15,1033.15,0.306,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1400 degF,,
+IN718,E,1088.71,1088.71,1.46858e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1500 degF,,21.3 x 10^3 ksi to Pa
+IN718,shear_modulus,1088.71,1088.71,5.58475e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1500 degF,,8.1 x 10^3 ksi to Pa
+IN718,poisson,1088.71,1088.71,0.321,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1500 degF,,
+IN718,E,1144.26,1144.26,1.39274e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1600 degF,,20.2 x 10^3 ksi to Pa
+IN718,shear_modulus,1144.26,1144.26,5.24002e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1600 degF,,7.6 x 10^3 ksi to Pa
+IN718,poisson,1144.26,1144.26,0.331,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1600 degF,,
+IN718,E,1199.82,1199.82,1.29621e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1700 degF,,18.8 x 10^3 ksi to Pa
+IN718,shear_modulus,1199.82,1199.82,4.89528e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1700 degF,,7.1 x 10^3 ksi to Pa
+IN718,poisson,1199.82,1199.82,0.334,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1700 degF,,
+IN718,E,1255.37,1255.37,1.19969e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1800 degF,,17.4 x 10^3 ksi to Pa
+IN718,shear_modulus,1255.37,1255.37,4.48159e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1800 degF,,6.5 x 10^3 ksi to Pa
+IN718,poisson,1255.37,1255.37,0.341,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1800 degF,,
+IN718,E,1310.93,1310.93,1.09627e+11,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1900 degF,,15.9 x 10^3 ksi to Pa
+IN718,shear_modulus,1310.93,1310.93,3.99896e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1900 degF,,5.8 x 10^3 ksi to Pa
+IN718,poisson,1310.93,1310.93,0.366,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 1900 degF,,
+IN718,E,1366.48,1366.48,9.8595e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 2000 degF,,14.3 x 10^3 ksi to Pa
+IN718,shear_modulus,1366.48,1366.48,3.51633e+10,Pa,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 2000 degF,,5.1 x 10^3 ksi to Pa
+IN718,poisson,1366.48,1366.48,0.402,1,"hot-rolled flat, 1800 degF/1 h AC + 1325 degF/8 h FC to 1150 degF, 18 h total aging",published,SM-IN718,Table 4 at 2000 degF,,
+IN718,k,294.26,294.26,11.3864,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 70 degF,,79 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,366.48,366.48,12.5394,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 200 degF,,87 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,477.59,477.59,14.4131,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 400 degF,,100 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,588.71,588.71,16.1427,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 600 degF,,112 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,699.82,699.82,17.8723,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 800 degF,,124 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,810.93,810.93,19.6019,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 1000 degF,,136 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,922.04,922.04,21.3314,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 1200 degF,,148 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,1033.15,1033.15,23.2052,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 1400 degF,,161 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,1144.26,1144.26,24.9347,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 1600 degF,,173 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,1255.37,1255.37,26.8084,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 1800 degF,,186 Btu in/(ft2 h degF) x 0.1441314
+IN718,k,1366.48,1366.48,28.6821,W/(m K),annealed and aged,published,SM-IN718,Table 5 at 2000 degF,,199 Btu in/(ft2 h degF) x 0.1441314
+IN718,alpha_mean,294.26,366.48,1.3158e-05,1/K,annealed and aged,published,SM-IN718,"Table 5 at 200 degF, mean from 70 degF",,7.31e-6 in/(in degF) x 1.8
+IN718,alpha_mean,294.26,477.59,1.3554e-05,1/K,annealed and aged,published,SM-IN718,"Table 5 at 400 degF, mean from 70 degF",,7.53e-6 in/(in degF) x 1.8
+IN718,alpha_mean,294.26,588.71,1.3932e-05,1/K,annealed and aged,published,SM-IN718,"Table 5 at 600 degF, mean from 70 degF",,7.74e-6 in/(in degF) x 1.8
+IN718,alpha_mean,294.26,699.82,1.4346e-05,1/K,annealed and aged,published,SM-IN718,"Table 5 at 800 degF, mean from 70 degF",,7.97e-6 in/(in degF) x 1.8
+IN718,alpha_mean,294.26,810.93,1.4562e-05,1/K,annealed and aged,published,SM-IN718,"Table 5 at 1000 degF, mean from 70 degF",,8.09e-6 in/(in degF) x 1.8
+IN718,alpha_mean,294.26,922.04,1.5102e-05,1/K,annealed and aged,published,SM-IN718,"Table 5 at 1200 degF, mean from 70 degF",,8.39e-6 in/(in degF) x 1.8
+IN718,alpha_mean,294.26,1033.15,1.6038e-05,1/K,annealed and aged,published,SM-IN718,"Table 5 at 1400 degF, mean from 70 degF",,8.91e-6 in/(in degF) x 1.8
+IN718,ultimate_strength,77.59,77.59,1.63406e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,Table 20 at -320 degF,,237.0 ksi to Pa
+IN718,yield_strength,77.59,77.59,1.19624e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,"Table 20 at -320 degF, 0.2 % offset",,173.5 ksi to Pa
+IN718,ultimate_strength,222.04,222.04,1.38929e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,Table 20 at -60 degF,,201.5 ksi to Pa
+IN718,yield_strength,222.04,222.04,1.08937e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,"Table 20 at -60 degF, 0.2 % offset",,158.0 ksi to Pa
+IN718,ultimate_strength,299.82,299.82,1.31345e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,Table 20 at 80 degF,,190.5 ksi to Pa
+IN718,yield_strength,299.82,299.82,1.05835e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,"Table 20 at 80 degF, 0.2 % offset",,153.5 ksi to Pa
+IN718,ultimate_strength,922.04,922.04,1.13419e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,Table 20 at 1200 degF,,164.5 ksi to Pa
+IN718,yield_strength,922.04,922.04,9.9974e+08,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,"Table 20 at 1200 degF, 0.2 % offset",,145.0 ksi to Pa
+IN718,ultimate_strength,977.59,977.59,1.00319e+09,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,Table 20 at 1300 degF,,145.5 ksi to Pa
+IN718,yield_strength,977.59,977.59,9.17003e+08,Pa,"hot-rolled 5/8 in round, annealed 1800 degF/1 h, aged 1325 degF/8 h FC to 1150 degF, 18 h total",published,SM-IN718,"Table 20 at 1300 degF, 0.2 % offset",,133.0 ksi to Pa
+GRCOP84,k,,,305,W/(m K),temperature range not stated,published,NASA-TM-2005-213566,"p.9, lower end of 305 to 320 W/(m K) over the liner operating range",,
+GRCOP84,k,,,320,W/(m K),temperature range not stated,published,NASA-TM-2005-213566,"p.9, upper end of 305 to 320 W/(m K) over the liner operating range",,
+GRCOP84,yield_strength,294.26,294.26,2.256e+08,Pa,as-rolled plate,published,NASA-TM-2005-213566,"Table I p.19 (also Table II p.20), as-rolled 1.27 cm plate",,225.6 MPa
+GRCOP84,ultimate_strength,294.26,294.26,4.031e+08,Pa,as-rolled plate,published,NASA-TM-2005-213566,"Table I p.19 (also Table II p.20), as-rolled 1.27 cm plate",,403.1 MPa
+GRCOP84,yield_strength,811.15,811.15,1.078e+08,Pa,as-rolled plate,published,NASA-TM-2005-213566,"Table II p.20, as-rolled plate at 538 degC",,107.8 MPa
+GRCOP84,ultimate_strength,811.15,811.15,1.389e+08,Pa,as-rolled plate,published,NASA-TM-2005-213566,"Table II p.20, as-rolled plate at 538 degC",,138.9 MPa

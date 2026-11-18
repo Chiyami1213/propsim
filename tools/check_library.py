@@ -15,8 +15,8 @@ Checks (brief rule 5, the parts that apply to the blocks delivered so far):
    (``propsim.data.closure``).
 6. Turbine drive gas (Huzel & Huang Table 6-4): R against c_p (gamma - 1) / gamma.
 7. Example graphs: count of published, derived and estimated values per graph.
-8. Material fits: continuity at segment joins and at T_low, zero thermal strain at 293 K
-   (transcription check).
+8. Material fits: continuity at segment joins and at T_low, zero thermal strain at 293 K; material points:
+   monotonic trends and yield below ultimate (transcription checks).
 """
 
 from __future__ import annotations
@@ -262,6 +262,35 @@ def material_section() -> tuple[list[str], int]:
             T = float(r["T_max"])
             d = matprops._eval(r, T) / matprops._eval(hi, T) - 1
             row(r["material_id"], r["property"], f"low/high fits at {T:g} K", d, abs(d) < 0.01)
+    # tables read from PDF text layers: trends and ordering confirm the column assignment
+    pts = data.material_points()
+    trend = {"E": -1, "shear_modulus": -1, "k": +1, "alpha_mean": +1}
+    groups: dict[tuple[str, str, str], list[tuple[float, float]]] = defaultdict(list)
+    for r in pts:
+        if r["property"] in trend and r["T_max"]:
+            groups[(r["material_id"], r["property"], r["condition"])].append(
+                (float(r["T_max"]), float(r["value"]))
+            )
+    for (m, prop, _), xy in sorted(groups.items()):
+        if len(xy) < 3:
+            continue
+        ys = [y for _, y in sorted(xy)]
+        steps = [trend[prop] * (b - a) for a, b in zip(ys, ys[1:])]
+        row(
+            m,
+            prop,
+            f"monotonic {'falling' if trend[prop] < 0 else 'rising'} over {len(ys)} points",
+            min(steps) / max(abs(y) for y in ys),
+            min(steps) >= 0,
+        )
+    ys_ut: dict[tuple[str, str, str], dict[str, float]] = defaultdict(dict)
+    for r in pts:
+        if r["property"] in ("yield_strength", "ultimate_strength") and r["T_max"]:
+            ys_ut[(r["material_id"], r["T_max"], r["condition"])][r["property"]] = float(r["value"])
+    for (m, T, _), v in sorted(ys_ut.items()):
+        if len(v) == 2:
+            ratio = v["yield_strength"] / v["ultimate_strength"]
+            row(m, "strength", f"yield / ultimate at {float(T):.0f} K", ratio, 0 < ratio <= 1)
     return lines + [""], n_flag
 
 
