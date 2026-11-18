@@ -12,7 +12,7 @@ from propsim.ui.latex import LatexLabel
 from propsim.ui.main_window import MainWindow
 from propsim.ui.text import _MATH_SPLIT, apa, has_plain_math, hover_message, to_math
 
-KEYS = [c.key for entries in registry.TREE.values() for _, _, c in entries if c is not None]
+KEYS = [c.key for entries in registry.TREE.values() for _, m, c in entries if c is not None and m != "tool"]
 
 
 def _outside_math(s: str) -> str:

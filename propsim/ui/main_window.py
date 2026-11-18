@@ -126,7 +126,8 @@ class MainWindow(QMainWindow):
             top = QStandardItem(apa(mod))
             top.setFlags(Qt.ItemIsEnabled)
             for label, mode, cls in entries:
-                it = QStandardItem(f"{apa(label)}  ({'Live' if mode == 'live' else 'Run'})")
+                kind = {"live": "Live", "run": "Run", "tool": "Editor"}[mode]
+                it = QStandardItem(f"{apa(label)}  ({kind})")
                 it.setData(cls.key if cls else None, KEY_ROLE)
                 it.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable if cls else Qt.NoItemFlags)
                 top.appendRow(it)
@@ -244,6 +245,8 @@ class MainWindow(QMainWindow):
         s = mb.addMenu("&Simulation")
         self._act(s, "Run", self.start_run, "Ctrl+R")
         self._act(s, "Cancel", self.cancel_run, "Esc")
+        s.addSeparator()
+        self._act(s, "Engine cycle sandbox", self.open_cycle_sandbox, "Ctrl+E")
         va = mb.addMenu("&Validation")
         self._act(va, "Run reference + core tests", self.run_validation)
         h = mb.addMenu("&Help")
@@ -375,8 +378,20 @@ class MainWindow(QMainWindow):
     # =================================================================== model selection
     def _on_tree(self, cur, _prev=None) -> None:
         key = cur.data(KEY_ROLE) if cur.isValid() else None
+        if key == registry.CycleSandboxTool.key:
+            self.open_cycle_sandbox()
+            return
         if key and (self.ctrl is None or key != self.ctrl.key):
             self.select_model(key)
+
+    def open_cycle_sandbox(self) -> None:
+        """Open (or raise) the liquid-engine cycle sandbox window."""
+        from .cycle_sandbox import CycleSandbox
+        if getattr(self, "sandbox", None) is None:
+            self.sandbox = CycleSandbox(self)
+        self.sandbox.show()
+        self.sandbox.raise_()
+        self.sandbox.activateWindow()
 
     def select_model(self, key: str, params: dict | None = None) -> None:
         self.cancel_run()

@@ -9,13 +9,19 @@ New changes go above this line, newest first.
   (power or Marxman) and chemistry: the motor's CEA pair, another CEA pair, or your own table of c*, Tc and gamma
   versus O/F. Several fuels are mixed by fuel mass flow (frozen composition). A custom circular port reproduces the
   circular-port solver within 0.1 %. The 3D view draws the equivalent circular port.
+- Liquid engines: an engine cycle sandbox (*Liquid, Cycle sandbox*, Ctrl+E). Build any cycle on a flow diagram from
+  the component library, choose propellants, parts and cooling (regenerative jacket, radiative, ablative, uncooled),
+  and solve the steady operating point with real-fluid properties (CoolProp): station pressures, temperatures,
+  phases and flows, pump, turbine, jacket, gas generator, chamber and nozzle states, shaft speeds and warnings (NPSH,
+  injector stiffness, turbine inlet temperature). Design targets size free parameters such as valve positions. The
+  RS-25 style staged-combustion template solves at 20.48 MPa and O/F 6.0. Steady state only.
 - Solid motors: build your own grain. The section kind *Custom* takes a list of shapes (circle, rectangle, radial slot,
   polygon, star, with polar repeats) and any shape can be marked inhibited, so its surface is coated and does not
   regress. A new *grain stack* describes a motor as several grains, each with its own length, section, propellant
   values and burning or inhibited end faces, and an option lets the outer surface burn too. Different propellants in
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
-  3-D burnback accepts custom sections. Hybrid motors are not covered yet.
+  3-D burnback accepts custom sections.
 - F2 saves a screenshot of the window to the data folder (`screenshots`); F11 toggles full screen; a Legend button in the 3D view shows a colour key for the solid-colour blocks (bottom right);
   the Spring-mass toy draws a real helical spring; the combo box arrow is a plain chevron; the Next Color Theme command
   (Ctrl+T) is removed, themes are picked in View, Color Theme.
