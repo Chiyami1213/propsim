@@ -69,6 +69,15 @@ and the bubbles (PT, TT, ST, FT, PDT) are field instruments with their tag numbe
 the flow moving through the cycle and exports it as a GIF or PNG. Every sandbox panel can be dragged; *Panels* brings
 back a closed one.
 
+The *3D Model* panel (beside the results) draws the part you select, built from its own parameters: a line's bore
+and length, a valve's bore and its solved position, a pump's impeller tip, stage count and impeller kind, a turbine's
+mean blade diameter and arrangement, a tank's volume and fill level, the chamber and nozzle contour from L*, throat
+area, contraction ratio, expansion ratio and bell fraction, and a jacket's channel count and size. After a solve the
+readout gives the part's operating state, and the chamber, nozzle and jacket can be coloured by the gas-side wall
+temperature, heat flux or coolant temperature from the jacket march (*Field*). Sizes the library does not hold
+(casings, flanges, actuators, blade counts, injector element pattern, gas generator and shaft size) are drawn to
+illustrative proportions, and the caption says which.
+
 The sandbox is steady state only; start-up and shutdown transients are not modelled.
 
 ### Compare designs

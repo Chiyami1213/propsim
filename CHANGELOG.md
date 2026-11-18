@@ -4,6 +4,10 @@ New changes go above this line, newest first.
 
 ## Unreleased
 
+- Cycle sandbox: a *3D Model* panel shows the selected component, sized from its parameters (lines, valves at their
+  solved position, pumps by impeller kind and stages, turbines by arrangement, tanks with their fill, chamber and Rao
+  nozzle contour, jacket channels, injectors, manifolds). Cutaway, a readout of the solved state, and wall
+  temperature, heat flux and coolant temperature from the jacket march on the chamber, nozzle and jacket.
 - Hybrid motors (quasi-1D burn and N2O blowdown): the port can be *Custom* (the same shape editor as the solid grain,
   with inhibited shapes), and a *fuel grain stack* gives each grain its own length, port, fuel density, regression law
   (power or Marxman) and chemistry: the motor's CEA pair, another CEA pair, or your own table of c*, Tc and gamma

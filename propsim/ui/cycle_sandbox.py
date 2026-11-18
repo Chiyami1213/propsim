@@ -760,7 +760,10 @@ class CycleSandbox(QMainWindow):
         from .cycle_animation import CycleAnimation
         self.anim = CycleAnimation(self.canvas, lambda: self.doc.get("title") or self.doc["graph"].get("title") or self.doc["graph"].get("name") or self.windowTitle())
         self.dock_anim = self._dock("Animation", "Cycle Animation", self.anim)
-        self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim]
+        from .component_view import ComponentView
+        self.view3d = ComponentView()
+        self.dock_3d = self._dock("Model3D", "3D Model", self.view3d)
+        self.docks = [self.dock_parts, self.dock_insp, self.dock_res, self.dock_anim, self.dock_3d]
         self.default_layout()
         self._toolbar()
         self.canvas.selected.connect(self.inspect)
@@ -791,13 +794,16 @@ class CycleSandbox(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_parts)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_insp)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_res)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.dock_3d)
+        self.splitDockWidget(self.dock_res, self.dock_3d, Qt.Horizontal)      # selected part's 3D model beside it
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_anim)
         self.tabifyDockWidget(self.dock_insp, self.dock_anim)
         self.dock_insp.raise_()
         for d in self.docks:
             d.show()
         self.resizeDocks([self.dock_parts, self.dock_insp], [230, 520], Qt.Horizontal)       # wide enough for the cycle schematic
-        self.resizeDocks([self.dock_res], [280], Qt.Vertical)
+        self.resizeDocks([self.dock_res], [330], Qt.Vertical)
+        self.resizeDocks([self.dock_res, self.dock_3d], [800, 700], Qt.Horizontal)
 
     def _style(self) -> None:
         t = theme.t
@@ -975,6 +981,8 @@ class CycleSandbox(QMainWindow):
             self.sol = None
             self.canvas.show_results(None, None)
             self.status.setText("changed: press Solve")
+        if self.view3d.nid is not None:
+            self.view3d.show_component(self.doc["graph"], self.view3d.nid, None)
         sel = [i for i in self.canvas.scene().selectedItems() if isinstance(i, NodeItem)]
         self.inspect(sel[0].node["id"] if len(sel) == 1 else None)
 
@@ -989,6 +997,8 @@ class CycleSandbox(QMainWindow):
                 w.deleteLater()
 
     def inspect(self, nid: str | None) -> None:
+        if hasattr(self, "view3d"):
+            self.view3d.show_component(self.doc["graph"], nid, self.sol)
         self._clear_inspector()
         head = QLabel("Inspector")
         head.setObjectName("heading")
@@ -1120,6 +1130,8 @@ class CycleSandbox(QMainWindow):
             self.sol = None
             self.canvas.show_results(None, None)
             self.status.setText("changed: press Solve")
+        if self.view3d.nid is not None:
+            self.view3d.show_component(self.doc["graph"], self.view3d.nid, None)
 
     def _set_option(self, node, name, value) -> None:
         node.setdefault("options", {})[name] = value
