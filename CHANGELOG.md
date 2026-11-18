@@ -4,6 +4,16 @@ New changes go above this line, newest first.
 
 ## Unreleased
 
+- Nuclear thermal propulsion, a new module with six models following Emrich, *Principles of Nuclear Rocket
+  Propulsion* (2nd ed.): NTR performance against LOX / LH₂ with reactor power and core size; one-group reactor
+  criticality (bare or reflected sphere, cylinder, slab); fuel-element thermal hydraulics (chopped-cosine power, peak
+  fuel temperature, Dittus–Boelter with CoolProp hydrogen, channel pressure drop); hot bleed, cold bleed and expander
+  cycles with real hydrogen and a T–s diagram; xenon and samarium over a burn, coast and restart; and a Run model for
+  six-group reactor kinetics with fuel, moderator and hydrogen-density feedback (startup under outlet temperature
+  control, reactivity step, scram with decay heat and cooldown propellant, closed-loop Bode plot). Physics in
+  `propsim/core/nuclear`; `tests/validation/test_nuclear.py` reproduces the book's worked examples (Isp at area ratio
+  200, critical sphere, fuel cell peak temperature, expander pump pressure, inhour period, shutdown cooling, NERVA-type
+  stability margin, xenon peak after shutdown).
 - Solid motors: build your own grain. The section kind *Custom* takes a list of shapes (circle, rectangle, radial slot,
   polygon, star, with polar repeats) and any shape can be marked inhibited, so its surface is coated and does not
   regress. A new *grain stack* describes a motor as several grains, each with its own length, section, propellant
