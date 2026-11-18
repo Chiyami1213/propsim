@@ -41,7 +41,8 @@ def demo_cases() -> dict[str, Path]:
 
 def models() -> list[tuple[str, str]]:
     from propsim.modules import registry
-    return [(cls.key, label) for entries in registry.TREE.values() for label, _, cls in entries if cls is not None]
+    return [(cls.key, label) for entries in registry.TREE.values() for label, mode, cls in entries
+            if cls is not None and mode != "tool"]       # tools (the cycle sandbox) are captured separately
 
 
 def save_png(qimage, path: Path) -> int:
@@ -139,6 +140,18 @@ def main() -> int:
         except Exception as e:                                           # noqa: BLE001 - report, keep going
             manual.append((name, key, str(e)))
             print(f"{name:48s} FAILED: {e}")
+    if not wanted or "liquid.sandbox" in wanted:                           # the cycle sandbox is its own window
+        try:
+            win.open_cycle_sandbox()
+            box = win.sandbox
+            box.resize(1500, 900)
+            pump(2.5)
+            size = save_png(box.grab().toImage(), OUT / "cycle-sandbox.png")
+            print(f"{'cycle-sandbox.png':48s} {size / 1024:6.0f} KB")
+            box.close()
+        except Exception as e:                                           # noqa: BLE001
+            manual.append(("cycle-sandbox.png", "liquid.sandbox", str(e)))
+            print(f"{'cycle-sandbox.png':48s} FAILED: {e}")
     win.close()
     W.shutdown()
     if manual:

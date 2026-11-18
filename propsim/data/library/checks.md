@@ -118,7 +118,7 @@ Every node parameter, boundary value and sequence time is a sourced value (integ
 | `expander_hydrolox` | 19 | 21 | 25 | 12 | 28 |
 | `gg_kerolox` | 29 | 32 | 45 | 25 | 30 |
 | `pressure_fed_kerolox` | 14 | 13 | 18 | 12 | 16 |
-| `ssme_staged_combustion` | 29 | 40 | 28 | 18 | 52 |
+| `ssme_staged_combustion` | 31 | 42 | 30 | 18 | 56 |
 
 ## 8. Material fits: transcription checks
 
