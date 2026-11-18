@@ -70,16 +70,16 @@ def _flows(kind: str, regen: bool, g: dict) -> tuple[list, list, list]:
         if regen:
             flows[0] = ([(23, 36), (23, 125)] + up + [(33.1, 76), (33.1, 70), (44, 70), (44, 77.5)], FUEL)
         valves += [(23, 50), (77, 50)]
-        labels += [("Fuel tank", 23, 4, "c"), ("Oxidizer tank", 77, 4, "c"), ("Control valves", 107, 56, "r")]
+        labels += [("Fuel tank", 23, 4, "c"), ("Oxidizer tank", 77, 4, "c"), ("Control" + chr(10) + "valves", 83, 58, "l")]
         return flows, valves, labels
     labels += top_labels
     flows += [([(5, 8), (5, SH_Y), (13, SH_Y)], FUEL), ([(95, 8), (95, SH_Y), (87, SH_Y)], OX)]
     if kind == "gas_generator":
         flows += [([(20, 34), (20, 53), (39, 53)], FUEL), ([(80, 34), (80, 53), (61, 53)], OX),
                   ([(20, 53)] + to_cc_fuel, FUEL), ([(80, 53), (80, 68), (56, 68), (56, 77.5)], OX),
-                  ([(50, 44), (50, 34)], GAS), ([(44, 27), (36, 27), (36, 38)], GAS)]
+                  ([(50, 44), (50, 34)], GAS), ([(44, 27), (30, 27), (30, 38)], GAS)]
         valves += [(29, 53), (71, 53)]
-        labels += [("Exhaust", 34, 41, "r"), ("GG", 50, 53.5, "c")]
+        labels += [("Exhaust", 30, 42, "c"), ("GG", 50, 53.5, "c")]
     elif kind == "staged":
         flows += [([(20, 34), (20, 53), (39, 53)], FUEL), ([(80, 34), (80, 53), (61, 53)], OX),
                   ([(20, 53)] + to_cc_fuel, FUEL), ([(80, 53), (80, 68), (56, 68), (56, 77.5)], OX),
@@ -91,7 +91,7 @@ def _flows(kind: str, regen: bool, g: dict) -> tuple[list, list, list]:
                   ([(80, 34), (80, 68), (56, 68), (56, 77.5)], OX), ([(50, 34), (50, 62), (50, 77.5)], GAS)]
         valves += [(20, 48), (80, 48)]
         labels += [("Heated fuel", 47, 48, "r")]
-    labels += [("Control valves", 107, 42 if kind == "expander" else 58, "r")]
+    labels += [("Control" + chr(10) + "valves", 83, 42 if kind == "expander" else 60, "l")]
     return flows, valves, labels
 
 
@@ -170,7 +170,7 @@ class Schematic:
         total = sum(s[2] for s in segs)
         n = max(1, round(total / 15.0))
         p.setPen(Qt.NoPen)
-        p.setBrush(color.lighter(135))
+        p.setBrush(QColor(theme.t["text"]))                      # plain line color, arrow heads in the text color
         for i in range(n):
             d = ((i + phase) / n) * total
             for a, b, ln in segs:
@@ -196,33 +196,25 @@ class Schematic:
         if self.kind == "pressure_fed":
             for x in (14, 68):                                  # propellant tanks
                 p.setPen(QPen(ink, 0.8))
-                p.setBrush(QColor(FUEL if x < 50 else OX).darker(240))
+                p.setBrush(Qt.NoBrush)
                 p.drawRoundedRect(QRectF(x + 0.0, 8, 18, 28), 7, 7)
             return
-        # shaft: a chrome bar with stripes that run along it
-        grad = QLinearGradient(0, SH_Y - 2.2, 0, SH_Y + 2.2)
-        for pos, v in ((0.0, 120), (0.45, 235), (0.55, 235), (1.0, 110)):
-            grad.setColorAt(pos, QColor(v, v, v))
-        p.setPen(Qt.NoPen)
-        p.setBrush(QBrush(grad))
-        p.drawRect(QRectF(26, SH_Y - 2.2, 48, 4.4))
-        p.setPen(QPen(QColor(60, 60, 60, 120), 0.5))
+        # shaft: a plain bar with ticks that run along it
+        p.setPen(QPen(ink, 0.8))
+        p.setBrush(Qt.NoBrush)
+        p.drawRect(QRectF(26, SH_Y - 2.0, 48, 4.0))
+        p.setPen(QPen(ink, 0.5))
         for i in range(12):
             x = 26 + ((i + phase) % 12) * 4.0
-            p.drawLine(QPointF(x, SH_Y - 2.2), QPointF(x, SH_Y + 2.2))
+            p.drawLine(QPointF(x, SH_Y - 2.0), QPointF(x, SH_Y + 2.0))
         for x, flip in ((14, False), (44, False), (74, True)):
             path = _pump(x, 8, flip)
             p.setPen(QPen(ink, 0.9))
             p.setBrush(bg)
             p.drawPath(path)
         if self.kind in ("gas_generator", "staged"):
-            cx, cy = 50.0, 53.0
-            g = QRadialGradient(QPointF(cx, cy), 12)
-            g.setColorAt(0.0, QColor("#3df0d0"))
-            g.setColorAt(0.6, QColor("#f4ff3a"))
-            g.setColorAt(1.0, QColor("#ffff2a"))
             p.setPen(QPen(ink, 0.9))
-            p.setBrush(QBrush(g))
+            p.setBrush(Qt.NoBrush)
             p.drawRoundedRect(QRectF(39, 44, 22, 18), 5, 5)
 
     @staticmethod
@@ -239,31 +231,24 @@ class Schematic:
         for q in right:
             body.lineTo(QPointF(*q))
         body.closeSubpath()
-        grad = QLinearGradient(0, 78, 0, 125)
-        grad.setColorAt(0.0, QColor("#ffff2e"))
-        grad.setColorAt(0.45, QColor("#f0dc70"))
-        grad.setColorAt(1.0, QColor("#d9b8d6"))
-        p.setBrush(QBrush(grad))
-        p.setPen(QPen(QColor("#ff2255") if self.regen else ink, 0.5))
+        p.setBrush(Qt.NoBrush)
+        p.setPen(QPen(ink, 0.7))
         p.drawPath(body)
         if self.regen:                                          # regenerative cooling tubes hugging the nozzle wall
             self._line(p, [(x - 1.4, y) for x, y in left], QColor(FUEL), 1.4)
             self._line(p, [(100 - x + 1.4, y) for x, y in left], QColor(FUEL), 1.4)
-        # exhaust: gray bands that move down the nozzle
+        # exhaust: plain bands that move down the nozzle
+        p.setBrush(Qt.NoBrush)
         for i in range(6):
             f = ((i + phase) % 6) / 6.0
             y = 100 + f * 24
-            half = 50.0 - self._wall_x(y + 1.2) - 1.0          # half width of the bell at that height
-            gg = QLinearGradient(50 - half, 0, 50 + half, 0)
-            gg.setColorAt(0.0, QColor(110, 110, 110, 200))
-            gg.setColorAt(0.5, QColor(250, 250, 250, 220))
-            gg.setColorAt(1.0, QColor(40, 40, 40, 200))
+            half = 50.0 - self._wall_x(y + 1.2) - 1.5          # half width of the bell at that height
+            p.setPen(QPen(QColor("#ff6a2a"), 0.7))
+            p.drawLine(QPointF(50 - half, y), QPointF(50 + half, y))
             p.setPen(Qt.NoPen)
-            p.setBrush(QBrush(gg))
-            p.drawRoundedRect(QRectF(50 - half, y, 2 * half, 2.4), 1.2, 1.2)
-            p.setBrush(QColor("#ff2020"))
-            p.drawPolygon(QPolygonF([QPointF(50 + half * 0.2 + 3, y + 1.2), QPointF(50 + half * 0.2 - 0.5, y - 0.2),
-                                     QPointF(50 + half * 0.2 - 0.5, y + 2.6)]))
+            p.setBrush(QColor("#ff6a2a"))
+            p.drawPolygon(QPolygonF([QPointF(50 + 3, y), QPointF(50 - 1.2, y - 1.6), QPointF(50 - 1.2, y + 1.6)]))
+            p.setBrush(Qt.NoBrush)
 
     def _labels(self, p, ink, labels) -> None:
         f = QFont(p.font())
@@ -272,17 +257,15 @@ class Schematic:
         p.setFont(f)
         p.setPen(ink)
         for text, x, y, al in labels:
-            p.setPen(QColor("black") if text in ("GG", "Pre-burner") else ink)
+            p.setPen(ink)
             w = 40.0
             rect = QRectF(x - (w / 2 if al == "c" else (0 if al == "l" else w)), y - 2.5, w, 5)
             p.drawText(rect, {"c": Qt.AlignCenter, "l": Qt.AlignLeft, "r": Qt.AlignRight}[al] | Qt.AlignVCenter, text)
         f.setPixelSize(5)
         p.setFont(f)
-        p.setPen(QColor("black"))
         p.drawText(QRectF(36, 79.5, 28, 7), Qt.AlignCenter, "CC")
-        p.setPen(ink)
         f.setPixelSize(4)
         p.setFont(f)
         p.drawText(QRectF(30, 128, 40, 6), Qt.AlignCenter, "Nozzle")
         if self.regen:
-            p.drawText(QRectF(2, 101, 28, 12), Qt.AlignRight | Qt.AlignVCenter, "Regenerative\ncooling")
+            p.drawText(QRectF(70, 102, 40, 12), Qt.AlignLeft | Qt.AlignVCenter, "Regenerative\ncooling")

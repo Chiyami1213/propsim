@@ -29,16 +29,19 @@ class Step:
 def _steps() -> list[Step]:
     return [
         Step("Welcome to PropSim",
-             ["A one-minute tour of the window. Use the left and right arrow keys to move between steps, and Esc to "
+             ["A short tour of the window. Use the left and right arrow keys to move between steps, and Esc to "
               "leave at any time."],
              prep=lambda w: (w.select_model("common.engine") if w.ctrl is None or w.ctrl.key != "common.engine" else None)),
         Step("Modules",
              ["Pick a model here. A model marked (Live) recomputes in under $50$ (ms) while you drag a slider; a model "
-              "marked (Run) simulates in a background process with progress and Cancel, then plays back."],
+              "marked (Run) simulates in a background process with progress and Cancel, then plays back. The modules are "
+              "Liquid, Hybrid, Solid, Electric, Nuclear, Vehicle and a Toy."],
              lambda w: w.tree),
         Step("3D View",
              ["Rotate with the left mouse button, pan with the right, zoom with the wheel. The toolbar sets the cutaway "
-              "angle, picks the field painted on the model, toggles the colorbar and saves a snapshot."],
+              "angle (a side view of the port in the grain designers), picks the field painted on the model, toggles the "
+              "colorbar and the legend that names its solid-colored blocks, and saves a snapshot. F11 switches full "
+              "screen on and off, and F2 saves a screenshot of the whole window to the data folder."],
              lambda w: w.vp),
         Step("Plots",
              ["Every plot has a grid and LaTeX labels. Run models draw a cursor at the playback time, and the tabs "
@@ -46,7 +49,8 @@ def _steps() -> list[Step]:
              lambda w: w.plot_tabs),
         Step("Parameters",
              ["Each slider changes one input. Hover over a slider to read its meaning and its dimensions, for example "
-              "$[\\mathrm{M\\,L^{-1}\\,T^{-2}}]$ for a pressure, in the box below."],
+              "$[\\mathrm{M\\,L^{-1}\\,T^{-2}}]$ for a pressure, in the box below. "
+              "Double-click a slider to restore its default value."],
              lambda w: [w.scroll, w.hover]),
         Step("Run and Playback",
              ["Run starts a simulation of the selected Run model; Cancel stops it. Afterwards the scrubber, the play "
@@ -64,9 +68,21 @@ def _steps() -> list[Step]:
              ["Drag a panel by the grip at its top left to move it or float it; the cross at its top right closes it. "
               "View, Panels brings it back, and F12 restores the default arrangement."],
              lambda w: [d.titleBarWidget() for d in (w.vp_dock, w.plots_dock)]),
-        Step("Color Themes",
-             ["View, Color Theme (F10) opens the picker with Graphite, Ocean, Forest, Plum and Light. "
-              "Your choice is remembered."],
+        Step("Preferences and Shortcuts",
+             ["Edit, Preferences (F9) sets the color theme, the 3D legend and colorbar, and the quit confirmation, and "
+              "lets you rebind every menu command. F10 opens the color theme picker with Graphite, Ocean, Forest, Plum "
+              "and Light. Your choices are remembered."],
+             lambda w: w.menuBar()),
+        Step("Grains and Ports",
+             ["The Solid and Hybrid grain designers build custom ports with inhibitors and stacks of grains with their "
+              "own propellant. The 3D view shows the whole grain, which you can turn with the mouse; Cutaway gives a "
+              "side view of the port."],
+             lambda w: w.tree),
+        Step("Engine Cycle Sandbox",
+             ["Liquid, Cycle Sandbox (Ctrl+E) opens a flow-diagram editor drawn with ANSI/ISA-5.1 P&ID symbols. Build "
+              "or load a cycle, Solve it, and press Play Flow to animate it. The Cycle Animation panel redraws a "
+              "gas-generator, expander, staged-combustion or pressure-fed engine as a schematic and exports a GIF. "
+              "Every panel there can be dragged too."],
              lambda w: w.menuBar()),
         Step("Engine to Vehicle",
              ["Run a hybrid, solid or liquid model, then choose File, Send Thrust to Vehicle and a stage. The Vehicle "
