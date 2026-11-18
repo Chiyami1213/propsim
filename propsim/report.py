@@ -42,6 +42,8 @@ def parameter_rows(ctrl, p) -> list[dict]:
         v = getattr(p, m["name"])
         if m.get("kind") == "choice":
             val = m["labels"][m["choices"].index(v)] if v in m["choices"] else str(v)
+        elif m.get("kind") == "text":
+            val = "user-defined" if str(v).strip() else "default"
         else:
             val = _fmt(v)
         rows.append(dict(symbol=f"${m['symbol']}$", desc=m["desc"], value=val,

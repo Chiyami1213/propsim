@@ -1,19 +1,23 @@
 """Run drivers for solid motors: internal ballistics (0-D / spatial, erosive, ignition, tail-off) and 3-D level-set burnback."""
 from __future__ import annotations
 
+from dataclasses import replace
 from functools import lru_cache
 
 import numpy as np
 
 from ..core.ballistics import solid as sol
 from ..core.grain import levelset as ls
+from ..core.grain import builder as gb
 from ..core.grain import section2d as s2
+from ..core.grain import stack as gstack
 from ..core.result import Result
-from ..core.schema import C, P, ParamModel
+from ..core.schema import C, P, ParamModel, T
 from .base import Simulation
 
 KIND_LABELS = ["Circular bore", "Star", "Wagon wheel (centre + slots)", "Finocyl (centre + fins)",
-               "Centre + 4 bores", "Centre + 6 bores"]
+               "Centre + 4 bores", "Centre + 6 bores", "Custom (shape list)"]
+KINDS = [*s2.KINDS, "custom"]
 
 
 @lru_cache(maxsize=32)
@@ -25,7 +29,7 @@ def _cached_section(kind, R_out, R_p, n, w, r_tip, r_valley, depth) -> s2.Burnba
 class SolidGrainFields(ParamModel):
     """2-D grain section, extruded along the motor axis."""
 
-    kind: str = C("wagon", choices=s2.KINDS, labels=KIND_LABELS, symbol=r"\mathrm{section}",
+    kind: str = C("wagon", choices=KINDS, labels=KIND_LABELS, symbol=r"\mathrm{section}",
                   desc="grain cross-section", group="Grain")
     R_out: float = P(60.0, symbol=r"R_{out}", desc="grain outer radius", units="mm", dims="L", lo=30.0, hi=150.0,
                      step=0.5, group="Grain")
@@ -44,17 +48,27 @@ class SolidGrainFields(ParamModel):
     L_g: float = P(0.6, symbol=r"L_g", desc="grain length", units="m", dims="L", lo=0.2, hi=2.0, step=0.01,
                    group="Grain")
 
+    section_json: str = T("", label="custom section", desc="custom section drawn as a list of shapes, with optional "
+                          "inhibited surfaces (used when the section is custom)", editor="section", group="Grain")
+
+    def custom_spec(self) -> gb.SectionSpec:
+        """The custom section; an empty text means the editor's starting shape on this outer radius."""
+        spec = gb.spec_from_json(self.section_json) if self.section_json.strip() else gb.default_spec(self.R_out)
+        return replace(spec, R_out=self.R_out)               # the form's outer radius always wins
+
     def sdf_kw(self) -> dict:
         return dict(R_p=self.R_p, n=int(round(self.n_el)), w=self.w_el, r_tip=self.r_tip, r_valley=self.r_valley,
                     depth=self.depth)
 
     def section(self) -> s2.Burnback:
+        if self.kind == "custom":
+            return gb.cached_section(self.custom_spec().to_json())
         return _cached_section(self.kind, self.R_out, self.R_p, int(round(self.n_el)), self.w_el, self.r_tip,
                                self.r_valley, self.depth)
 
     def section_table(self, b: s2.Burnback | None = None) -> sol.SectionTable:
         b = b or self.section()
-        return sol.SectionTable(b.d * 1e-3, b.area * 1e-6, b.perim * 1e-3)
+        return sol.SectionTable(b.d * 1e-3, b.area * 1e-6, b.perim * 1e-3, b.A_case * 1e-6)
 
 
 class SolidPropFields(ParamModel):
@@ -86,6 +100,9 @@ class SolidBallisticsParams(SolidGrainFields, SolidPropFields):
                      units="10⁻⁶ SI", dims="–", lo=0.0, hi=30.0, step=0.1, group="Erosive burning")
     beta: float = P(53.0, symbol=r"\beta", desc="Lenoir–Robillard exponent constant", units="", dims="1", lo=20.0,
                     hi=100.0, step=1.0, group="Erosive burning")
+    stack_json: str = T("", label="grain stack", desc="optional stack of grains, each with its own length, section, "
+                        "propellant and end-face inhibition (empty = one grain from the parameters above)",
+                        editor="stack", group="Grain")
     D_t: float = P(36.0, symbol=r"D_t", desc="throat diameter", units="mm", dims="L", lo=10.0, hi=120.0, step=0.5,
                    group="Nozzle")
     eps: float = P(8.0, symbol=r"\varepsilon=\frac{A_e}{A_t}", desc="nozzle expansion ratio", units="", dims="1",
@@ -101,10 +118,37 @@ class SolidBallisticsParams(SolidGrainFields, SolidPropFields):
     t_end: float = P(7.0, symbol=r"t_{end}", desc="simulated time (includes tail-off)", units="s", dims="T", lo=1.0,
                      hi=40.0, step=0.5, group="Simulation")
 
+    def _grain_section(self, sec: dict | None) -> sol.SectionTable:
+        if sec is None:
+            return self.section_table()
+        if "shapes" in sec:
+            return self.section_table(gb.cached_section(replace(gb.spec_from_dict(sec), R_out=self.R_out).to_json()))
+        kw = {"R_p": self.R_p * 1.0, "n": int(round(self.n_el)), "w": self.w_el, "r_tip": self.r_tip,
+              "r_valley": self.r_valley, "depth": self.depth}
+        kw.update({k: v for k, v in sec.items() if k in kw})
+        kind = sec.get("kind", self.kind)
+        if kind not in s2.KINDS:
+            raise ValueError(f"grain section kind {kind!r} is not one of {s2.KINDS}")
+        return self.section_table(_cached_section(kind, self.R_out, kw["R_p"], kw["n"], kw["w"], kw["r_tip"],
+                                                  kw["r_valley"], kw["depth"]))
+
+    def _grain_prop(self, over: dict) -> sol.SolidProp:
+        f = {k: getattr(self, k) for k in gstack.PROP_KEYS if hasattr(self, k)}
+        f["alpha"], f["beta"] = self.alpha, self.beta
+        f.update(over)
+        return sol.SolidProp(rho_p=f["rho_p"], a=sol.a_from_mm_MPa(f["a_mm"], f["n"]), n=f["n"],
+                             sigma_p=f["sigma_p"] * 1e-3, Ti=f["T_i"], cstar=f["cstar"], Tc=f["Tc"],
+                             gamma=f["gamma"], alpha=f["alpha"] * 1e-6, beta=f["beta"])
+
     def to_si(self) -> sol.SolidMotor:
-        return sol.SolidMotor(prop=self.prop(self.alpha, self.beta), table=self.section_table(), L=self.L_g,
-                              At=np.pi * (self.D_t * 1e-3) ** 2 / 4.0, eps=self.eps, N=int(round(self.N)),
-                              m_ig=self.m_ig * 1e-3, t_ig=self.t_ig, v_fs=self.v_fs, R_case=self.R_out * 1e-3)
+        kw = dict(At=np.pi * (self.D_t * 1e-3) ** 2 / 4.0, eps=self.eps, N=int(round(self.N)),
+                  m_ig=self.m_ig * 1e-3, t_ig=self.t_ig, v_fs=self.v_fs, R_case=self.R_out * 1e-3)
+        defs = gstack.parse_stack(self.stack_json)
+        if not defs:
+            return sol.SolidMotor(prop=self.prop(self.alpha, self.beta), table=self.section_table(), L=self.L_g, **kw)
+        grains = [sol.Grain(self._grain_prop(dict(d.prop)), self._grain_section(d.section), d.L, d.burn_head,
+                            d.burn_aft) for d in defs]
+        return sol.SolidMotor.from_grains(grains, **kw)
 
 
 class SolidBallistics(Simulation):
@@ -115,9 +159,9 @@ class SolidBallistics(Simulation):
         ch = sol.integrate(m, params.t_end, self.N_FRAMES, progress, cancel)
         t = np.linspace(0.0, params.t_end, self.N_FRAMES)
         meta = sol.summary(m, t, ch)
-        meta["x_cells"] = ((np.arange(m.N) + 0.5) * m.dx).tolist()
+        meta["x_cells"] = m.cell_x().tolist()
         meta["gamma_mean"] = m.prop.gamma
-        log = [f"setup solid ballistics: {params.kind} section, web {meta['web_mm']:.1f} (mm), {m.N} axial cell(s), "
+        log = [f"setup solid ballistics: {params.kind} section, web {meta['web_mm']:.1f} (mm), {m.nc} axial cell(s), "
                f"{'erosive burning on' if m.prop.alpha > 0 else 'erosive burning off'}",
                f"propellant: {m.prop.rho_p:.0f} (kg/m³), a' = {params.a_mm:.2f} (mm/s), n = {m.prop.n:.2f} — "
                f"{meta['note']}", f"K_n max {meta['Kn_max']:.0f}  ->  equilibrium P_c {meta['Pc_eq_MPa']:.2f} (MPa)"]
@@ -149,7 +193,9 @@ class SolidBurnback3D(Simulation):
         h = 2.0 * Ro / params.cells
         kw = params.sdf_kw()
         partial = params.kind == "finocyl" and params.fin_frac < 0.999
-        if partial:
+        if params.kind == "custom":
+            phi, act, _ = gb.phi_3d(params.custom_spec(), L, h)
+        elif partial:
             phi, act, _ = ls.phi_partial_fins(Ro, L, h, params.R_p, kw["n"], params.w_el, params.depth,
                                               params.fin_frac)
         else:
