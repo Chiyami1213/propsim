@@ -89,3 +89,53 @@ def test_shipped_cea_tables_match_huzel_huang():
         assert isp == pytest.approx(float(r["Isp_opt"]), rel=0.015), r["case_id"]
         n += 1
     assert n == 5
+
+
+def _component_validator():
+    from referencing import Registry, Resource
+
+    schemas = data.LIBRARY / "schemas"
+    sv = json.loads((schemas / "sourced_value.schema.json").read_text(encoding="utf-8"))
+    comp = json.loads((schemas / "component.schema.json").read_text(encoding="utf-8"))
+    registry = Registry().with_resource(sv["$id"], Resource.from_contents(sv))
+    return jsonschema.Draft202012Validator(comp, registry=registry)
+
+
+def test_component_records_match_schema():
+    v = _component_validator()
+    recs = data.components()
+    assert len(recs) >= 19
+    for t, rec in recs.items():
+        errors = sorted(v.iter_errors(rec), key=str)
+        assert not errors, f"{t}: {errors[0].message}"
+
+
+def test_valve_loss_coefficients_fall_as_valve_opens():
+    """Huzel & Huang Table 7-4: K decreases monotonically with opening for butterfly and ball valves."""
+    rows = data.component_table("loss_coefficients")
+    for fitting in ("valve_butterfly", "valve_ball"):
+        pts = sorted(
+            (float(r["geometry_value"]), float(r["K_nominal"])) for r in rows if r["fitting"] == fitting
+        )
+        ks = [k for _, k in pts]
+        assert ks == sorted(ks, reverse=True), fitting
+
+
+def test_pump_efficiency_curves_are_ordered_by_capacity():
+    """Fig. 6-23: at a given specific speed, larger pumps are more efficient (digitized peaks)."""
+    rows = data.component_table("pump_efficiency_vs_specific_speed")
+    peaks = {}
+    for r in rows:
+        peaks[r["capacity_band"]] = max(peaks.get(r["capacity_band"], 0.0), float(r["efficiency"]))
+    order = ["below_100_gpm", "100_200_gpm", "200_500_gpm", "500_1000_gpm", "1000_3000_gpm", "3000_10000_gpm",
+             "over_10000_gpm"]
+    assert [peaks[b] for b in order] == sorted(peaks[b] for b in order)
+
+
+def test_a1_turbopump_power_balance():
+    """Huzel & Huang A-1 engine (Table 3-2): pump powers + auxiliary drive = turbine power within 1 %."""
+    bhp = 745.69987
+    pumps = (14850 + 11790) * bhp
+    aux = data.components()["shaft"]["parameters"][1]["default"]["value"]
+    turbine = 27140 * bhp
+    assert (pumps + aux) == pytest.approx(turbine, rel=0.01)

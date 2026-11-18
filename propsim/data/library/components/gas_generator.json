@@ -1,0 +1,119 @@
+{
+  "type": "gas_generator",
+  "category": "combustion",
+  "description": "Fuel-rich gas generator producing turbine drive gas.",
+  "ports": [
+    {
+      "name": "ox_in",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "fuel_in",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "gas"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "mixture_ratio",
+      "unit": "1",
+      "default": {
+        "value": 0.408,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine), gas generator"
+      },
+      "min": 0.2,
+      "max": 1.0,
+      "meaning": "O/F (fuel rich)"
+    },
+    {
+      "name": "p_injector_end",
+      "unit": "Pa",
+      "default": {
+        "value": 4895277.67814928,
+        "unit": "Pa",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine), gas generator",
+        "formula": "710 psia"
+      },
+      "min": 1000000.0,
+      "max": 30000000.0,
+      "meaning": "Injector end pressure"
+    },
+    {
+      "name": "T_max",
+      "unit": "K",
+      "default": {
+        "value": null,
+        "unit": "K",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "meaning": "Turbine-material temperature limit (from materials block)"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "p_gg",
+      "unit": "Pa",
+      "meaning": "Generator pressure"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "p_gg",
+      "unit": "Pa",
+      "meaning": "Pressure"
+    },
+    {
+      "name": "T_gg",
+      "unit": "K",
+      "meaning": "Gas temperature"
+    },
+    {
+      "name": "mixture_ratio",
+      "unit": "1",
+      "meaning": "O/F"
+    },
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Gas flow"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "mass balance",
+      "form": "\\frac{V}{RT}\\dot p = \\dot m_{ox}+\\dot m_f-\\dot m_{turbine}",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: chamber analogue"
+    },
+    {
+      "name": "gas properties",
+      "form": "T, c_p, \\gamma = \\mathrm{CEA}(O/F, p)",
+      "source_id": "CEA-THERMO",
+      "location": "fuel-rich equilibrium",
+      "note": "H&H Table 6-4 p.197 lists typical fuel-rich GG products"
+    }
+  ],
+  "valid_range": "Fuel-rich O/F where CEA equilibrium is meaningful (soot not modelled).",
+  "known_limitations": [
+    "Equilibrium chemistry overpredicts fuel-rich kerosene temperatures (non-equilibrium, soot).",
+    "Combustion lag not modelled."
+  ]
+}

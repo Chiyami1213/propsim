@@ -1,0 +1,11 @@
+parameter,min,max,unit,quality,source_id,location,formula
+specific_speed,2.195,4.391,1,derived,HH-SP125,Table 6-5 p.213,6000-12000 rpm gpm^0.5 ft^-0.75 x 0.0003659 (Omega_s = omega Q^0.5/(g H)^0.75)
+suction_specific_speed,7.318,18.29,1,derived,HH-SP125,Table 6-5 p.213,20000-50000 rpm gpm^0.5 ft^-0.75 x 0.0003659 (Omega_ss = omega Q^0.5/(g NPSH)^0.75)
+head_coefficient,0.06,0.15,1,published,HH-SP125,Table 6-5 p.213,
+inlet_flow_coefficient,0.06,0.2,1,published,HH-SP125,Table 6-5 p.213,
+diameter_ratio_hub_tip,0.2,0.5,1,published,HH-SP125,Table 6-5 p.213,
+vane_solidity_tip,1.5,3,1,published,HH-SP125,Table 6-5 p.213,
+number_of_vanes,3,5,1,published,HH-SP125,Table 6-5 p.213,
+vane_thickness_over_chord,0.07,0.3,1,published,HH-SP125,Table 6-5 p.213,
+tip_clearance_over_diameter,0.005,0.01,1,published,HH-SP125,Table 6-5 p.213,0.5 to 1 percent
+length_over_tip_diameter,0.3,0.6,1,published,HH-SP125,Table 6-5 p.213,

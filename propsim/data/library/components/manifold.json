@@ -1,0 +1,85 @@
+{
+  "type": "manifold",
+  "category": "volume",
+  "description": "Liquid volume (manifold, dome, plenum): stores mass through liquid compressibility.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "volume",
+      "unit": "m3",
+      "default": {
+        "value": null,
+        "unit": "m3",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 1e-07,
+      "max": 1.0,
+      "user_input": true,
+      "meaning": "Internal volume"
+    },
+    {
+      "name": "a_sound",
+      "unit": "m/s",
+      "default": {
+        "value": null,
+        "unit": "m/s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 100.0,
+      "max": 3000.0,
+      "meaning": "Liquid speed of sound; null means take it from the fluid table at the local state"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "p",
+      "unit": "Pa",
+      "meaning": "Pressure"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "p",
+      "unit": "Pa",
+      "meaning": "Pressure"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "capacitance",
+      "form": "\\frac{V}{\\rho a^2}\\,\\dot p = \\sum\\dot m_{in}-\\sum\\dot m_{out}",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: module docstring"
+    },
+    {
+      "name": "instant closure surge (check)",
+      "form": "\\Delta p = \\rho a v",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: module docstring (Joukowsky limit)",
+      "note": "primary citation for the Joukowsky relation pending (gaps.md)"
+    }
+  ],
+  "valid_range": "Single-phase liquid.",
+  "known_limitations": [
+    "Wall compliance not included (lowers the effective a).",
+    "No gas pockets."
+  ],
+  "implementation": "propsim/core/feed/network.py"
+}

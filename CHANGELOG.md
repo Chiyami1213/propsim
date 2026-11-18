@@ -7,6 +7,9 @@ New changes go above this line, newest first.
 - Component library, block A (fluids and propellants): `propsim/data/library` with sourced fluid scalars, CoolProp
   property tables for 11 fluids, CEA reactant cards and published theoretical-performance cases, read by
   `propsim.data`; checks in `tools/check_library.py` and `tests/data`.
+- Component library, block B (component catalog): 19 component types with ports, sourced parameter defaults,
+  plot outputs and cited equations, plus valve/fitting loss coefficients, roughness, L*, inducer ranges and digitized
+  pump and turbine efficiency curves from Huzel & Huang.
 
 ## 1.0.0
 

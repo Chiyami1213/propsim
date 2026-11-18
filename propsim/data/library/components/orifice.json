@@ -1,0 +1,76 @@
+{
+  "type": "orifice",
+  "category": "valve",
+  "description": "Calibration or control orifice (sharp or rounded), incompressible liquid.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "diameter",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0001,
+      "max": 0.5,
+      "user_input": true,
+      "meaning": "Orifice diameter"
+    },
+    {
+      "name": "Cd",
+      "unit": "1",
+      "default": {
+        "value": 0.75,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.130, sample calculation with eq. (4-40)",
+        "formula": "Cd used for injector orifices from component tests"
+      },
+      "min": 0.5,
+      "max": 0.92,
+      "meaning": "Discharge coefficient"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "dp",
+      "unit": "Pa",
+      "meaning": "Pressure drop"
+    },
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Mass flow"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "orifice flow",
+      "form": "\\dot m = C_d A \\sqrt{2\\rho\\,\\Delta p}",
+      "source_id": "HH-SP125",
+      "location": "eq. (4-40) p.128 (SI form)"
+    }
+  ],
+  "valid_range": "Non-cavitating: downstream pressure above vapour pressure.",
+  "known_limitations": [
+    "Cd assumed constant with Reynolds number."
+  ]
+}

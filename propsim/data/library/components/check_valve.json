@@ -1,0 +1,93 @@
+{
+  "type": "check_valve",
+  "category": "valve",
+  "description": "Poppet check valve: flows forward above the cracking pressure, blocks reverse flow.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "any"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "any"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "diameter",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.001,
+      "max": 1.0,
+      "user_input": true,
+      "meaning": "Flow diameter"
+    },
+    {
+      "name": "K_open",
+      "unit": "1",
+      "default": {
+        "value": 3.0,
+        "unit": "1",
+        "quality": "derived",
+        "source_id": "HH-SP125",
+        "location": "Table 7-4 p.286 (poppet check valve 2-4)",
+        "formula": "midpoint of 2-4"
+      },
+      "min": 1.0,
+      "max": 5.0,
+      "meaning": "Loss coefficient open",
+      "table": "components/tables/loss_coefficients.csv"
+    },
+    {
+      "name": "dp_crack",
+      "unit": "Pa",
+      "default": {
+        "value": null,
+        "unit": "Pa",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Cracking pressure"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "dp",
+      "unit": "Pa",
+      "meaning": "Pressure drop"
+    },
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Mass flow"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "open loss",
+      "form": "\\Delta p = K\\rho v^2/2 \\ \\text{if}\\ p_{in}-p_{out}>\\Delta p_{crack},\\ \\text{else}\\ \\dot m=0",
+      "source_id": "HH-SP125",
+      "location": "eq. (7-9) p.285, Table 7-4 p.286"
+    }
+  ],
+  "valid_range": "Quasi-steady.",
+  "known_limitations": [
+    "No poppet dynamics or chatter.",
+    "Cracking pressure is user input."
+  ]
+}
