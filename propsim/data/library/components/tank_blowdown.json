@@ -1,0 +1,119 @@
+{
+  "type": "tank_blowdown",
+  "category": "tank",
+  "description": "Propellant tank with a fixed pressurant mass; ullage expands polytropically as liquid leaves.",
+  "ports": [
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "V_tank",
+      "unit": "m3",
+      "default": {
+        "value": null,
+        "unit": "m3",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0001,
+      "max": 1000.0,
+      "user_input": true,
+      "meaning": "Total tank volume"
+    },
+    {
+      "name": "fill_fraction",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0,
+      "max": 0.98,
+      "user_input": true,
+      "meaning": "Initial liquid volume / tank volume"
+    },
+    {
+      "name": "p0",
+      "unit": "Pa",
+      "default": {
+        "value": null,
+        "unit": "Pa",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 100000.0,
+      "max": 40000000.0,
+      "user_input": true,
+      "meaning": "Initial ullage pressure"
+    },
+    {
+      "name": "n_poly",
+      "unit": "1",
+      "default": {
+        "value": 1.6666666666666667,
+        "unit": "1",
+        "quality": "derived",
+        "source_id": "PROPSIM-DEF",
+        "location": "monatomic ideal gas",
+        "formula": "helium isentropic limit n = cp/cv = 5/3"
+      },
+      "min": 1.0,
+      "max": 1.67,
+      "meaning": "Polytropic exponent of the ullage expansion: 1 (isothermal) to cp/cv (isentropic)"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "V_ull",
+      "unit": "m3",
+      "meaning": "Ullage volume"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "p_ullage",
+      "unit": "Pa",
+      "meaning": "Ullage pressure"
+    },
+    {
+      "name": "mdot_out",
+      "unit": "kg/s",
+      "meaning": "Outflow"
+    },
+    {
+      "name": "m_liq",
+      "unit": "kg",
+      "meaning": "Liquid remaining"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "polytropic ullage",
+      "form": "p_u V_{ull}^{n} = p_0 V_{ull,0}^{n}",
+      "source_id": "HH-SP125",
+      "location": "eq. (5-15) p.159 (polytropic gas expansion)"
+    },
+    {
+      "name": "ullage growth",
+      "form": "\\dot V_{ull} = \\dot m_{out}/\\rho_l",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: state dV"
+    }
+  ],
+  "valid_range": "1 <= n <= cp/cv of the pressurant.",
+  "known_limitations": [
+    "Constant n over the burn; real blowdown drifts from isentropic toward isothermal as wall heat flows in.",
+    "No vapour in the ullage (see the N2O self-pressurized tank model for that case)."
+  ],
+  "implementation": "propsim/core/feed/network.py"
+}

@@ -1,0 +1,76 @@
+{
+  "type": "cavitating_venturi",
+  "category": "valve",
+  "description": "Venturi whose throat runs at vapour pressure, fixing the flow independent of downstream pressure.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "liquid"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "throat_diameter",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0001,
+      "max": 0.3,
+      "user_input": true,
+      "meaning": "Throat diameter"
+    },
+    {
+      "name": "Cd",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.9,
+      "max": 1.0,
+      "meaning": "Throat discharge coefficient (no generic published value in the library yet)"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Mass flow"
+    },
+    {
+      "name": "cavitating",
+      "unit": "1",
+      "meaning": "1 when choked by cavitation"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "cavitating flow",
+      "form": "\\dot m = C_d A_t\\sqrt{2\\rho\\,(p_{in}-p_v)}\\quad \\text{while}\\ p_{out} < p_{in}-\\Delta p_{recovery}",
+      "source_id": "HH-SP125",
+      "location": "p.299 (cavitating venturi, text with eq. 7-2)",
+      "note": "pressure-recovery limit of the diffuser is not given numerically in H&H; see gaps.md"
+    }
+  ],
+  "valid_range": "Downstream pressure low enough for throat cavitation.",
+  "known_limitations": [
+    "Cd and recovery ratio missing (gaps.md)."
+  ]
+}

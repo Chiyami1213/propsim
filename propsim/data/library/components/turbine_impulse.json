@@ -1,0 +1,154 @@
+{
+  "type": "turbine_impulse",
+  "category": "turbomachinery",
+  "description": "Impulse turbine (single stage, pressure- or velocity-compounded) driven by hot gas.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "gas"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "gas"
+    },
+    {
+      "name": "shaft",
+      "kind": "shaft",
+      "direction": "bidir",
+      "medium": "torque"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "arrangement",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "meaning": "impulse_single_stage | impulse_pressure_compounded_2stage | impulse_velocity_compounded_2row"
+    },
+    {
+      "name": "D_mean",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.05,
+      "max": 1.5,
+      "user_input": true,
+      "meaning": "Mean blade diameter"
+    },
+    {
+      "name": "eta_design",
+      "unit": "1",
+      "default": {
+        "value": 0.582,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine), turbine"
+      },
+      "min": 0.3,
+      "max": 0.9,
+      "meaning": "Total-to-static efficiency at design",
+      "table": "components/tables/turbine_efficiency_vs_velocity_ratio.csv"
+    },
+    {
+      "name": "pressure_ratio",
+      "unit": "1",
+      "default": {
+        "value": 23.7,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine), turbine"
+      },
+      "min": 1.2,
+      "max": 40.0,
+      "meaning": "Inlet / exit pressure"
+    },
+    {
+      "name": "T_inlet",
+      "unit": "K",
+      "default": {
+        "value": 1033.15,
+        "unit": "K",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine), turbine",
+        "formula": "1400 degF to K"
+      },
+      "min": 300.0,
+      "max": 1300.0,
+      "meaning": "Inlet total temperature"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "power",
+      "unit": "W",
+      "meaning": "Shaft power"
+    },
+    {
+      "name": "torque",
+      "unit": "N m",
+      "meaning": "Shaft torque"
+    },
+    {
+      "name": "efficiency",
+      "unit": "1",
+      "meaning": "Efficiency"
+    },
+    {
+      "name": "u_over_c0",
+      "unit": "1",
+      "meaning": "Velocity ratio"
+    },
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Gas flow"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "isentropic spouting velocity",
+      "form": "C_0=\\sqrt{2c_pT_0\\left[1-(1/R_t)^{(\\gamma-1)/\\gamma}\\right]}",
+      "source_id": "HH-SP125",
+      "location": "eqs. (6-19), (6-20) p.198 (SI)"
+    },
+    {
+      "name": "power",
+      "form": "P = \\eta_t\\,\\dot m\\,c_p T_0\\left[1-(1/R_t)^{(\\gamma-1)/\\gamma}\\right]",
+      "source_id": "HH-SP125",
+      "location": "eq. (6-20) p.198 (SI)"
+    },
+    {
+      "name": "efficiency versus velocity ratio",
+      "form": "\\eta_t=\\eta(U/C_0)\\ \\text{from Fig. 6-27}",
+      "source_id": "HH-SP125",
+      "location": "Fig. 6-27 p.198"
+    }
+  ],
+  "valid_range": "U/C0 within the digitized range of Fig. 6-27; ideal-gas working fluid.",
+  "known_limitations": [
+    "Partial admission and reaction/radial turbines not covered yet.",
+    "Choked-flow relation between inlet pressure and flow pending."
+  ],
+  "implementation": "propsim/core/feed/cycles.py"
+}

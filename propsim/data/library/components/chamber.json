@@ -1,0 +1,182 @@
+{
+  "type": "chamber",
+  "category": "combustion",
+  "description": "Combustion chamber: gas volume with first-order combustion lag and equilibrium thermochemistry.",
+  "ports": [
+    {
+      "name": "ox_in",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "any"
+    },
+    {
+      "name": "fuel_in",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "any"
+    },
+    {
+      "name": "throat",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "gas"
+    },
+    {
+      "name": "wall",
+      "kind": "thermal",
+      "direction": "out",
+      "medium": "heat"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "Lstar",
+      "unit": "m",
+      "default": {
+        "value": 1.143,
+        "unit": "m",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine)",
+        "formula": "45 in x 0.0254 (LOX/RP-1)"
+      },
+      "min": 0.381,
+      "max": 3.048,
+      "meaning": "Characteristic length V_c/A_t",
+      "table": "components/tables/chamber_lstar.csv"
+    },
+    {
+      "name": "A_t",
+      "unit": "m2",
+      "default": {
+        "value": null,
+        "unit": "m2",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 1e-06,
+      "max": 2.0,
+      "user_input": true,
+      "meaning": "Throat area"
+    },
+    {
+      "name": "contraction_ratio",
+      "unit": "1",
+      "default": {
+        "value": 1.6,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine)"
+      },
+      "min": 1.3,
+      "max": 6.0,
+      "meaning": "A_c/A_t"
+    },
+    {
+      "name": "eta_cstar",
+      "unit": "1",
+      "default": {
+        "value": 0.975,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "Table 3-2 p.65 (750K A-1 stage engine)"
+      },
+      "min": 0.85,
+      "max": 1.0,
+      "meaning": "c* efficiency"
+    },
+    {
+      "name": "tau_comb",
+      "unit": "s",
+      "default": {
+        "value": null,
+        "unit": "s",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0,
+      "max": 0.01,
+      "meaning": "Combustion time lag (null: use stay time from L*)"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "p_c",
+      "unit": "Pa",
+      "meaning": "Chamber pressure"
+    },
+    {
+      "name": "m_ox_g",
+      "unit": "kg",
+      "meaning": "Gas-phase oxidizer mass (lag state)"
+    },
+    {
+      "name": "m_f_g",
+      "unit": "kg",
+      "meaning": "Gas-phase fuel mass (lag state)"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "p_c",
+      "unit": "Pa",
+      "meaning": "Chamber pressure"
+    },
+    {
+      "name": "T_c",
+      "unit": "K",
+      "meaning": "Chamber temperature"
+    },
+    {
+      "name": "mixture_ratio",
+      "unit": "1",
+      "meaning": "O/F"
+    },
+    {
+      "name": "cstar",
+      "unit": "m/s",
+      "meaning": "Characteristic velocity"
+    },
+    {
+      "name": "mdot_throat",
+      "unit": "kg/s",
+      "meaning": "Throat mass flow"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "characteristic length",
+      "form": "L^* = V_c/A_t",
+      "source_id": "HH-SP125",
+      "location": "eq. (4-4) p.86"
+    },
+    {
+      "name": "stay time",
+      "form": "t_s = V_c/(\\dot m\\,\\bar v)",
+      "source_id": "HH-SP125",
+      "location": "eq. (4-3) p.86"
+    },
+    {
+      "name": "chamber mass balance",
+      "form": "\\frac{V_c}{R T_c}\\dot p_c = \\dot m_{gen}-\\frac{p_c A_t}{\\eta_{c^*} c^*}",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: rhs()"
+    },
+    {
+      "name": "characteristic velocity",
+      "form": "c^* = p_c A_t/\\dot m",
+      "source_id": "HH-SP125",
+      "location": "eq. (1-32) p.12"
+    }
+  ],
+  "valid_range": "Equilibrium chemistry from the shipped CEA tables; L* within Table 4-1 ranges.",
+  "known_limitations": [
+    "Lumped (0-D): no acoustics; combustion instability needs the chugging module.",
+    "Ignition transient simplified."
+  ],
+  "implementation": "propsim/core/feed/network.py"
+}

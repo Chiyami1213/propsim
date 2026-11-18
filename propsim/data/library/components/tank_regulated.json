@@ -1,0 +1,143 @@
+{
+  "type": "tank_regulated",
+  "category": "tank",
+  "description": "Propellant tank held at a set ullage pressure by a pressurant regulator (pressure-fed or pump inlet supply).",
+  "ports": [
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "liquid"
+    },
+    {
+      "name": "pressurant_in",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "gas"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "V_tank",
+      "unit": "m3",
+      "default": {
+        "value": null,
+        "unit": "m3",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0001,
+      "max": 1000.0,
+      "user_input": true,
+      "meaning": "Total tank volume"
+    },
+    {
+      "name": "fill_fraction",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 0.0,
+      "max": 0.98,
+      "user_input": true,
+      "meaning": "Initial liquid volume / tank volume"
+    },
+    {
+      "name": "p_set",
+      "unit": "Pa",
+      "default": {
+        "value": null,
+        "unit": "Pa",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 100000.0,
+      "max": 40000000.0,
+      "user_input": true,
+      "meaning": "Regulated ullage pressure"
+    },
+    {
+      "name": "T_prop",
+      "unit": "K",
+      "default": {
+        "value": null,
+        "unit": "K",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Initial propellant temperature"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "m_liq",
+      "unit": "kg",
+      "meaning": "Liquid mass"
+    },
+    {
+      "name": "V_ull",
+      "unit": "m3",
+      "meaning": "Ullage volume"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "p_ullage",
+      "unit": "Pa",
+      "meaning": "Ullage pressure"
+    },
+    {
+      "name": "mdot_out",
+      "unit": "kg/s",
+      "meaning": "Outflow"
+    },
+    {
+      "name": "m_liq",
+      "unit": "kg",
+      "meaning": "Liquid remaining"
+    },
+    {
+      "name": "mdot_pressurant",
+      "unit": "kg/s",
+      "meaning": "Pressurant inflow"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "ullage pressure",
+      "form": "p_u = p_{set}",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: module docstring (regulated mode)"
+    },
+    {
+      "name": "liquid mass",
+      "form": "\\dot m_{liq} = -\\dot m_{out}",
+      "source_id": "PROPSIM-CODE",
+      "location": "propsim/core/feed/network.py: state dV"
+    },
+    {
+      "name": "pressurant demand (perfect gas)",
+      "form": "\\dot m_g = \\frac{p_{set}}{R_g T_u}\\frac{\\dot m_{out}}{\\rho_l}",
+      "source_id": "HH-SP125",
+      "location": "eq. (5-1) p.152 (SI, rate form)",
+      "note": "T_u is the ullage gas temperature; heat and mass transfer neglected as in eq. (5-1)"
+    }
+  ],
+  "valid_range": "Ullage gas ideal; no heat or mass transfer between ullage, wall and liquid.",
+  "known_limitations": [
+    "No ullage heat transfer, condensation or propellant vaporization (H&H eqs. 5-2 to 5-6 give the correction).",
+    "No slosh or outflow vortexing.",
+    "Regulator dynamics are in pressure_regulator, not here."
+  ],
+  "implementation": "propsim/core/feed/network.py"
+}

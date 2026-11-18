@@ -1,0 +1,123 @@
+{
+  "type": "injector",
+  "category": "combustion",
+  "description": "Injector (one propellant side): orifice flow from manifold into the chamber.",
+  "ports": [
+    {
+      "name": "inlet",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "any"
+    },
+    {
+      "name": "outlet",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "any"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "A_total",
+      "unit": "m2",
+      "default": {
+        "value": null,
+        "unit": "m2",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 1e-07,
+      "max": 0.5,
+      "user_input": true,
+      "meaning": "Total orifice area of this side"
+    },
+    {
+      "name": "Cd",
+      "unit": "1",
+      "default": {
+        "value": 0.75,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.130, sample calculation with eq. (4-40)"
+      },
+      "min": 0.5,
+      "max": 0.92,
+      "meaning": "Discharge coefficient"
+    },
+    {
+      "name": "dp_over_pc_design",
+      "unit": "1",
+      "default": {
+        "value": 0.2,
+        "unit": "1",
+        "quality": "published",
+        "source_id": "HH-SP125",
+        "location": "p.128, rule of thumb with eq. (4-40)",
+        "formula": "15-20 percent; upper value"
+      },
+      "min": 0.15,
+      "max": 0.2,
+      "meaning": "Design injection pressure drop / chamber pressure (stiffness)",
+      "table": "components/tables/design_rules.csv"
+    },
+    {
+      "name": "type",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "meaning": "Element type (showerhead, doublet, triplet, coaxial, pintle): descriptive until per-type data is added"
+    }
+  ],
+  "state_variables": [],
+  "outputs_for_plots": [
+    {
+      "name": "mdot",
+      "unit": "kg/s",
+      "meaning": "Mass flow"
+    },
+    {
+      "name": "dp",
+      "unit": "Pa",
+      "meaning": "Injection pressure drop"
+    },
+    {
+      "name": "dp_over_pc",
+      "unit": "1",
+      "meaning": "Stiffness"
+    },
+    {
+      "name": "v_inj",
+      "unit": "m/s",
+      "meaning": "Injection velocity"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "injection flow",
+      "form": "\\dot m = C_d A\\sqrt{2\\rho\\,(p_{man}-p_c)}",
+      "source_id": "HH-SP125",
+      "location": "eq. (4-40) p.128 (SI form)"
+    },
+    {
+      "name": "injection velocity",
+      "form": "v_{inj} = \\dot m/(\\rho C_d A)",
+      "source_id": "PROPSIM-DEF",
+      "location": "continuity"
+    }
+  ],
+  "valid_range": "Liquid injection; for gas-side injection (preburner gas, GH2) use compressible orifice flow.",
+  "known_limitations": [
+    "No atomization or mixing-efficiency model (c* efficiency is a chamber parameter).",
+    "Per-type Cd correlations pending (gaps.md)."
+  ],
+  "implementation": "propsim/core/feed/network.py"
+}

@@ -1,0 +1,160 @@
+{
+  "type": "regen_jacket",
+  "category": "heat_transfer",
+  "description": "Regeneratively cooled wall: gas-side Bartz, coolant-side Nusselt correlation, 1-D marching along the wall.",
+  "ports": [
+    {
+      "name": "coolant_in",
+      "kind": "fluid",
+      "direction": "in",
+      "medium": "any"
+    },
+    {
+      "name": "coolant_out",
+      "kind": "fluid",
+      "direction": "out",
+      "medium": "any"
+    },
+    {
+      "name": "wall",
+      "kind": "thermal",
+      "direction": "in",
+      "medium": "heat"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "n_channels",
+      "unit": "1",
+      "default": {
+        "value": null,
+        "unit": "1",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": 1,
+      "max": 2000,
+      "user_input": true,
+      "meaning": "Number of tubes or channels"
+    },
+    {
+      "name": "channel_width",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Channel width"
+    },
+    {
+      "name": "channel_height",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Channel height"
+    },
+    {
+      "name": "wall_thickness",
+      "unit": "m",
+      "default": {
+        "value": null,
+        "unit": "m",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "user_input": true,
+      "meaning": "Hot-wall thickness"
+    },
+    {
+      "name": "k_wall",
+      "unit": "W/(m K)",
+      "default": {
+        "value": null,
+        "unit": "W/(m K)",
+        "quality": null,
+        "source_id": null,
+        "location": null
+      },
+      "min": null,
+      "max": null,
+      "meaning": "Wall conductivity (materials block)"
+    }
+  ],
+  "state_variables": [
+    {
+      "name": "T_cool",
+      "unit": "K",
+      "meaning": "Coolant temperature along the jacket"
+    },
+    {
+      "name": "p_cool",
+      "unit": "Pa",
+      "meaning": "Coolant pressure along the jacket"
+    }
+  ],
+  "outputs_for_plots": [
+    {
+      "name": "q_wall",
+      "unit": "W/m2",
+      "meaning": "Heat flux"
+    },
+    {
+      "name": "T_wall_gas",
+      "unit": "K",
+      "meaning": "Gas-side wall temperature"
+    },
+    {
+      "name": "T_wall_cool",
+      "unit": "K",
+      "meaning": "Coolant-side wall temperature"
+    },
+    {
+      "name": "T_cool",
+      "unit": "K",
+      "meaning": "Coolant temperature"
+    },
+    {
+      "name": "p_cool",
+      "unit": "Pa",
+      "meaning": "Coolant pressure"
+    }
+  ],
+  "governing_equations": [
+    {
+      "name": "gas-side coefficient (Bartz)",
+      "form": "h_g=\\left[\\frac{0.026}{D_t^{0.2}}\\left(\\frac{\\mu^{0.2}c_p}{Pr^{0.6}}\\right)\\left(\\frac{p_c}{c^*}\\right)^{0.8}\\left(\\frac{D_t}{R}\\right)^{0.1}\\right]\\left(\\frac{A_t}{A}\\right)^{0.9}\\sigma",
+      "source_id": "HH-SP125",
+      "location": "eq. (4-13) p.100 (SI form, g removed)"
+    },
+    {
+      "name": "coolant-side coefficient",
+      "form": "Nu = C\\,Re^{0.8}Pr^{0.34}",
+      "source_id": "HH-SP125",
+      "location": "eq. (4-12) p.100"
+    }
+  ],
+  "valid_range": "Single-phase coolant away from the critical point.",
+  "known_limitations": [
+    "No supercritical/near-critical correction yet (block B follow-up).",
+    "Film and transpiration cooling not included."
+  ],
+  "implementation": "propsim/modules/liquid_models.py"
+}

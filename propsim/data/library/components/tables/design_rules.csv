@@ -1,0 +1,11 @@
+rule,value,unit,quality,source_id,location,formula
+injector_discharge_coefficient_min,0.5,1,published,HH-SP125,"p.128, text with eq. (4-40)",
+injector_discharge_coefficient_max,0.92,1,published,HH-SP125,"p.128, text with eq. (4-40)",
+injector_dp_over_pc_min,0.15,1,published,HH-SP125,"p.128, rule of thumb with eq. (4-40)",15 percent
+injector_dp_over_pc_max,0.2,1,published,HH-SP125,"p.128, rule of thumb with eq. (4-40)",20 percent
+chamber_stay_time_min,0.002,s,published,HH-SP125,"p.87, text with Table 4-1",
+chamber_stay_time_max,0.04,s,published,HH-SP125,"p.87, text with Table 4-1",
+chamber_Lstar_min,0.381,m,published,HH-SP125,"p.87, text with Table 4-1",15 in x 0.0254
+chamber_Lstar_max,3.048,m,published,HH-SP125,"p.87, text with Table 4-1",120 in x 0.0254
+pump_overall_efficiency_min,0.6,1,published,HH-SP125,"p.195, text with Fig. 6-23",60 percent; high head and speed rocket pumps
+pump_overall_efficiency_max,0.85,1,published,HH-SP125,"p.195, text with Fig. 6-23",85 percent

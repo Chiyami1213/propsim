@@ -1,0 +1,26 @@
+propellants,T_inlet,cp,gamma,R,MR,quality,source_id,location,formula
+LOX/RP1,866.483,2658.62,1.097,232.968,0.303,published,HH-SP125,Table 6-4 p.197,T 1100 degF to K; cp 0.635 Btu/(lb degF) x 4186.8; R 43.3 ft/degR x 5.38032
+LOX/RP1,894.261,2675.37,1.1,242.652,0.32,published,HH-SP125,Table 6-4 p.197,T 1150 degF to K; cp 0.639 Btu/(lb degF) x 4186.8; R 45.1 ft/degR x 5.38032
+LOX/RP1,922.039,2692.11,1.106,253.413,0.337,published,HH-SP125,Table 6-4 p.197,T 1200 degF to K; cp 0.643 Btu/(lb degF) x 4186.8; R 47.1 ft/degR x 5.38032
+LOX/RP1,949.817,2704.67,1.111,315.287,0.354,published,HH-SP125,Table 6-4 p.197,T 1250 degF to K; cp 0.646 Btu/(lb degF) x 4186.8; R 58.6 ft/degR x 5.38032
+LOX/RP1,977.594,2713.05,1.115,271.168,0.372,published,HH-SP125,Table 6-4 p.197,T 1300 degF to K; cp 0.648 Btu/(lb degF) x 4186.8; R 50.4 ft/degR x 5.38032
+LOX/RP1,1005.37,2725.61,1.119,278.701,0.39,published,HH-SP125,Table 6-4 p.197,T 1350 degF to K; cp 0.651 Btu/(lb degF) x 4186.8; R 51.8 ft/degR x 5.38032
+LOX/RP1,1033.15,2733.98,1.124,288.385,0.408,published,HH-SP125,Table 6-4 p.197,T 1400 degF to K; cp 0.653 Btu/(lb degF) x 4186.8; R 53.6 ft/degR x 5.38032
+LOX/RP1,1060.93,2742.35,1.128,298.07,0.425,published,HH-SP125,Table 6-4 p.197,T 1450 degF to K; cp 0.655 Btu/(lb degF) x 4186.8; R 55.4 ft/degR x 5.38032
+LOX/RP1,1088.71,2750.73,1.132,312.059,0.443,published,HH-SP125,Table 6-4 p.197,T 1500 degF to K; cp 0.657 Btu/(lb degF) x 4186.8; R 58.0 ft/degR x 5.38032
+LOX/RP1,1116.48,2759.1,1.137,317.439,0.46,published,HH-SP125,Table 6-4 p.197,T 1550 degF to K; cp 0.659 Btu/(lb degF) x 4186.8; R 59.0 ft/degR x 5.38032
+LOX/RP1,1144.26,2763.29,1.14,326.585,0.478,published,HH-SP125,Table 6-4 p.197,T 1600 degF to K; cp 0.66 Btu/(lb degF) x 4186.8; R 60.7 ft/degR x 5.38032
+LOX/RP1,1172.04,2767.47,1.144,335.732,0.497,published,HH-SP125,Table 6-4 p.197,T 1650 degF to K; cp 0.661 Btu/(lb degF) x 4186.8; R 62.4 ft/degR x 5.38032
+LOX/RP1,1199.82,2771.66,1.148,344.341,0.516,published,HH-SP125,Table 6-4 p.197,T 1700 degF to K; cp 0.662 Btu/(lb degF) x 4186.8; R 64.0 ft/degR x 5.38032
+N2O4/UDMH,1033.15,1590.98,1.42,470.778,0.11,published,HH-SP125,Table 6-4 p.197,T 1400 degF to K; cp 0.38 Btu/(lb degF) x 4186.8; R 87.5 ft/degR x 5.38032
+N2O4/UDMH,1088.71,1666.35,1.42,492.837,0.165,published,HH-SP125,Table 6-4 p.197,T 1500 degF to K; cp 0.398 Btu/(lb degF) x 4186.8; R 91.6 ft/degR x 5.38032
+N2O4/UDMH,1144.26,1741.71,1.42,514.897,0.22,published,HH-SP125,Table 6-4 p.197,T 1600 degF to K; cp 0.416 Btu/(lb degF) x 4186.8; R 95.7 ft/degR x 5.38032
+N2O4/UDMH,1199.82,1817.07,1.42,537.494,0.274,published,HH-SP125,Table 6-4 p.197,T 1700 degF to K; cp 0.434 Btu/(lb degF) x 4186.8; R 99.9 ft/degR x 5.38032
+N2O4/UDMH,1255.37,1892.43,1.42,559.553,0.328,published,HH-SP125,Table 6-4 p.197,T 1800 degF to K; cp 0.452 Btu/(lb degF) x 4186.8; R 104.0 ft/degR x 5.38032
+N2O4/UDMH,1310.93,1967.8,1.42,582.151,0.382,published,HH-SP125,Table 6-4 p.197,T 1900 degF to K; cp 0.47 Btu/(lb degF) x 4186.8; R 108.2 ft/degR x 5.38032
+LOX/LH2,810.928,8582.94,1.374,2335.06,0.785,published,HH-SP125,Table 6-4 p.197,T 1000 degF to K; cp 2.05 Btu/(lb degF) x 4186.8; R 434 ft/degR x 5.38032
+LOX/LH2,922.039,8122.39,1.364,2168.27,0.903,published,HH-SP125,Table 6-4 p.197,T 1200 degF to K; cp 1.94 Btu/(lb degF) x 4186.8; R 403 ft/degR x 5.38032
+LOX/LH2,1033.15,7787.45,1.354,2033.76,1.025,published,HH-SP125,Table 6-4 p.197,T 1400 degF to K; cp 1.86 Btu/(lb degF) x 4186.8; R 378 ft/degR x 5.38032
+LOX/LH2,1144.26,7536.24,1.343,1926.15,1.143,published,HH-SP125,Table 6-4 p.197,T 1600 degF to K; cp 1.8 Btu/(lb degF) x 4186.8; R 358 ft/degR x 5.38032
+LOX/LH2,1255.37,7243.16,1.333,1807.79,1.273,published,HH-SP125,Table 6-4 p.197,T 1800 degF to K; cp 1.73 Btu/(lb degF) x 4186.8; R 336 ft/degR x 5.38032
+LOX/LH2,1366.48,7075.69,1.322,1721.7,1.41,published,HH-SP125,Table 6-4 p.197,T 2000 degF to K; cp 1.69 Btu/(lb degF) x 4186.8; R 320 ft/degR x 5.38032

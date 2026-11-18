@@ -1,0 +1,23 @@
+fluid_id,name,formula,role,model,coolprop_name,rocketprops_name,table_file,sat_file,table_source_id,table_location
+LOX,Oxygen (LOX and GOX),O2,oxidizer;pressurant,coolprop,Oxygen,LOX,tables/LOX.csv,sat/LOX.csv,COOLPROP-8.0.0,"Oxygen: EOS Schmidt-FPE-1985,Stewart-JPCRD-1991; mu Lemmon-IJT-2004; k Lemmon-IJT-2004"
+LN2,Nitrogen (LN2 and GN2),N2,pressurant;test_fluid,coolprop,Nitrogen,,tables/LN2.csv,sat/LN2.csv,COOLPROP-8.0.0,Nitrogen: EOS Span-JPCRD-2000; mu Lemmon-IJT-2004; k Lemmon-IJT-2004
+LH2,Parahydrogen (LH2 and GH2),H2,fuel;coolant;pressurant,coolprop,ParaHydrogen,PH2,tables/LH2.csv,sat/LH2.csv,COOLPROP-8.0.0,ParaHydrogen: EOS Leachman-JPCRD-2009; mu Muzny-JCED-2013; k Assael-JPCRD-2011-Hydrogen
+LCH4,Methane (LCH4),CH4,fuel;coolant,coolprop,Methane,Methane,tables/LCH4.csv,sat/LCH4.csv,COOLPROP-8.0.0,Methane: EOS Setzmann-JPCRD-1991; mu QuinonesCisneros-JPCB-2006; k Friend-JPCRD-1989
+RP1,RP-1 kerosene,CH1.95,fuel;coolant,rocketprops,,RP1,,,,
+RP1_SURR,n-Dodecane (single-component RP-1 surrogate),C12H26,fuel;coolant,coolprop,n-Dodecane,,tables/RP1_SURR.csv,sat/RP1_SURR.csv,COOLPROP-8.0.0,n-Dodecane: EOS Lemmon-EF-2004; mu Huber-EF-2004; k Huber-EF-2004
+ETOH,Ethanol,C2H5OH,fuel;coolant,coolprop,Ethanol,Ethanol,tables/ETOH.csv,sat/ETOH.csv,COOLPROP-8.0.0,Ethanol: EOS Schroeder-JPCRD-2014; mu Kiselev-IECR-2005; k Assael-JPCRD-2013-Ethanol
+ETOH95,Ethanol 95 wt% / water 5 wt%,C2H5OH+H2O,fuel;coolant,coolprop,HEOS::Ethanol[0.881377]&Water[0.118623],,tables/ETOH95.csv,,COOLPROP-8.0.0,Ethanol: EOS Schroeder-JPCRD-2014; mu Kiselev-IECR-2005; k Assael-JPCRD-2013-Ethanol | Water: EOS Wagner-JPCRD-2002; mu Huber-JPCRD-2009; k Huber-JPCRD-2012 | binary Ethanol-Water from REFPROP 9.1 via CoolProp; mixture transport by CoolProp estimation
+ETOH75,Ethanol 75 wt% / water 25 wt%,C2H5OH+H2O,fuel;coolant,coolprop,HEOS::Ethanol[0.539841]&Water[0.460159],,tables/ETOH75.csv,,COOLPROP-8.0.0,Ethanol: EOS Schroeder-JPCRD-2014; mu Kiselev-IECR-2005; k Assael-JPCRD-2013-Ethanol | Water: EOS Wagner-JPCRD-2002; mu Huber-JPCRD-2009; k Huber-JPCRD-2012 | binary Ethanol-Water from REFPROP 9.1 via CoolProp; mixture transport by CoolProp estimation
+IPA,Isopropanol,C3H8O,fuel;coolant,none,,,,,,
+N2O4,Nitrogen tetroxide,N2O4,oxidizer,rocketprops,,N2O4,,,,
+MMH,Monomethylhydrazine,CH6N2,fuel;coolant,rocketprops,,MMH,,,,
+UDMH,Unsymmetrical dimethylhydrazine,C2H8N2,fuel;coolant,rocketprops,,UDMH,,,,
+N2H4,Hydrazine,N2H4,fuel;monopropellant;coolant,rocketprops,,N2H4,,,,
+H2O2_70,Hydrogen peroxide 70 wt%,H2O2+H2O,oxidizer;monopropellant,rocketprops,,Peroxide_70,,,,
+H2O2_90,Hydrogen peroxide 90 wt%,H2O2+H2O,oxidizer;monopropellant,rocketprops,,Peroxide_90,,,,
+H2O2_95,Hydrogen peroxide 95 wt%,H2O2+H2O,oxidizer;monopropellant,rocketprops,,Peroxide_95,,,,
+H2O2_98,Hydrogen peroxide 98 wt%,H2O2+H2O,oxidizer;monopropellant,rocketprops,,Peroxide_98,,,,
+N2O,Nitrous oxide,N2O,oxidizer;self_pressurant,coolprop,NitrousOxide,N2O,tables/N2O.csv,sat/N2O.csv,COOLPROP-8.0.0,NitrousOxide: EOS Lemmon-JCED-2006; mu none; k none
+H2O,Water,H2O,coolant;test_fluid,coolprop,Water,Water,tables/H2O.csv,sat/H2O.csv,COOLPROP-8.0.0,Water: EOS Wagner-JPCRD-2002; mu Huber-JPCRD-2009; k Huber-JPCRD-2012
+GHE,Helium,He,pressurant;purge,coolprop,Helium,,tables/GHE.csv,,COOLPROP-8.0.0,Helium: EOS OrtizVega-JPCRD-2019; mu Arp-NIST-1998; k Hands-CRYO-1981
+H2O2_100,Hydrogen peroxide (pure; reference for the blends),H2O2,reference,none,,,,,,

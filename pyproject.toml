@@ -25,8 +25,9 @@ dependencies = [
 [project.optional-dependencies]
 rao = ["pygasflow>=1.4"]               # Rao bell angles from the Huzel & Huang chart (GPL-3.0, not bundled)
 cea = ["rocketcea>=1.2"]              # direct NASA-CEA (GPL-3.0, not bundled); without it the shipped CEA tables are used
+props = ["rocketprops>=0.1.10"]       # storable-propellant properties (GPL-3.0, not bundled); see propsim/data/library
 fast = ["numba>=0.68"]                 # compiled level-set kernel; without it a NumPy fallback is used
-dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black", "rocketcea>=1.2"]
+dev = ["pytest>=8", "pytest-qt>=4.4", "ruff", "black", "rocketcea>=1.2", "jsonschema>=4.20"]
 
 [project.scripts]
 propsim = "propsim.app:main"
@@ -35,7 +36,10 @@ propsim = "propsim.app:main"
 include = ["propsim*"]
 
 [tool.setuptools.package-data]
-propsim = ["assets/*", "core/thermo/data/*.npz"]
+propsim = ["assets/*", "core/thermo/data/*.npz", "data/library/*.csv", "data/library/*.md", "data/library/schemas/*.json",
+           "data/library/fluids/*.csv", "data/library/fluids/tables/*.csv", "data/library/fluids/sat/*.csv",
+           "data/library/components/*.json", "data/library/components/tables/*.csv",
+           "data/library/engines/*.csv", "data/library/cycles/*.csv", "data/library/cycles/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
