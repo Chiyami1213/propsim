@@ -40,6 +40,23 @@ columns `t,F,mdot` (SI units) into the `profiles` folder of the data folder.
 Set *Drag* to *Table* and put a file `drag.csv` with the columns `mach,cd` (Mach strictly increasing) in the `profiles`
 folder. *File, Open Data Folder* opens it.
 
+### Solid grain design and internal ballistics
+*Solid, Grain Designer* (Live) shows the burning area, K_n and equilibrium pressure through the burn of one section
+kind: BATES (circular bore), star, wagon wheel, finocyl, centre plus 4 or 6 bores, moon burner (bore offset by $e$),
+C-slot, D-grain (flat at $e$ from the axis), X-core, end burner (no port) or a custom shape list. *Segments* repeats
+the grain $N_{seg}$ times and *Ends* says which end faces burn, so a classic BATES motor is a circular bore with *Both
+ends burn*; an end burner always burns its aft face. The caption gives the web, loading, propellant mass, K_n
+progressivity, burn time and the port-to-throat area ratio.
+
+*Solid, Internal Ballistics* (Run) integrates the chamber with the same grain. The *burn-rate law* is either $a$ and
+$n$, your own *pressure bands* (a table of $p_{lo}$, $p_{hi}$, $a'$, $n$; the dialog can load a library law), or
+Nakka's 1999 KNSB or KNDX bands from the component library. The *Nozzle* group adds the c* efficiency, the conical
+divergence loss $\lambda=(1+\cos\alpha)/2$, other $C_F$ losses, the ambient pressure (0 for vacuum) and, for KN and
+aluminized propellants, a separate two-phase $\gamma$ for the expansion. *Throat erosion* grows the throat at
+$\dot D_t=\dot e_{ref}(p_c/p_{ref})^k$. The *Nozzle & Isp* tab plots Isp, $C_F$, the throat and the aft
+port-to-throat ratio; the log lists the design checks (port-to-throat ratio, peak core mass flux, volumetric loading,
+L/D) and the motor class. *File, Export Thrust Curve (.eng)* writes the thrust curve for flight simulators.
+
 ### Quasi-steady solid motor, sweeps and US units
 *Solid, CP Motor (Quasi-Steady)* (SI) and *Solid, CP Motor (US Units)* (in, psi, lbf, lbm) march a hollow-cylinder
 grain through its web with the equilibrium chamber pressure at every step. Choose *Both end faces burn* to include the

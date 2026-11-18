@@ -43,25 +43,45 @@ class SolidGrainLiveModel(ModelController):
         b = p.section()
         prop = p.prop(alpha=0.0)
         At = np.pi * (p.D_t * 1e-3) ** 2 / 4.0
-        Kn = b.perim * 1e-3 * p.L_g / At
-        pc = np.array([sol.p_equilibrium(prop, k) if k > 0 else 0.0 for k in Kn]) / 1e6
+        tab = p.section_table()
+        nseg, k = int(round(p.n_seg)), p.faces
+        web = sol.segment_web(tab, p.L_g, k)                       # m: radial web, or the axial one if the ends win
+        d = np.linspace(0.0, web, 61)
+        Ab = sol.segment_burn_area(tab, p.L_g, d, nseg, k)
+        Ab[-1] = 0.0
+        Kn = Ab / At
+        pc = np.array([sol.p_equilibrium(prop, kn) if kn > 0 else 0.0 for kn in Kn]) / 1e6
         rate = prop.rate(pc * 1e6) * 1e3
-        d_now = p.burn / 100.0 * b.web
-        pct = 100.0 * b.d / b.web
-        tb = float(np.trapezoid(1.0 / np.maximum(rate[:-1], 1e-9), b.d[:-1]) * 1e-3 * 1e3) if len(b.d) > 2 else 0.0
-        i = lambda y: float(np.interp(d_now, b.d, y))
-        return dict(b=b, pct=pct, Kn=Kn, pc=pc, rate=rate, d_now=d_now, Pi=i(b.perim), Ap=i(b.area), rem=i(b.remain),
-                    Kn_now=i(Kn), pc_now=i(pc), load=1.0 - b.area[0] / b.A_case, prog=float(b.perim.max() / b.perim[0]),
-                    t_burn=tb, note=sol.stability_note(p.n))
+        rate[Kn <= 0] = 0.0
+        perim = tab.perim(d) * 1e3
+        area = tab.area(d) * 1e6
+        Lr = np.maximum(p.L_g - k * d, 0.0)
+        V0 = nseg * (tab.A_case - float(tab.A_p[0])) * p.L_g
+        remain = nseg * np.maximum(tab.A_case - tab.area(d), 0.0) * Lr / max(V0, 1e-30)
+        remain[-1] = 0.0
+        dmm = d * 1e3
+        d_now = p.burn / 100.0 * dmm[-1]
+        pct = 100.0 * d / web
+        ok = rate[:-1] > 0
+        tb = float(np.trapezoid(1.0 / np.maximum(rate[:-1][ok], 1e-9), dmm[:-1][ok])) if ok.sum() > 1 else 0.0
+        i = lambda y: float(np.interp(d_now, dmm, y))
+        Kn0 = max(float(Kn[0]), 1e-12)
+        A_free = float(tab.A_p[0]) * 1e6
+        return dict(b=b, d=dmm, pct=pct, Kn=Kn, pc=pc, rate=rate, d_now=d_now, Pi=i(perim), perim=perim, area=area,
+                    remain=remain, Ap=i(area), rem=i(remain), Kn_now=i(Kn), pc_now=i(pc), Ab=Ab,
+                    load=1.0 - A_free / (tab.A_case * 1e6), prog=float(Kn.max() / Kn0), t_burn=tb, web=dmm[-1],
+                    m_prop=prop.rho_p * V0, J0=(A_free * 1e-6 / At) if A_free > 0 else float("nan"),
+                    note=sol.stability_note(prop.n_max))
 
     def tabs(self, p, r, compare=None) -> list[TabSpec]:
-        b, x = r["b"], r["pct"]
+        x = r["pct"]
         mk = lambda y, c="hot": [(p.burn, float(np.interp(p.burn, x, y)), c)]
-        sect = [PlotSpec("Burning perimeter", WEB, r"$\Pi$ (mm)", [Curve(x, b.perim, "fuel")], markers=mk(b.perim)),
-                PlotSpec("Port area", WEB, r"$A_p$ (cm²)", [Curve(x, b.area / 100.0, "oxidizer")],
-                         markers=mk(b.area / 100.0)),
-                PlotSpec("Propellant remaining", WEB, r"$\frac{m_p}{m_{p,0}}$ (–)", [Curve(x, b.remain, "thrust")],
-                         markers=mk(b.remain))]
+        sect = [PlotSpec("Burning area", WEB, r"$A_b$ (cm²)", [Curve(x, r["Ab"] * 1e4, "fuel")],
+                         markers=mk(r["Ab"] * 1e4)),
+                PlotSpec("Port area", WEB, r"$A_p$ (cm²)", [Curve(x, r["area"] / 100.0, "oxidizer")],
+                         markers=mk(r["area"] / 100.0)),
+                PlotSpec("Propellant remaining", WEB, r"$\frac{m_p}{m_{p,0}}$ (–)", [Curve(x, r["remain"], "thrust")],
+                         markers=mk(r["remain"]))]
         bal = [PlotSpec("Burning-area ratio", WEB, r"$K_n=\frac{A_b}{A_t}$ (–)", [Curve(x, r["Kn"], "hot")],
                         markers=mk(r["Kn"])),
                PlotSpec("Equilibrium pressure", WEB, r"$P_c$ (MPa)", [Curve(x, r["pc"], "pressure")],
@@ -71,17 +91,19 @@ class SolidGrainLiveModel(ModelController):
         return [TabSpec("Section", sect), TabSpec("Ballistics", bal)]
 
     def readout(self, p, r, frame) -> list[str]:
-        return [rf"$\frac{{w}}{{w_{{max}}}}$ = {p.burn:.0f} (%)", rf"$\Pi$ = {r['Pi']:.0f} (mm)",
+        return [rf"$\frac{{w}}{{w_{{max}}}}$ = {p.burn:.0f} (%)", rf"$A_b$ = {np.interp(r['d_now'], r['d'], r['Ab']) * 1e4:.0f} (cm²)",
                 rf"$K_n$ = {r['Kn_now']:.0f}", rf"$P_c$ = {r['pc_now']:.2f} (MPa)"]
 
     def caption(self, p, r, frame) -> str:
-        return (rf"web {r['b'].web:.1f} (mm) · loading {100 * r['load']:.0f} % · progressivity "
-                rf"$\frac{{\Pi_{{max}}}}{{\Pi_0}}$ = {r['prog']:.2f} · burn time ≈ {r['t_burn']:.2f} (s) · {r['note']}")
+        j = "" if not np.isfinite(r["J0"]) else rf" · $\frac{{A_p}}{{A_t}}$ = {r['J0']:.2f}"
+        return (rf"web {r['web']:.1f} (mm) · loading {100 * r['load']:.0f} % · {r['m_prop']:.2f} (kg) · "
+                rf"$\frac{{K_{{n,max}}}}{{K_{{n,0}}}}$ = {r['prog']:.2f} · burn time ≈ {r['t_burn']:.2f} (s){j} · "
+                rf"{r['note']}")
 
     def export_data(self, p, r) -> dict[str, np.ndarray]:
-        b = r["b"]
-        return {"burn_distance_mm": b.d, "port_area_mm2": b.area, "perimeter_mm": b.perim, "remaining": b.remain,
-                "Kn": r["Kn"], "Pc_eq_MPa": r["pc"], "rate_mmps": r["rate"]}
+        return {"burn_distance_mm": r["d"], "port_area_mm2": r["area"], "perimeter_mm": r["perim"],
+                "burning_area_mm2": r["Ab"] * 1e6, "remaining": r["remain"], "Kn": r["Kn"], "Pc_eq_MPa": r["pc"],
+                "rate_mmps": r["rate"]}
 
     legend_labels = {"grain": "Propellant (burn distance)", "case": "Motor case"}
 
@@ -92,7 +114,7 @@ class SolidGrainLiveModel(ModelController):
 
     def update_scene(self, vp, p, r, frame) -> None:
         b = r["b"]
-        draw_section_slab(vp, np.maximum(b.sdf, 0.0), b.inside, b.h, b.web, r["d_now"], p.R_out, L=p.L_g)
+        draw_section_slab(vp, np.maximum(b.sdf, 0.0), b.inside, b.h, b.web, min(r["d_now"], b.web), p.R_out, L=p.L_g)
 
 
 # ====================================================================================== burn rate & equilibrium (Live)
@@ -239,8 +261,8 @@ class SolidBallisticsModel(HybridBurnModel):
 
     def summary_line(self, p, r) -> str:
         s = r.meta
-        return (rf"$I_t$ = {s['I_t_Ns'] / 1e3:.2f} (kN·s),  $\bar{{I}}_{{sp}}$ = {s['Isp_avg']:.0f} (s),  "
-                rf"$P_{{c,max}}$ = {s['Pc_max_MPa']:.2f} (MPa)")
+        return (rf"$I_t$ = {s['I_t_Ns'] / 1e3:.2f} (kN·s) ({s['impulse_class']}),  $\bar{{I}}_{{sp}}$ = "
+                rf"{s['Isp_avg']:.0f} (s),  $P_{{c,max}}$ = {s['Pc_max_MPa']:.2f} (MPa)")
 
     # ---------------------------------------------------------------- plots
     def tabs(self, p, r, compare=None) -> list[TabSpec]:
@@ -248,8 +270,8 @@ class SolidBallisticsModel(HybridBurnModel):
             e = lambda title, yl: PlotSpec(title, TT, yl, [], cursor=True)
             return [TabSpec("Time histories", [e("Chamber pressure", r"$P_c$ (MPa)"), e("Thrust", r"$F$ (kN)"),
                                                e("Burning-area ratio", r"$K_n$ (–)")]),
-                    TabSpec("Burn rate", []), TabSpec("Port evolution", []), TabSpec("Ignition & tail-off", []),
-                    TabSpec("Compare", [])]
+                    TabSpec("Burn rate", []), TabSpec("Nozzle & Isp", []), TabSpec("Port evolution", []),
+                    TabSpec("Ignition & tail-off", []), TabSpec("Compare", [])]
         c, t = r.channels, r.t
         n = len(r.meta["x_cells"])
         cur = lambda y, col, label="", style="solid": Curve(t, y, col, label, style)
@@ -266,6 +288,11 @@ class SolidBallisticsModel(HybridBurnModel):
                 PlotSpec("Mass flow", TT, r"$\dot m$ (kg·s⁻¹)",
                          [cur(c["mdot"], "thrust", "nozzle"), cur(c["mdot_gen"], "fuel", "generated", "dash")],
                          cursor=True)]
+        noz = [PlotSpec("Specific impulse", TT, r"$I_{sp}$ (s)", [cur(c["Isp"], "thrust")], cursor=True),
+               PlotSpec("Thrust coefficient", TT, r"$C_F$ (–)", [cur(c["CF"], "oxidizer")], cursor=True),
+               PlotSpec("Throat and port", TT, r"$D_t$ (mm), $\frac{A_{p,aft}}{A_t}$ (–)",
+                        [cur(c["Dt"], "hot", "throat diameter"), cur(c["J_aft"], "fuel", "aft port / throat", "dash")],
+                        cursor=True)]
         x = np.array(r.meta["x_cells"]) * 1e3
         idx = [int(round(f * (r.n - 1))) for f in (0.0, 0.2, 0.4, 0.6, 0.8)]
         prof = lambda pre, fmin=None: [Curve(x, np.array([c[f"{pre}_{k:02d}"][i] for k in range(n)]), col, f"t = {t[i]:.1f} s")
@@ -287,13 +314,21 @@ class SolidBallisticsModel(HybridBurnModel):
             return PlotSpec(title, TT, yl, cs, cursor=False)
         cmp_ = [overlay("Pc", "Chamber pressure", r"$P_c$ (MPa)"), overlay("F", "Thrust", r"$F$ (kN)"),
                 overlay("Kn", "Burning-area ratio", r"$K_n$ (–)")]
-        return [TabSpec("Time histories", hist), TabSpec("Burn rate", rate), TabSpec("Port evolution", port),
+        return [TabSpec("Time histories", hist), TabSpec("Burn rate", rate), TabSpec("Nozzle & Isp", noz),
+                TabSpec("Port evolution", port),
                 TabSpec("Ignition & tail-off", ign), TabSpec("Compare", cmp_)]
+
+    def export_eng(self, p, r) -> str:
+        """The predicted thrust curve as a RASP ``.eng`` file (motor diameter = grain diameter)."""
+        L = p.L_g * max(int(round(p.n_seg)), 1) if not p.stack_json.strip() else float(r.meta.get("L_total", p.L_g))
+        return sol.eng_text(r.t, r.channels["F"] * 1e3, "PropSim-" + str(r.meta["impulse_class"]).split()[0],
+                            2.0 * p.R_out, L * 1e3, r.meta["m_prop"])
 
     def export_data(self, p, r) -> dict[str, np.ndarray]:
         names = {"Pc": "Pc_MPa", "F": "F_kN", "Kn": "Kn", "mdot": "mdot_kgps", "mdot_gen": "mdot_gen_kgps",
                  "rdot": "rdot_mean_mmps", "rdot_head": "rdot_head_mmps", "rdot_aft": "rdot_aft_mmps",
-                 "erosive_aft": "erosive_ratio_aft", "lit_frac": "lit_fraction", "Ab": "Ab_m2", "Vc": "Vc_m3"}
+                 "erosive_aft": "erosive_ratio_aft", "lit_frac": "lit_fraction", "Ab": "Ab_m2", "Vc": "Vc_m3",
+                 "Isp": "Isp_s", "CF": "CF", "Dt": "Dt_mm", "G_max": "G_max_kgpm2s", "F_vac": "F_vac_kN"}
         return {"t_s": r.t, **{v: r.channels[k] for k, v in names.items()}}
 
 

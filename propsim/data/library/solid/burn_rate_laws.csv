@@ -1,0 +1,12 @@
+propellant_id,band,p_lo,p_hi,a,n,a_source,r_unit_source,p_unit_source,quality,source_id,location,note,formula
+KNDX,1,103000,779000,1.71559e-06,0.619,8.88,mm/s,MPa,published,NAKKA-1999,Table 4,"KN/dextrose 65/35, strand burner, oxidizer about 60-125 um","a_SI = 8.88 x 0.001 / (1e6)^0.619 (r in m/s, p in Pa)"
+KNDX,2,779000,2570000,0.00854962,-0.009,7.55,mm/s,MPa,published,NAKKA-1999,Table 4,plateau band,a_SI = 7.55 x 0.001 / (1e6)^-0.009
+KNDX,3,2570000,5930000,2.85977e-07,0.688,3.84,mm/s,MPa,published,NAKKA-1999,Table 4,,a_SI = 3.84 x 0.001 / (1e6)^0.688
+KNDX,4,5930000,8500000,0.132901,-0.148,17.2,mm/s,MPa,published,NAKKA-1999,Table 4,,a_SI = 17.2 x 0.001 / (1e6)^-0.148
+KNDX,5,8500000,11200000,1.06519e-05,0.442,4.78,mm/s,MPa,published,NAKKA-1999,Table 4,,a_SI = 4.78 x 0.001 / (1e6)^0.442
+KNSB,1,103000,807000,1.90454e-06,0.625,10.71,mm/s,MPa,published,NAKKA-1999,Table 5,"KN/sorbitol 65/35, strand burner, oxidizer about 60-125 um",a_SI = 10.71 x 0.001 / (1e6)^0.625
+KNSB,2,807000,1500000,0.670892,-0.314,8.763,mm/s,MPa,published,NAKKA-1999,Table 5,,a_SI = 8.763 x 0.001 / (1e6)^-0.314
+KNSB,3,1500000,3790000,0.00939681,-0.013,7.852,mm/s,MPa,published,NAKKA-1999,Table 5,plateau band,a_SI = 7.852 x 0.001 / (1e6)^-0.013
+KNSB,4,3790000,7030000,2.40904e-06,0.535,3.907,mm/s,MPa,published,NAKKA-1999,Table 5,,a_SI = 3.907 x 0.001 / (1e6)^0.535
+KNSB,5,7030000,10670000,0.00398715,0.064,9.653,mm/s,MPa,published,NAKKA-1999,Table 5,,a_SI = 9.653 x 0.001 / (1e6)^0.064
+RSRM_PBAN,1,,,4.45289e-05,0.35,0.368,in/s,psia,published,AIAA-2000-3803,RSRM CFD model description,"RSRM nominal burn rate 0.368 in/s at 625 psia and 60 degF, exponent 0.35; a_SI from the reference point",a_SI = 0.368 x 0.0254 / (625 x 6894.757)^0.35
