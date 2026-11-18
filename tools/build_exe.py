@@ -16,7 +16,8 @@ def main() -> int:
     import PyInstaller.__main__ as pyi
 
     data = [("cases", "cases"), ("propsim/assets", "propsim/assets"),
-            ("propsim/core/thermo/data", "propsim/core/thermo/data")]
+            ("propsim/core/thermo/data", "propsim/core/thermo/data"),
+            ("propsim/data/library", "propsim/data/library")]
     args = [str(ROOT / "run.py"), "--name", "PropSim", "--noconfirm", "--clean", "--windowed",
             "--icon", str(ROOT / "propsim" / "assets" / "icon.ico"),
             "--distpath", str(ROOT / "dist"), "--workpath", str(ROOT / "build" / "pyinstaller"),

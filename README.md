@@ -20,6 +20,10 @@ application, with live parameter studies, time-domain simulations, synchronized 
   - *Vehicle*: staging and atmosphere budget, and a 2-D point-mass ascent over a spherical Earth (U.S. Standard
     Atmosphere 1976, drag curves or your own table, wind, up to three stages, pitch kick and level-off guidance,
     perigee cutoff) that can fly thrust curves sent from the hybrid, solid and liquid models.
+- **Component library** (`propsim/data/library`): sourced fluid and propellant data, a catalog of 19 liquid-engine
+  component types, reference engines and cycles, every value with its source and quality (`published`, `derived`,
+  `estimated`), plus documented gaps and source conflicts. Read with `propsim.data`; checked by
+  `python tools/check_library.py`. The vehicle model uses it for stage engine presets.
 - **All math in LaTeX**: plot labels, tables, readouts and hover help; every plot has a grid.
 - **Color themes**: Graphite, Ocean, Forest, Plum and Light, chosen in *View > Color Theme* (Ctrl+Shift+T; Ctrl+T
   steps to the next one) and remembered between sessions. The picker shows each theme's palette and falls back to the

@@ -24,6 +24,24 @@ EVENT_PLOT = {"Stage": "oxidizer", "Apogee": "pressure", "Max-Q": "hot", "Mach":
               "Orbit": "thrust", "Impact": "hot", "Pitch": "dim"}
 
 
+def stage_preset_updates(p, prev: dict) -> dict:
+    """A stage's engine preset was just chosen: fill its thrust, Isp and exit area from the component library."""
+    from ..core.trajectory import engines as lib
+    out, notes = {}, []
+    for k in (1, 2, 3):
+        name = f"s{k}_engine"
+        now = getattr(p, name)
+        if now != prev.get(name) and now != lib.CUSTOM:
+            pr = lib.preset(now)
+            out.update({f"s{k}_F": round(pr["F_vac"] / 1e3, 1), f"s{k}_isp": round(pr["isp"], 1),
+                        f"s{k}_Ae": round(pr["A_e"] * 1e4, 0)})
+            notes.append(f"stage {k} set from {pr['label']} (component library): thrust {pr['F_vac'] / 1e3:.1f} (kN), "
+                         f"Isp {pr['isp']:.1f} (s), exit area {pr['A_e'] * 1e4:.0f} (cm²); {pr['note']}")
+    if notes:
+        out["_note"] = "\n".join(notes)
+    return out
+
+
 def _ev_key(name: str) -> str | None:
     return next((k for k in EVENT_PLOT if name.startswith(k)), None)
 
@@ -39,6 +57,8 @@ class VehicleLiveModel(ModelController):
 
     def __init__(self) -> None:
         self._m: dict = {}
+
+    preset_updates = staticmethod(lambda p, prev: stage_preset_updates(p, prev))
 
     def _build(self, p: AscentParams) -> fl.Vehicle:
         return p.vehicle(imported=False)
@@ -183,6 +203,8 @@ class AscentModel(ModelController):
 
     def reset_scene(self) -> None:
         self._m = {}
+
+    preset_updates = staticmethod(lambda p, prev: stage_preset_updates(p, prev))
 
     def prepare_params(self, p, home) -> None:
         """Load the thrust profiles sent from other modules (``<data folder>/profiles/stage<k>.json|csv``)."""

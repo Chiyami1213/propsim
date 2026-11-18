@@ -100,3 +100,28 @@ def test_missing_profile_is_reported(win):
         QApplication.processEvents()
     assert win.worker is None                                          # refused before any process starts
     assert "none was sent" in win.log.toPlainText()
+
+
+def test_engine_presets_fill_the_stage_from_the_library(win):
+    from propsim import data
+    win.select_model("vehicle.ascent")
+    row = win.form.rows["s1_engine"]
+    row.slider.setCurrentIndex(row.meta["choices"].index("RS25"))
+    for _ in range(4):
+        QApplication.processEvents()
+    v = win.form.values()
+    assert v.s1_F == pytest.approx(data.engine_value("RS25", "engine", "thrust", "vac") / 1e3, abs=0.06)
+    assert v.s1_isp == pytest.approx(452.3, abs=0.06)
+    Ae = (data.engine_value("RS25", "engine", "thrust", "vac") - data.engine_value("RS25", "engine", "thrust", "sl")) / 101325.0
+    assert v.s1_Ae == pytest.approx(Ae * 1e4, abs=10.0)                      # the slider steps in 10 cm²
+    log = win.log.toPlainText()
+    assert "component library" in log and "RS-25" in log and "derived from the sea-level and vacuum thrust" in log
+    row.slider.setCurrentIndex(row.meta["choices"].index("custom"))
+    QApplication.processEvents()
+    assert win.form.values().s1_F == v.s1_F                                    # choosing Custom leaves the values alone
+    win.form.rows["s2_engine"].slider.setCurrentIndex(win.form.rows["s2_engine"].meta["choices"].index("RL10C_1"))
+    for _ in range(4):
+        QApplication.processEvents()
+    v = win.form.values()
+    assert v.s2_isp == pytest.approx(449.7, abs=0.06)
+    assert "treated as vacuum" in win.log.toPlainText()

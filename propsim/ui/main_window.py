@@ -88,6 +88,7 @@ class MainWindow(QMainWindow):
         self.active_run: str | None = None
         self._stale_noted = False
         self._switching = False
+        self._prev_values: dict = {}
         self.playback = PlaybackModel(self)
         self._build_ui()
         self._build_menus()
@@ -323,6 +324,7 @@ class MainWindow(QMainWindow):
         self.playback.set_range(0, 1.0)
         base = ctrl.Params(**params) if params else None
         self.form = ParamForm(ctrl.Params, base)
+        self._prev_values = self.form.values().model_dump()
         self.form.changed.connect(self._on_params_changed)
         self.form.hovered.connect(self.hover.setLatex)
         self.scroll.setWidget(self.form)
@@ -364,6 +366,14 @@ class MainWindow(QMainWindow):
 
     # =================================================================== Live mode
     def _on_params_changed(self) -> None:
+        p = self.form.values()
+        upd = self.ctrl.preset_updates(p, self._prev_values) if self.ctrl is not None else {}
+        if upd:
+            note = upd.pop("_note", "")
+            self.form.set_values(upd)                                 # silent: written once, refreshed below
+            if note:
+                self._log(note)
+        self._prev_values = self.form.values().model_dump()
         if self.ctrl.mode == "live":
             self.refresh_live()
         elif not self._stale_noted and self.result is not None:

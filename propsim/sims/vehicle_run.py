@@ -10,12 +10,14 @@ from ..core.constants import G0
 from ..core.result import Result
 from ..core.schema import C, H, P, ParamModel
 from ..core.trajectory import flight as fl
+from ..core.trajectory import engines as lib_engines
 from ..core.trajectory import profiles
 from .base import Simulation
 
 SRC_CHOICES = ["constant", "profile"]
 SRC_LABELS = ["Constant thrust", "Imported thrust profile"]
 DRAG_LABELS = ["Slender rocket", "Launch vehicle", "Blunt body"]
+ENGINE_CHOICES, ENGINE_LABELS = lib_engines.choices()
 
 
 class AscentParams(ParamModel):
@@ -33,12 +35,15 @@ class AscentParams(ParamModel):
                       step=0.5, group="Stage 1")
     s1_prop: float = P(10000.0, symbol=r"m_{p,1}", desc="stage 1 propellant mass", units="kg", dims="M", lo=1.0,
                        hi=60000.0, step=1.0, group="Stage 1")
+    s1_engine: str = C("custom", choices=ENGINE_CHOICES, labels=ENGINE_LABELS, symbol=r"\mathrm{engine}",
+                        desc="fill this stage's thrust, specific impulse and exit area from a reference engine of the "
+                        "component library (you can edit them afterwards)", group="Stage 1")
     s1_F: float = P(260.0, symbol=r"F_{vac,1}", desc="stage 1 vacuum thrust", units="kN", dims="M L T⁻²", lo=0.1,
-                    hi=2000.0, step=0.1, group="Stage 1")
+                    hi=8000.0, step=0.1, group="Stage 1")
     s1_isp: float = P(300.0, symbol=r"I_{sp,1}", desc="stage 1 vacuum specific impulse (sets the mass flow)", units="s",
-                      dims="T", lo=150.0, hi=460.0, step=1.0, group="Stage 1")
+                      dims="T", lo=150.0, hi=480.0, step=0.1, group="Stage 1")
     s1_Ae: float = P(2000.0, symbol=r"A_{e,1}", desc="stage 1 nozzle exit area (back-pressure thrust loss)",
-                     units="cm²", dims="L²", lo=0.0, hi=20000.0, step=10.0, group="Stage 1")
+                     units="cm²", dims="L²", lo=0.0, hi=60000.0, step=10.0, group="Stage 1")
     s1_d: float = P(1.4, symbol=r"d_1", desc="stage 1 diameter (drag reference area)", units="m", dims="L", lo=0.05,
                     hi=6.0, step=0.01, group="Stage 1")
     s1_src: str = C("constant", choices=SRC_CHOICES, labels=SRC_LABELS, symbol=r"\mathrm{thrust\ source}",
@@ -51,12 +56,15 @@ class AscentParams(ParamModel):
                       step=0.5, group="Stage 2")
     s2_prop: float = P(3200.0, symbol=r"m_{p,2}", desc="stage 2 propellant mass", units="kg", dims="M", lo=1.0,
                        hi=60000.0, step=1.0, group="Stage 2")
+    s2_engine: str = C("custom", choices=ENGINE_CHOICES, labels=ENGINE_LABELS, symbol=r"\mathrm{engine}",
+                        desc="fill this stage's thrust, specific impulse and exit area from a reference engine of the "
+                        "component library (you can edit them afterwards)", group="Stage 2")
     s2_F: float = P(45.0, symbol=r"F_{vac,2}", desc="stage 2 vacuum thrust", units="kN", dims="M L T⁻²", lo=0.1,
-                    hi=2000.0, step=0.1, group="Stage 2")
+                    hi=8000.0, step=0.1, group="Stage 2")
     s2_isp: float = P(345.0, symbol=r"I_{sp,2}", desc="stage 2 vacuum specific impulse", units="s", dims="T", lo=150.0,
-                      hi=460.0, step=1.0, group="Stage 2")
+                      hi=480.0, step=0.1, group="Stage 2")
     s2_Ae: float = P(500.0, symbol=r"A_{e,2}", desc="stage 2 nozzle exit area", units="cm²", dims="L²", lo=0.0,
-                     hi=20000.0, step=10.0, group="Stage 2")
+                     hi=60000.0, step=10.0, group="Stage 2")
     s2_d: float = P(1.0, symbol=r"d_2", desc="stage 2 diameter", units="m", dims="L", lo=0.05, hi=6.0, step=0.01,
                     group="Stage 2")
     s2_src: str = C("constant", choices=SRC_CHOICES, labels=SRC_LABELS, symbol=r"\mathrm{thrust\ source}",
@@ -68,12 +76,15 @@ class AscentParams(ParamModel):
                       step=0.5, group="Stage 3")
     s3_prop: float = P(400.0, symbol=r"m_{p,3}", desc="stage 3 propellant mass", units="kg", dims="M", lo=1.0,
                        hi=60000.0, step=1.0, group="Stage 3")
+    s3_engine: str = C("custom", choices=ENGINE_CHOICES, labels=ENGINE_LABELS, symbol=r"\mathrm{engine}",
+                        desc="fill this stage's thrust, specific impulse and exit area from a reference engine of the "
+                        "component library (you can edit them afterwards)", group="Stage 3")
     s3_F: float = P(6.0, symbol=r"F_{vac,3}", desc="stage 3 vacuum thrust", units="kN", dims="M L T⁻²", lo=0.1,
-                    hi=2000.0, step=0.1, group="Stage 3")
+                    hi=8000.0, step=0.1, group="Stage 3")
     s3_isp: float = P(330.0, symbol=r"I_{sp,3}", desc="stage 3 vacuum specific impulse", units="s", dims="T", lo=150.0,
-                      hi=460.0, step=1.0, group="Stage 3")
+                      hi=480.0, step=0.1, group="Stage 3")
     s3_Ae: float = P(100.0, symbol=r"A_{e,3}", desc="stage 3 nozzle exit area", units="cm²", dims="L²", lo=0.0,
-                     hi=20000.0, step=10.0, group="Stage 3")
+                     hi=60000.0, step=10.0, group="Stage 3")
     s3_d: float = P(0.8, symbol=r"d_3", desc="stage 3 diameter", units="m", dims="L", lo=0.05, hi=6.0, step=0.01,
                     group="Stage 3")
     s3_src: str = C("constant", choices=SRC_CHOICES, labels=SRC_LABELS, symbol=r"\mathrm{thrust\ source}",

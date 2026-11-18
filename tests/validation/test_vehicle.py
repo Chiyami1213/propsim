@@ -172,3 +172,21 @@ def test_custom_drag_table(tmp_path):
     f.write_text("mach,cd\n1,0.3\n0.5,0.3\n", encoding="utf-8")
     with pytest.raises(ValueError, match="strictly increasing"):
         profiles.load_drag(f)
+
+
+def test_library_engine_presets_use_only_library_values():
+    from propsim import data
+    from propsim.core.trajectory import engines as lib
+    rs = lib.preset("RS25")
+    assert rs["F_vac"] == data.engine_value("RS25", "engine", "thrust", "vac") and rs["isp"] == 452.3
+    assert rs["A_e"] == pytest.approx((rs["F_vac"] - data.engine_value("RS25", "engine", "thrust", "sl")) / 101325.0)
+    assert "derived" in rs["note"]
+    rl = lib.preset("RL10C_1")
+    assert rl["A_e"] == pytest.approx(np.pi / 4 * data.engine_value("RL10C_1", "thrust_chamber", "exit_diameter") ** 2)
+    assert "treated as vacuum" in rl["note"]
+    j2 = lib.preset("J2")
+    assert j2["A_e"] == 0.0 and "unknown in the library" in j2["note"]                  # a gap is never filled with a guess
+    ids, labels = lib.choices()
+    assert ids[0] == "custom" and len(ids) == len(labels) == 1 + len(lib.PRESETS)
+    for e in lib.PRESETS:
+        assert e in data.engines()

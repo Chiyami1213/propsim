@@ -26,6 +26,11 @@ class ModelController:
     def evaluate(self, p) -> dict:
         raise NotImplementedError
 
+    def preset_updates(self, p, prev: dict) -> dict:
+        """Called when a parameter changed: values to write into other parameters (display units), plus an optional
+        ``"_note"`` message for the log. ``prev`` holds the values before the change."""
+        return {}
+
     def prepare_params(self, p, home) -> None:
         """Last step before a Run: models that need data from the data folder (e.g. imported thrust profiles) fill it
         into ``p``; raise ``ValueError`` with a helpful message when it is missing."""

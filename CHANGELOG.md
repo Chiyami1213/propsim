@@ -15,6 +15,9 @@ New changes go above this line, newest first.
   records with sourced efficiency ranges, fuel-rich turbine gas properties, and closure checks (c*, thrust, C_F,
   pump and turbine power, cycle efficiency) in `propsim.data.closure`.
 
+- Vehicle stages can be filled from the library's reference engines (RS-25, J-2 and the RL10 variants) with one
+  choice; values the library does not have stay empty or are labelled as assumed or derived.
+
 ## 1.0.0
 
 - Live mode (physics recomputed in under 50 ms while a slider drags) and Run mode (background process with progress,
