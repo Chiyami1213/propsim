@@ -34,6 +34,12 @@ MATERIAL_UNITS = {
     "alpha": "1/K",
     "poisson": "1",
     "yield_strength": "Pa",
+    "ultimate_strength": "Pa",
+    "shear_modulus": "Pa",
+    "density": "kg/m3",
+    "T_solidus": "K",
+    "T_liquidus": "K",
+    "alpha_mean": "1/K",
 }
 # valve timing parameters may come from the graph sequence instead of the node
 SEQUENCED = {"t_open", "ramp_open", "t_close", "ramp_close"}
@@ -248,7 +254,7 @@ def _check_materials(problems: list[str]) -> None:
                 problems.append(f"{tag}: unknown material {r['material_id']!r}")
             if MATERIAL_UNITS.get(r["property"]) != r["unit"]:
                 problems.append(f"{tag}: property {r['property']!r} with unit {r['unit']!r}")
-            if float(r["T_min"]) > float(r["T_max"]):
+            if r["T_min"] and r["T_max"] and float(r["T_min"]) > float(r["T_max"]):
                 problems.append(f"{tag}: T_min > T_max")
     for i, r in enumerate(fits, start=2):
         if r["form"] not in FIT_FORMS:

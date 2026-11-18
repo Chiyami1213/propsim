@@ -272,3 +272,12 @@ def test_inconel_x_points_match_the_graph_wall():
     k = [r for r in data.material_points("INCONEL_X") if r["property"] == "k"]
     wall = {n["id"]: n for n in data.graphs()["gg_kerolox"]["nodes"]}["regen_jacket"]["params"]["k_wall"]
     assert any(float(r["value"]) == pytest.approx(wall["value"], rel=1e-4) for r in k)
+
+
+def test_high_temperature_points():
+    rows = data.material_points("IN718")
+    e70 = next(r for r in rows if r["property"] == "E" and r["location"].startswith("Table 4 at 70 degF"))
+    assert float(e70["value"]) == pytest.approx(29.0e6 * 6894.757, rel=1e-5)
+    assert float(e70["T_min"]) == pytest.approx(294.26, abs=0.01)
+    gr = [r for r in data.material_points("GRCOP84") if r["property"] == "yield_strength"]
+    assert {round(float(r["T_max"])) for r in gr} == {294, 811}

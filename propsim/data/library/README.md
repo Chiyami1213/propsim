@@ -1,7 +1,7 @@
 # PropSim component library
 
 Machine-readable data for building and checking engines in PropSim: fluid and propellant properties (block A) and
-the component catalog (block B), cycles (block C), reference engines (block D), the graph/dashboard schemas with example graphs (block H) and cryogenic material fits (block E, part 1) now; high-temperature materials, hybrid and electric in later blocks
+the component catalog (block B), cycles (block C), reference engines (block D), the graph/dashboard schemas with example graphs (block H) and materials (block E: cryogenic fits plus high-temperature points for Inconel 718, Inconel X and GRCop-84) now; hybrid and electric in later blocks
 (plan: brief blocks A to H).
 
 **Rule:** no number without a source. Every value carries `quality` (`published`, `derived` or `estimated`),
@@ -71,7 +71,7 @@ material fits are evaluated by `propsim.data.matprops.material_property`; closur
 | `schemas/dashboard.schema.json`, `dashboards/default_panels.json` | plot panels (time series, x-y, nozzle field, 3D view) with left and right y series, units and colours; default panels for every component type (`$node` placeholder) | see schema |
 | `materials/materials.csv` | material identity | `material_id, name, uns, class, typical_use` |
 | `materials/property_fits.csv` | NIST cryogenic curve fits, one row per material, property and segment (copper RRR, or low/high temperature range) | `material_id, property (k, cp, E, thermal_strain, alpha), segment, form (log10_poly, poly_floor, cu_rational), unit, scale, a..i, T_low, y_low, T_min, T_max (equation range, K), data_T_min, data_T_max, fit_error_pct, ...` |
-| `materials/material_points.csv` | single published values at a temperature or range | `material_id, property, T_min, T_max, value, unit, ...` |
+| `materials/material_points.csv` | single published values at a temperature or range: Inconel X (Huzel & Huang), Inconel 718 to 2000 degF (Special Metals: density, melting range, E, G, Poisson, k, mean expansion, strength), GRCop-84 (NASA/TM-2005-213566) | `material_id, property (density, T_solidus, T_liquidus, cp, k, E, shear_modulus, poisson, alpha_mean, yield_strength, ultimate_strength), T_min, T_max (K; empty when not stated), value, unit, condition (heat treatment or form), ...` |
 | `checks.md` | generated sanity checks, including engine closure (c*, thrust, C_F, MR, pump and turbine power, cycle efficiency) | |
 | `gaps.md` | values no source provided yet | |
 | `conflicts.md` | disagreeing sources and the choice made | |

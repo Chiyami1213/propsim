@@ -136,3 +136,14 @@ Every node parameter, boundary value and sequence time is a sourced value (integ
 | SS304 | E | low/high fits at 57 K | -0.000174 | ok |
 | SS316 | cp | low/high fits at 50 K | +0.00151 | ok |
 | SS316 | E | low/high fits at 50 K | +0.000114 | ok |
+| IN718 | E | monotonic falling over 21 points | +0.0069 | ok |
+| IN718 | alpha_mean | monotonic rising over 7 points | +0.0135 | ok |
+| IN718 | k | monotonic rising over 11 points | +0.0402 | ok |
+| IN718 | shear_modulus | monotonic falling over 21 points | -0 | ok |
+| GRCOP84 | strength | yield / ultimate at 294 K | +0.56 | ok |
+| GRCOP84 | strength | yield / ultimate at 811 K | +0.776 | ok |
+| IN718 | strength | yield / ultimate at 222 K | +0.784 | ok |
+| IN718 | strength | yield / ultimate at 300 K | +0.806 | ok |
+| IN718 | strength | yield / ultimate at 78 K | +0.732 | ok |
+| IN718 | strength | yield / ultimate at 922 K | +0.881 | ok |
+| IN718 | strength | yield / ultimate at 978 K | +0.914 | ok |

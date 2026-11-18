@@ -39,6 +39,12 @@ Table 6-4 (p.197) prints R = 58.6 ft/degR at 1250 degF, between 47.1 at 1200 deg
 1) / gamma gives 50.2. The printed value is kept as published (checked against the page image) and flagged in
 `checks.md`; use c_p and gamma for that row, or interpolate R from the neighbours.
 
+## Inconel 718 thermal conductivity near room temperature
+
+NIST's cryogenic fit gives 9.7 W/(m K) at 294 K; the Special Metals bulletin (Table 5, annealed and aged) gives
+79 Btu in/(ft2 h degF) = 11.4 W/(m K) at 70 degF, 17 % higher. The NIST data end at 275 K and the heat-treatment
+states may differ. Both are kept: use the NIST fit below 294 K and the bulletin points above.
+
 ## Small differences, no action
 
 - LH2 and LOX critical and boiling points: CoolProp (modern equations of state) and Huzel & Huang Table 1-5 agree
