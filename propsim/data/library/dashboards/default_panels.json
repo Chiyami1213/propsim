@@ -1,0 +1,740 @@
+{
+ "schema_version": "1.0",
+ "dashboard_id": "default_panels",
+ "description": "Standard panels per component type; '$node' is replaced by each node id of that type. Output names and units are those of components/<type>.json outputs_for_plots.",
+ "panels_by_type": {
+  "tank_regulated": [
+   {
+    "id": "tank_regulated_0",
+    "title": "Tank pressure and outflow",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "p_ullage",
+      "unit": "Pa",
+      "label": "Ullage pressure",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "mdot_out",
+      "unit": "kg/s",
+      "label": "Outflow",
+      "color": "#efb118"
+     }
+    ]
+   },
+   {
+    "id": "tank_regulated_1",
+    "title": "Propellant left",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "m_liq",
+      "unit": "kg",
+      "label": "Liquid remaining",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": []
+   }
+  ],
+  "tank_blowdown": [
+   {
+    "id": "tank_blowdown_0",
+    "title": "Tank pressure and outflow",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "p_ullage",
+      "unit": "Pa",
+      "label": "Ullage pressure",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "mdot_out",
+      "unit": "kg/s",
+      "label": "Outflow",
+      "color": "#efb118"
+     }
+    ]
+   },
+   {
+    "id": "tank_blowdown_1",
+    "title": "Propellant left",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "m_liq",
+      "unit": "kg",
+      "label": "Liquid remaining",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": []
+   }
+  ],
+  "line": [
+   {
+    "id": "line_0",
+    "title": "Line flow",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "dp_friction",
+      "unit": "Pa",
+      "label": "Friction and fitting loss",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "valve_ball": [
+   {
+    "id": "valve_ball_0",
+    "title": "Valve",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "opening",
+      "unit": "1",
+      "label": "Opening fraction",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "valve_butterfly": [
+   {
+    "id": "valve_butterfly_0",
+    "title": "Valve",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "opening",
+      "unit": "1",
+      "label": "Opening fraction",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "valve_poppet": [
+   {
+    "id": "valve_poppet_0",
+    "title": "Valve",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "opening",
+      "unit": "1",
+      "label": "Opening fraction",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "check_valve": [
+   {
+    "id": "check_valve_0",
+    "title": "Check valve",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "dp",
+      "unit": "Pa",
+      "label": "Pressure drop",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "orifice": [
+   {
+    "id": "orifice_0",
+    "title": "Orifice",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "dp",
+      "unit": "Pa",
+      "label": "Pressure drop",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "cavitating_venturi": [
+   {
+    "id": "cavitating_venturi_0",
+    "title": "Venturi",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "cavitating",
+      "unit": "1",
+      "label": "1 when choked by cavitation",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "manifold": [
+   {
+    "id": "manifold_0",
+    "title": "Manifold pressure",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "p",
+      "unit": "Pa",
+      "label": "Pressure",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": []
+   }
+  ],
+  "injector": [
+   {
+    "id": "injector_0",
+    "title": "Injector",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "mdot",
+      "unit": "kg/s",
+      "label": "Mass flow",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "dp_over_pc",
+      "unit": "1",
+      "label": "Stiffness",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "chamber": [
+   {
+    "id": "chamber_0",
+    "title": "Chamber pressure and temperature",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "p_c",
+      "unit": "Pa",
+      "label": "Chamber pressure",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "T_c",
+      "unit": "K",
+      "label": "Chamber temperature",
+      "color": "#efb118"
+     }
+    ]
+   },
+   {
+    "id": "chamber_1",
+    "title": "Mixture ratio and c*",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "mixture_ratio",
+      "unit": "1",
+      "label": "O/F",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "cstar",
+      "unit": "m/s",
+      "label": "Characteristic velocity",
+      "color": "#efb118"
+     }
+    ]
+   },
+   {
+    "id": "chamber_3d",
+    "title": "Engine 3D view",
+    "kind": "view3d",
+    "node": "$node"
+   }
+  ],
+  "nozzle_bell": [
+   {
+    "id": "nozzle_bell_0",
+    "title": "Thrust and Isp",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "thrust",
+      "unit": "N",
+      "label": "Thrust",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "isp",
+      "unit": "s",
+      "label": "Specific impulse",
+      "color": "#efb118"
+     }
+    ]
+   },
+   {
+    "id": "nozzle_bell_field",
+    "title": "Nozzle Mach field",
+    "kind": "nozzle_field",
+    "node": "$node"
+   }
+  ],
+  "pump_centrifugal": [
+   {
+    "id": "pump_centrifugal_0",
+    "title": "Pump speed and head",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "speed",
+      "unit": "rad/s",
+      "label": "Shaft speed",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "head",
+      "unit": "m",
+      "label": "Developed head",
+      "color": "#efb118"
+     }
+    ]
+   },
+   {
+    "id": "pump_centrifugal_1",
+    "title": "Pump power and NPSH",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "power",
+      "unit": "W",
+      "label": "Shaft power",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "npsh_available",
+      "unit": "m",
+      "label": "NPSH available",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "inducer": [
+   {
+    "id": "inducer_0",
+    "title": "Inducer",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "head",
+      "unit": "m",
+      "label": "Inducer head",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "npsh_available",
+      "unit": "m",
+      "label": "NPSH at inducer inlet",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "turbine_impulse": [
+   {
+    "id": "turbine_impulse_0",
+    "title": "Turbine power and torque",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "power",
+      "unit": "W",
+      "label": "Shaft power",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "torque",
+      "unit": "N m",
+      "label": "Shaft torque",
+      "color": "#efb118"
+     }
+    ]
+   },
+   {
+    "id": "turbine_impulse_1",
+    "title": "Turbine efficiency",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "efficiency",
+      "unit": "1",
+      "label": "Efficiency",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "u_over_c0",
+      "unit": "1",
+      "label": "Velocity ratio",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "gas_generator": [
+   {
+    "id": "gas_generator_0",
+    "title": "Gas generator",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "p_gg",
+      "unit": "Pa",
+      "label": "Pressure",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "T_gg",
+      "unit": "K",
+      "label": "Gas temperature",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "shaft": [
+   {
+    "id": "shaft_0",
+    "title": "Shaft",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "speed",
+      "unit": "rad/s",
+      "label": "Shaft speed",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "torque_net",
+      "unit": "N m",
+      "label": "Net torque",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ],
+  "regen_jacket": [
+   {
+    "id": "regen_jacket_0",
+    "title": "Wall temperatures",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "T_wall_gas",
+      "unit": "K",
+      "label": "Gas-side wall temperature",
+      "color": "#4269d0"
+     },
+     {
+      "node": "$node",
+      "output": "T_wall_cool",
+      "unit": "K",
+      "label": "Coolant-side wall temperature",
+      "color": "#efb118"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "q_wall",
+      "unit": "W/m2",
+      "label": "Heat flux",
+      "color": "#ff725c"
+     }
+    ]
+   },
+   {
+    "id": "regen_jacket_1",
+    "title": "Coolant",
+    "kind": "time_series",
+    "x": {
+     "var": "t",
+     "unit": "s",
+     "label": "time"
+    },
+    "y_left": [
+     {
+      "node": "$node",
+      "output": "T_cool",
+      "unit": "K",
+      "label": "Coolant temperature",
+      "color": "#4269d0"
+     }
+    ],
+    "y_right": [
+     {
+      "node": "$node",
+      "output": "p_cool",
+      "unit": "Pa",
+      "label": "Coolant pressure",
+      "color": "#efb118"
+     }
+    ]
+   }
+  ]
+ }
+}

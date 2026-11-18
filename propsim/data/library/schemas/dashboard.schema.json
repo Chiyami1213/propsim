@@ -1,0 +1,378 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://propsim/library/schemas/dashboard.schema.json",
+ "title": "Dashboard",
+ "description": "Plot panels for a simulation run. Either a concrete dashboard (panels) or the default panel set per component type (panels_by_type, with $node placeholders). Units are SI strings and must equal the unit of the output in the component type.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema_version",
+  "dashboard_id"
+ ],
+ "oneOf": [
+  {
+   "required": [
+    "panels"
+   ]
+  },
+  {
+   "required": [
+    "panels_by_type"
+   ]
+  }
+ ],
+ "properties": {
+  "schema_version": {
+   "const": "1.0"
+  },
+  "dashboard_id": {
+   "type": "string"
+  },
+  "description": {
+   "type": "string"
+  },
+  "panels": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "title",
+     "kind"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "title": {
+      "type": "string"
+     },
+     "kind": {
+      "enum": [
+       "time_series",
+       "xy",
+       "nozzle_field",
+       "view3d"
+      ]
+     },
+     "x": {
+      "type": "object",
+      "required": [
+       "var",
+       "unit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "var": {
+        "type": "string"
+       },
+       "unit": {
+        "type": "string"
+       },
+       "label": {
+        "type": "string"
+       },
+       "node": {
+        "type": "string"
+       }
+      }
+     },
+     "y_left": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "required": [
+        "node",
+        "output",
+        "unit"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "node": {
+         "type": "string",
+         "description": "node id, or $node in default panels"
+        },
+        "output": {
+         "type": "string"
+        },
+        "unit": {
+         "type": "string"
+        },
+        "label": {
+         "type": "string"
+        },
+        "color": {
+         "type": "string",
+         "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+       }
+      }
+     },
+     "y_right": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "required": [
+        "node",
+        "output",
+        "unit"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "node": {
+         "type": "string",
+         "description": "node id, or $node in default panels"
+        },
+        "output": {
+         "type": "string"
+        },
+        "unit": {
+         "type": "string"
+        },
+        "label": {
+         "type": "string"
+        },
+        "color": {
+         "type": "string",
+         "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+       }
+      }
+     },
+     "node": {
+      "type": "string",
+      "description": "node shown by nozzle_field and view3d panels"
+     },
+     "layout": {
+      "type": "object",
+      "properties": {
+       "row": {
+        "type": "integer"
+       },
+       "col": {
+        "type": "integer"
+       },
+       "w": {
+        "type": "integer"
+       },
+       "h": {
+        "type": "integer"
+       }
+      }
+     }
+    },
+    "allOf": [
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "enum": [
+          "time_series",
+          "xy"
+         ]
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "x",
+        "y_left"
+       ]
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "kind": {
+         "enum": [
+          "nozzle_field",
+          "view3d"
+         ]
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "node"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "panels_by_type": {
+   "type": "object",
+   "additionalProperties": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "required": [
+      "id",
+      "title",
+      "kind"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "id": {
+       "type": "string"
+      },
+      "title": {
+       "type": "string"
+      },
+      "kind": {
+       "enum": [
+        "time_series",
+        "xy",
+        "nozzle_field",
+        "view3d"
+       ]
+      },
+      "x": {
+       "type": "object",
+       "required": [
+        "var",
+        "unit"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "var": {
+         "type": "string"
+        },
+        "unit": {
+         "type": "string"
+        },
+        "label": {
+         "type": "string"
+        },
+        "node": {
+         "type": "string"
+        }
+       }
+      },
+      "y_left": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "required": [
+         "node",
+         "output",
+         "unit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "node": {
+          "type": "string",
+          "description": "node id, or $node in default panels"
+         },
+         "output": {
+          "type": "string"
+         },
+         "unit": {
+          "type": "string"
+         },
+         "label": {
+          "type": "string"
+         },
+         "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+         }
+        }
+       }
+      },
+      "y_right": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "required": [
+         "node",
+         "output",
+         "unit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "node": {
+          "type": "string",
+          "description": "node id, or $node in default panels"
+         },
+         "output": {
+          "type": "string"
+         },
+         "unit": {
+          "type": "string"
+         },
+         "label": {
+          "type": "string"
+         },
+         "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+         }
+        }
+       }
+      },
+      "node": {
+       "type": "string",
+       "description": "node shown by nozzle_field and view3d panels"
+      },
+      "layout": {
+       "type": "object",
+       "properties": {
+        "row": {
+         "type": "integer"
+        },
+        "col": {
+         "type": "integer"
+        },
+        "w": {
+         "type": "integer"
+        },
+        "h": {
+         "type": "integer"
+        }
+       }
+      }
+     },
+     "allOf": [
+      {
+       "if": {
+        "properties": {
+         "kind": {
+          "enum": [
+           "time_series",
+           "xy"
+          ]
+         }
+        }
+       },
+       "then": {
+        "required": [
+         "x",
+         "y_left"
+        ]
+       }
+      },
+      {
+       "if": {
+        "properties": {
+         "kind": {
+          "enum": [
+           "nozzle_field",
+           "view3d"
+          ]
+         }
+        }
+       },
+       "then": {
+        "required": [
+         "node"
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ }
+}

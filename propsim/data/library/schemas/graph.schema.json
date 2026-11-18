@@ -1,0 +1,328 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://propsim/library/schemas/graph.schema.json",
+ "title": "Engine graph",
+ "description": "A propulsion system as nodes (component instances of components/<type>.json) joined by typed edges between ports. SI units only: every parameter is a sourced value whose unit must equal the unit of that parameter in the component type. A fluid out-port may feed several edges (a tee at equal pressure); a shaft port may join several machines on one shaft.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema_version",
+  "graph_id",
+  "name",
+  "description",
+  "cycle",
+  "propellants",
+  "nodes",
+  "edges",
+  "boundary_conditions",
+  "sequence"
+ ],
+ "$defs": {
+  "sv": {
+   "$ref": "sourced_value.schema.json"
+  },
+  "port_ref": {
+   "type": "object",
+   "required": [
+    "node",
+    "port"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "node": {
+     "type": "string"
+    },
+    "port": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ "properties": {
+  "schema_version": {
+   "const": "1.0"
+  },
+  "graph_id": {
+   "type": "string",
+   "pattern": "^[a-z][a-z0-9_]*$"
+  },
+  "name": {
+   "type": "string"
+  },
+  "description": {
+   "type": "string"
+  },
+  "cycle": {
+   "type": "string",
+   "description": "cycle_id of cycles/cycles.json"
+  },
+  "reference_engine": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "description": "engine_id of engines/engines.csv"
+  },
+  "propellants": {
+   "type": "object",
+   "required": [
+    "oxidizer",
+    "fuel"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "oxidizer": {
+     "type": "string"
+    },
+    "fuel": {
+     "type": "string"
+    }
+   },
+   "description": "fluid_id values of fluids/fluids.csv"
+  },
+  "nodes": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "type",
+     "params"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+     },
+     "type": {
+      "type": "string",
+      "description": "component type (components/<type>.json)"
+     },
+     "label": {
+      "type": "string"
+     },
+     "params": {
+      "type": "object",
+      "additionalProperties": {
+       "$ref": "#/$defs/sv"
+      },
+      "description": "parameter name -> sourced value; omitted parameters take the type default; parameters with user_input must be given"
+     },
+     "options": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string"
+      },
+      "description": "categorical choices, e.g. turbine arrangement or injector type"
+     },
+     "ui": {
+      "type": "object",
+      "properties": {
+       "x": {
+        "type": "number"
+       },
+       "y": {
+        "type": "number"
+       }
+      }
+     }
+    }
+   }
+  },
+  "edges": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "from",
+     "to",
+     "kind",
+     "medium"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "from": {
+      "$ref": "#/$defs/port_ref"
+     },
+     "to": {
+      "$ref": "#/$defs/port_ref"
+     },
+     "kind": {
+      "enum": [
+       "fluid",
+       "shaft",
+       "thermal",
+       "signal"
+      ]
+     },
+     "medium": {
+      "type": "string",
+      "description": "fluid edges: a fluid_id or combustion_gas; shaft: torque; thermal: heat; signal: command"
+     }
+    }
+   }
+  },
+  "boundary_conditions": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "node",
+     "port",
+     "kind",
+     "value"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "node": {
+      "type": "string"
+     },
+     "port": {
+      "type": "string"
+     },
+     "kind": {
+      "enum": [
+       "ambient_pressure",
+       "fixed_pressure",
+       "fixed_temperature",
+       "fixed_mass_flow"
+      ]
+     },
+     "value": {
+      "$ref": "#/$defs/sv"
+     },
+     "note": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "sequence": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "node",
+     "command"
+    ],
+    "additionalProperties": false,
+    "oneOf": [
+     {
+      "required": [
+       "t"
+      ]
+     },
+     {
+      "required": [
+       "when"
+      ]
+     }
+    ],
+    "properties": {
+     "t": {
+      "$ref": "#/$defs/sv",
+      "description": "time from start signal (s)"
+     },
+     "when": {
+      "type": "object",
+      "required": [
+       "node",
+       "output",
+       "op",
+       "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "node": {
+        "type": "string"
+       },
+       "output": {
+        "type": "string"
+       },
+       "op": {
+        "enum": [
+         ">=",
+         "<="
+        ]
+       },
+       "value": {
+        "$ref": "#/$defs/sv"
+       }
+      },
+      "description": "event trigger on a node output (outputs_for_plots name)"
+     },
+     "node": {
+      "type": "string",
+      "description": "node id, or * for every valve (cutoff)"
+     },
+     "command": {
+      "enum": [
+       "open",
+       "close",
+       "set",
+       "ignite",
+       "cutoff"
+      ]
+     },
+     "value": {
+      "$ref": "#/$defs/sv",
+      "description": "target for set (e.g. valve opening fraction)"
+     },
+     "ramp": {
+      "$ref": "#/$defs/sv",
+      "description": "stroke time for open, close or set (s)"
+     },
+     "note": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "dashboard": {
+   "type": "string",
+   "description": "library path of the dashboard file"
+  },
+  "validation_targets": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "node",
+     "output",
+     "value"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "node": {
+      "type": "string"
+     },
+     "output": {
+      "type": "string"
+     },
+     "value": {
+      "$ref": "#/$defs/sv"
+     }
+    },
+    "description": "published steady-state values the simulation should reproduce"
+   }
+  },
+  "design_point": {
+   "type": "object",
+   "additionalProperties": {
+    "$ref": "#/$defs/sv"
+   }
+  },
+  "known_limitations": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  }
+ }
+}

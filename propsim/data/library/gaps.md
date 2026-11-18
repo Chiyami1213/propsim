@@ -69,6 +69,20 @@ design run.
 3. **Cycle-efficiency curve versus chamber pressure** (H&H Fig. 6-28) not digitized.
 4. **Oxidizer-rich staged combustion and full-flow staged combustion**: no public source with numbers chosen yet.
 
+## Graphs and dashboards (block H)
+
+1. **SSME staged-combustion example graph** is not included yet: its station data (pressures, temperatures and flows)
+   come from documents marked proprietary or private-use, and the repository is public. A public NASA source is needed.
+2. **Estimated values in the examples** (counts in `checks.md` section 7): line lengths, manifold volumes, tank
+   sizes, valve stroke times and sequence thresholds are not published for the Huzel & Huang engines. The pressure-fed
+   kerolox and expander hydrolox graphs adapt published engines to other propellants or another cycle.
+3. **Jacket and dome hydraulic losses** are lumped into equivalent orifices until the jacket model carries its own
+   pressure drop.
+4. **Suction lines and vehicle tanks** are not modelled; tank pressure is the published pump inlet pressure.
+5. **Component ranges widened** to admit published engines: injector dp/P_c 0.1 to 0.3 (A-2 fuel 0.125, A-4 0.25
+   against the 0.15 to 0.2 rule of thumb), nozzle C_F efficiency up to 1.05 (A-2 to A-4 list 1.01 to 1.02),
+   turbine inlet temperature from 100 K and pressure ratio from 1.05 (expander turbines).
+
 ## Later blocks
 
-Materials, hybrid, electric and the graph/dashboard schemas arrive in later PRs; their gaps will be listed here.
+Materials, hybrid and electric arrive in later PRs; their gaps will be listed here.
