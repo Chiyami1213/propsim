@@ -1,0 +1,23 @@
+case_id,property,value,unit,quality,source_id,location,formula
+HH_A1,D_throat,0.63246,m,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",24.9 in x 0.0254
+HH_A1,R_throat_curvature,0.297434,m,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",mean radius of the throat contour 11.71 in x 0.0254
+HH_A1,p_c,6.89476e+06,Pa,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",1000 psia x 6894.757
+HH_A1,cstar,1725.17,m/s,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",design c* 5660 ft/s x 0.3048
+HH_A1,T_c,3411.11,K,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",design chamber temperature 6140 degR x 5/9
+HH_A1,M_gas,0.0225,kg/mol,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",22.5 lb/mol = 22.5 g/mol
+HH_A1,gamma,1.222,1,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",
+HH_A1,Tw_over_Tc,0.8,1,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",gas-side wall temperature / chamber temperature as used to read figure 4-24
+HH_A1,h_g_before_sigma,7947.75,W/(m2 K),published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",0.0027 Btu/(in2 s degF) x 1055.056 / (0.0254^2 x 5/9); eq. (4-13) with the factor a left out
+HH_A1,sigma_chart,1,1,published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine",factor a read from figure 4-24 at the throat
+HH_A1,h_g_throat,7947.75,W/(m2 K),published,HH-SP125,"Sample Calculation (4-3) p.111, A-1 stage engine","0.0027 Btu/(in2 s degF) x 1055.056 / (0.0254^2 x 5/9); eq. (4-13) at the throat, M = 1"
+HH_A2,D_throat,0.28448,m,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",11.2 in x 0.0254
+HH_A2,R_throat_curvature,0.133858,m,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",mean radius of the throat contour 5.27 in x 0.0254
+HH_A2,p_c,5.51581e+06,Pa,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",800 psia x 6894.757
+HH_A2,cstar,2279.9,m/s,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",design c* 7480 ft/s x 0.3048
+HH_A2,T_c,3188.89,K,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",design chamber temperature 5740 degR x 5/9
+HH_A2,M_gas,0.012,kg/mol,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",12.0 lb/mol = 12.0 g/mol
+HH_A2,gamma,1.213,1,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",
+HH_A2,Tw_over_Tc,0.261324,1,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",gas-side wall temperature / chamber temperature as used to read figure 4-24
+HH_A2,h_g_before_sigma,11332.9,W/(m2 K),published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",0.00385 Btu/(in2 s degF) x 1055.056 / (0.0254^2 x 5/9); eq. (4-13) with the factor a left out
+HH_A2,sigma_chart,1.35,1,published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine",factor a read from figure 4-24 at the throat
+HH_A2,h_g_throat,15306.8,W/(m2 K),published,HH-SP125,"Sample Calculation (4-3) pp.112-113, A-2 stage engine","0.0052 Btu/(in2 s degF) x 1055.056 / (0.0254^2 x 5/9); eq. (4-13) at the throat, M = 1"

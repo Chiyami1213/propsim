@@ -264,3 +264,32 @@ def sharp_contraction_K(d_small: float, d_large: float) -> float:
     beta = d_small / d_large
     lam = 1.0 + 0.622 * (1.0 - 0.215 * beta**2 - 0.785 * beta**5)
     return 0.0696 * (1.0 - beta**5) * lam**2 + (lam - 1.0) ** 2
+
+
+def bartz_cases() -> dict[str, dict[str, float]]:
+    """Huzel & Huang Sample Calculation (4-3) inputs and results per engine, SI (``bartz_validation.csv``)."""
+    from . import component_table
+
+    out: dict[str, dict[str, float]] = {}
+    for r in component_table("bartz_validation"):
+        out.setdefault(r["case_id"], {})[r["property"]] = float(r["value"])
+    return out
+
+
+def bartz_check(case: dict[str, float]) -> dict[str, float]:
+    """Run PropSim's Bartz model (``propsim.core.heat``) on one case; ratios to the published values.
+
+    The gas transport follows ``gas_transport`` (Huzel & Huang eq. 4-15, 4-16); ``h_before_sigma`` is
+    eq. (4-13) with sigma = 1 and ``h_throat`` includes the Bartz property-variation factor at M = 1.
+    """
+    from propsim.core.heat import bartz_hg, gas_transport, sigma
+
+    cp, mu, pr = gas_transport(case["T_c"], case["M_gas"], case["gamma"])
+    args = (case["D_throat"], mu, cp, pr, case["p_c"], case["cstar"], case["R_throat_curvature"], 1.0)
+    h0 = float(bartz_hg(*args, 1.0))
+    sig = float(sigma(case["Tw_over_Tc"], case["gamma"], 1.0))
+    return {
+        "h_before_sigma": h0 / case["h_g_before_sigma"],
+        "sigma": sig / case["sigma_chart"],
+        "h_throat": h0 * sig / case["h_g_throat"],
+    }

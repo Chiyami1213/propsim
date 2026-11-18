@@ -76,6 +76,7 @@ UNITS = {
     "rad/s",
     "kg m2",
     "1/K",
+    "W/(m2 K)",
 }
 TABLE_COLUMNS = ["T", "p", "phase", "rho", "mu", "cp", "cv", "k", "a_sound", "h", "s"]
 SAT_COLUMNS = ["T", "p_sat", "rho_l", "rho_v", "h_l", "h_v", "cp_l", "mu_l", "k_l", "sigma"]

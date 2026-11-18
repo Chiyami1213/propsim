@@ -356,3 +356,16 @@ def test_loss_coefficients_against_borda_carnot():
     assert closure.sudden_expansion_K(0.75, 1.0) == pytest.approx(0.191, abs=0.001)
     assert rows[("sudden_enlargement", 0.75)] == 0.5  # printed value, flagged in conflicts.md
     assert closure.sharp_contraction_K(0.5, 1.0) == pytest.approx(0.496, abs=0.002)
+
+
+def test_bartz_model_reproduces_huzel_huang_throat_conductance():
+    """PropSim's Bartz film coefficient matches the handbook's A-1 and A-2 throat values."""
+    from propsim.data import closure
+
+    cases = closure.bartz_cases()
+    assert set(cases) == {"HH_A1", "HH_A2"}
+    for cid, case in cases.items():
+        r = closure.bartz_check(case)
+        assert r["h_before_sigma"] == pytest.approx(1.0, abs=0.02), cid
+        assert r["sigma"] == pytest.approx(1.0, abs=0.05), cid
+        assert r["h_throat"] == pytest.approx(1.0, abs=0.05), cid

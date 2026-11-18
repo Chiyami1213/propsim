@@ -403,6 +403,31 @@ def loss_section() -> tuple[list[str], int]:
     return lines + [""], n_flag
 
 
+def bartz_section() -> tuple[list[str], int]:
+    lines = [
+        "## 12. Gas-side heat transfer against Huzel & Huang Sample Calculation (4-3)",
+        "",
+        "PropSim's Bartz model (`propsim.core.heat`: eq. 4-13 with the property-variation factor sigma and "
+        "the gas transport of eq. 4-15 and 4-16) run on the throat of the A-1 and A-2 engines with the "
+        "inputs printed in the sample calculation. Ratios of PropSim to the published value; flagged "
+        "beyond 5 % "
+        "(sigma is read from a chart in the handbook, so 5 % is its reading accuracy).",
+        "",
+        "| engine | h_g before sigma | sigma | h_g at throat | flag |",
+        "|---|---|---|---|---|",
+    ]
+    n_flag = 0
+    for cid, case in closure.bartz_cases().items():
+        r = closure.bartz_check(case)
+        bad = any(abs(v - 1) > 0.05 for v in r.values())
+        n_flag += bad
+        lines.append(
+            f"| {cid} | {r['h_before_sigma']:.3f} | {r['sigma']:.3f} | {r['h_throat']:.3f} | "
+            f"{'**check**' if bad else 'ok'} |"
+        )
+    return lines + [""], n_flag
+
+
 def main() -> int:
     problems = data.validate()
     integrity = (
@@ -422,6 +447,7 @@ def main() -> int:
     hyb, n_hyb = hybrid_section()
     ele, n_ele = electric_section()
     los, n_los = loss_section()
+    brt, n_brt = bartz_section()
     head = [
         "# Library checks",
         "",
@@ -431,7 +457,7 @@ def main() -> int:
         f"{TOL_CEA:g} %, {n_sca} multi-source scalars spreading more than {TOL_SCALAR:g} %, {n_eng} engine "
         f"closure checks outside tolerance, {n_tg} turbine-gas rows flagged, {n_mat} material-fit checks "
         f"flagged, {n_hyb} hybrid cases flagged, {n_ele} electric throttle points flagged, {n_los} loss "
-        "coefficients differing from Rennels by more than 15 %.",
+        f"coefficients differing from Rennels by more than 15 %, {n_brt} Bartz throat checks flagged.",
         "",
     ]
     OUT.write_text(
@@ -448,13 +474,15 @@ def main() -> int:
             + hyb
             + ele
             + los
+            + brt
         ),
         encoding="utf-8",
     )
     print(
         f"wrote {OUT}: {len(problems)} integrity problems, {n_cea} CEA flags, {n_sca} scalar flags, "
         f"{n_eng} engine flags, {n_tg} turbine-gas flags, {n_mat} material flags, {n_hyb} hybrid flags, "
-        f"{n_ele} electric flags, {n_los} loss-coefficient flags"
+        f"{n_ele} electric flags, {n_los} loss-coefficient flags, "
+        f"{n_brt} Bartz flags"
     )
     return 1 if problems else 0
 
