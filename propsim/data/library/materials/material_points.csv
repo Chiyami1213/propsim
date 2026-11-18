@@ -1,0 +1,11 @@
+material_id,property,T_min,T_max,value,unit,quality,source_id,location,uncertainty,formula
+INCONEL_X,alpha,555.6,666.7,1.44e-05,1/K,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,8e-6 in/(in degF) x 1.8
+INCONEL_X,E,555.6,666.7,1.93053e+11,Pa,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,28e6 psi to Pa
+INCONEL_X,k,555.6,666.7,23.8509,W/(m K),published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,3.19e-4 Btu/(in s degF) to W/(m K)
+INCONEL_X,poisson,555.6,666.7,0.35,1,published,HH-SP125,"Sample Calculation (4-4) p.110, average 1000-1200 degR",,
+INCONEL_X,yield_strength,555.6,555.6,5.6537e+08,Pa,published,HH-SP125,"Sample Calculation (4-4) p.110, F_ty at 1000 degR",,82000 psi to Pa
+INCONEL_X,alpha,888.9,888.9,1.476e-05,1/K,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,8.2e-6 in/(in degF) x 1.8
+INCONEL_X,E,888.9,888.9,1.65474e+11,Pa,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,24e6 psi to Pa
+INCONEL_X,k,888.9,888.9,28.8603,W/(m K),published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,3.86e-4 Btu/(in s degF) to W/(m K)
+INCONEL_X,poisson,888.9,888.9,0.35,1,published,HH-SP125,"Sample Calculation (4-4) p.112, at 1600 degR",,
+INCONEL_X,yield_strength,666.7,666.7,5.58475e+08,Pa,published,HH-SP125,"Sample Calculation (4-4) p.113, F_ty at 1200 degR",,81000 psi to Pa

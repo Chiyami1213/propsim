@@ -535,12 +535,11 @@ def gg_kerolox():
                 "wall_thickness": pub(
                     0.020 * IN, "m", "Sample Calculation (4-4) p.110, tube wall thickness", "0.020 in to m"
                 ),
-                "k_wall": est(
-                    28.86,
+                "k_wall": pub(
+                    3.19e-4 * 1055.05585 / (0.0254 * 5 / 9),
                     "W/(m K)",
-                    gid,
-                    "Inconel X, k = 3.86e-4 Btu/(in s degF) at 1600 degR quoted in Sample "
-                    "Calculation (4-4) p.112 for the A-2 tubes; same material on A-1",
+                    "Sample Calculation (4-4) p.110, Inconel X average at 1000-1200 degR",
+                    "3.19e-4 Btu/(in s degF) to W/(m K); also materials/material_points.csv",
                 ),
             },
             700,

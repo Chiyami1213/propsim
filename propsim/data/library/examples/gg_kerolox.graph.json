@@ -766,12 +766,12 @@
      "formula": "0.020 in to m"
     },
     "k_wall": {
-     "value": 28.86,
+     "value": 23.8509,
      "unit": "W/(m K)",
-     "quality": "estimated",
-     "source_id": "PROPSIM-EST",
-     "location": "examples/gg_kerolox.graph.json",
-     "formula": "Inconel X, k = 3.86e-4 Btu/(in s degF) at 1600 degR quoted in Sample Calculation (4-4) p.112 for the A-2 tubes; same material on A-1"
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Sample Calculation (4-4) p.110, Inconel X average at 1000-1200 degR",
+     "formula": "3.19e-4 Btu/(in s degF) to W/(m K); also materials/material_points.csv"
     }
    },
    "ui": {
