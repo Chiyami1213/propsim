@@ -271,12 +271,24 @@ Questions and bug reports: [GitHub Issues](https://github.com/Chiyami1213/propsi
     <td><img src="docs/gallery/28-low-thrust-spiral.png" alt="Low-thrust spiral: low-thrust Edelbaum spiral with solar-array degradation"><br><sub><b>Low-thrust spiral</b> (Electric, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/29-vehicle-and-staging.png" alt="Vehicle & staging: staging budget (ideal velocity, mass, thrust-to-weight), atmosphere, drag and wind, with a stack sketch"><br><sub><b>Vehicle & staging</b> (Vehicle, Live)</sub></td>
-    <td><img src="docs/gallery/30-point-mass-ascent.png" alt="Point-mass ascent: 2-D point-mass ascent over a spherical Earth with staging, wind, drag and imported thrust profiles"><br><sub><b>Point-mass ascent</b> (Vehicle, Run)</sub></td>
+    <td><img src="docs/gallery/29-ntr-performance.png" alt="NTR performance: chamber temperature, pressure and area ratio give I_sp, flow, reactor power and core size against a LOX / LH₂ engine"><br><sub><b>NTR performance</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/30-reactor-criticality.png" alt="Reactor criticality: one-group bare or reflected reactor, k_eff, critical size and mass, reflector savings and the flux shape"><br><sub><b>Reactor criticality</b> (Nuclear, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/31-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
-    <td></td>
+    <td><img src="docs/gallery/31-fuel-element-thermal-hydraulics.png" alt="Fuel element thermal hydraulics: chopped-cosine power shape, propellant, wall and peak fuel temperatures and channel pressure drop"><br><sub><b>Fuel element thermal hydraulics</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/32-ntr-engine-cycles.png" alt="NTR engine cycles: hot bleed, cold bleed and expander energy balances with real hydrogen"><br><sub><b>NTR engine cycles</b> (Nuclear, Live)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/33-xenon-and-samarium.png" alt="Xenon & samarium: iodine-xenon and promethium-samarium poisoning over a burn, coast and restart"><br><sub><b>Xenon & samarium</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/34-reactor-kinetics-and-startup.png" alt="Reactor kinetics & startup: six-group point kinetics with feedback, startup under temperature control, reactivity steps and scram"><br><sub><b>Reactor kinetics & startup</b> (Nuclear, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/35-vehicle-and-staging.png" alt="Vehicle & staging: staging budget (ideal velocity, mass, thrust-to-weight), atmosphere, drag and wind, with a stack sketch"><br><sub><b>Vehicle & staging</b> (Vehicle, Live)</sub></td>
+    <td><img src="docs/gallery/36-point-mass-ascent.png" alt="Point-mass ascent: 2-D point-mass ascent over a spherical Earth with staging, wind, drag and imported thrust profiles"><br><sub><b>Point-mass ascent</b> (Vehicle, Run)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/37-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
+    <td><img src="docs/gallery/cycle-sandbox.png" alt="Cycle sandbox: flow-diagram editor for building and solving liquid engine cycles"><br><sub><b>Cycle sandbox</b> (Liquid, Editor)</sub></td>
   </tr>
 </table>
 
