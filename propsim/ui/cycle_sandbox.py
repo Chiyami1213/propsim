@@ -284,6 +284,53 @@ class EdgeItem(QGraphicsPathItem):
         return super().itemChange(change, value)
 
 
+class _LegendOverlay(QWidget):
+    """Connection-line legend: a child widget of the canvas viewport, so it stays put while the view is dragged."""
+
+    W, H = 250, 10 + 18 * 6 + 8
+
+    def __init__(self, canvas: "Canvas") -> None:
+        super().__init__(canvas)                       # a child of the view itself: scrolling the viewport never moves it
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.setFixedSize(self.W, self.H)
+        theme.changed.connect(self.update)
+        self.show()
+
+    def paintEvent(self, _) -> None:
+        p = QPainter(self)
+        try:
+            p.setRenderHint(QPainter.Antialiasing)
+            t = theme.t
+            f = QFont(p.font())
+            f.setPointSizeF(8.0)
+            p.setFont(f)
+            w = self.W
+            box = QRectF(0.5, 0.5, w - 1, self.H - 1)
+            c = QColor(t["card"])
+            c.setAlpha(225)
+            p.setBrush(c)
+            p.setPen(QColor(t["edge"]))
+            p.drawRoundedRect(box, 6, 6)
+            for i, (name, key, style) in enumerate(Canvas.LEGEND):
+                y = 14 + 18 * i
+                p.setPen(QPen(QColor(MEDIUM_COLORS[key]), 2.4, style))
+                p.drawLine(QPointF(10, y), QPointF(52, y))
+                if style == Qt.SolidLine:                               # flow direction arrow
+                    p.setPen(Qt.NoPen)
+                    p.setBrush(QColor(MEDIUM_COLORS[key]))
+                    p.drawPolygon([QPointF(36, y), QPointF(29, y - 3.5), QPointF(29, y + 3.5)])
+                p.setPen(QColor(t["text"]))
+                p.drawText(QRectF(60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, name)
+            y = 14 + 18 * len(Canvas.LEGEND)
+            p.setPen(QPen(QColor(t["dim"]), 1.0))
+            p.setBrush(Qt.NoBrush)
+            p.drawEllipse(QPointF(31, y), 7, 7)
+            p.setPen(QColor(t["text"]))
+            p.drawText(QRectF(60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, "Instrument bubble")
+        finally:
+            p.end()
+
+
 class Canvas(QGraphicsView):
     """The flow diagram: nodes, port-to-port edges, drag-to-connect, coloring by the solved stations."""
 
@@ -465,43 +512,17 @@ class Canvas(QGraphicsView):
               ("Heat transfer (wall)", "heat", Qt.DotLine)]
     BUBBLES = "PT pressure · TT temperature · ST speed · FT flow · PDT differential pressure (ISA-5.1)"
 
-    def paintEvent(self, e) -> None:
-        super().paintEvent(e)
-        p = QPainter(self.viewport())
-        try:
-            p.setRenderHint(QPainter.Antialiasing)
-            t = theme.t
-            f = QFont(p.font())
-            f.setPointSizeF(8.0)
-            p.setFont(f)
-            rows = len(self.LEGEND) + 1
-            w, h = 250, 10 + 18 * rows + 8
-            box = QRectF(self.viewport().width() - w - 12, self.viewport().height() - h - 12, w, h)
-            c = QColor(t["card"])
-            c.setAlpha(225)
-            p.setBrush(c)
-            p.setPen(QColor(t["edge"]))
-            p.drawRoundedRect(box, 6, 6)
-            for i, (name, key, style) in enumerate(self.LEGEND):
-                y = box.top() + 14 + 18 * i
-                pen = QPen(QColor(MEDIUM_COLORS[key]), 2.4, style)
-                p.setPen(pen)
-                p.drawLine(QPointF(box.left() + 10, y), QPointF(box.left() + 52, y))
-                if style == Qt.SolidLine:                               # flow direction arrow
-                    p.setPen(Qt.NoPen)
-                    p.setBrush(QColor(MEDIUM_COLORS[key]))
-                    p.drawPolygon([QPointF(box.left() + 36, y), QPointF(box.left() + 29, y - 3.5),
-                                   QPointF(box.left() + 29, y + 3.5)])
-                p.setPen(QColor(t["text"]))
-                p.drawText(QRectF(box.left() + 60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, name)
-            y = box.top() + 14 + 18 * len(self.LEGEND)
-            p.setPen(QPen(QColor(t["dim"]), 1.0))
-            p.setBrush(Qt.NoBrush)
-            p.drawEllipse(QPointF(box.left() + 31, y), 7, 7)
-            p.setPen(QColor(t["text"]))
-            p.drawText(QRectF(box.left() + 60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, "Instrument bubble")
-        finally:
-            p.end()
+    def resizeEvent(self, e) -> None:
+        super().resizeEvent(e)
+        self._place_legend()
+
+    def _place_legend(self) -> None:
+        lg = getattr(self, "legend_box", None)
+        if lg is None:
+            self.legend_box = lg = _LegendOverlay(self)
+        vg = self.viewport().geometry()
+        lg.move(vg.right() - lg.width() - 12, vg.bottom() - lg.height() - 12)
+        lg.raise_()
 
     def drawForeground(self, p: QPainter, rect: QRectF) -> None:
         if not self.legend:
