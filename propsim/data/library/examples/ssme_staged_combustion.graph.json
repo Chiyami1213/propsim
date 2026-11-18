@@ -390,15 +390,15 @@
      "quality": "estimated",
      "source_id": "PROPSIM-EST",
      "location": "examples/ssme_staged_combustion.graph.json",
-     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp from the NIST-JANAF tables, interpolated)"
     },
     "pressure_ratio": {
-     "value": 1.59759,
+     "value": 1.59762,
      "unit": "1",
      "quality": "estimated",
      "source_id": "PROPSIM-EST",
      "location": "examples/ssme_staged_combustion.graph.json",
-     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp); mdot 66.21 kg/s (TP-3700 preburner flows), power 46.435 MW (SNR p.2-12/2-13), cp 8306 J/(kg K), gamma 1.362; exit 3232 psia"
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp from the NIST-JANAF tables, interpolated); mdot 66.21 kg/s (TP-3700 preburner flows), power 46.435 MW (SNR p.2-12/2-13), cp 8301 J/(kg K), gamma 1.363; exit 3232 psia"
     },
     "T_inlet": {
      "value": 961.0,
@@ -436,15 +436,15 @@
      "quality": "estimated",
      "source_id": "PROPSIM-EST",
      "location": "examples/ssme_staged_combustion.graph.json",
-     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp from the NIST-JANAF tables, interpolated)"
     },
     "pressure_ratio": {
-     "value": 1.5552,
+     "value": 1.55524,
      "unit": "1",
      "quality": "estimated",
      "source_id": "PROPSIM-EST",
      "location": "examples/ssme_staged_combustion.graph.json",
-     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp); mdot 26.66 kg/s (TP-3700 preburner flows), power 16.740 MW (SNR p.2-12/2-13), cp 9029 J/(kg K), gamma 1.375; exit 3362 psia"
+     "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp from the NIST-JANAF tables, interpolated); mdot 26.66 kg/s (TP-3700 preburner flows), power 16.740 MW (SNR p.2-12/2-13), cp 9021 J/(kg K), gamma 1.376; exit 3362 psia"
     },
     "T_inlet": {
      "value": 817.0,
@@ -948,7 +948,7 @@
    "label": "main injector, hot-gas fuel side",
    "params": {
     "A_total": {
-     "value": 0.0223959,
+     "value": 0.022398,
      "unit": "m2",
      "quality": "estimated",
      "source_id": "PROPSIM-EST",
@@ -963,7 +963,7 @@
      "location": "p.130, sample calculation with eq. (4-40)"
     },
     "dp_over_pc_design": {
-     "value": 0.08834,
+     "value": 0.08832,
      "unit": "1",
      "quality": "estimated",
      "source_id": "PROPSIM-EST",
@@ -1804,23 +1804,23 @@
    "formula": "mdot MR / (1 + MR); LPOTP flow printed as 401 kg/s"
   },
   "hpft_exit_pressure": {
-   "value": 22286400.0,
+   "value": 22286000.0,
    "unit": "Pa",
    "quality": "estimated",
    "source_id": "PROPSIM-EST",
    "location": "examples/ssme_staged_combustion.graph.json",
-   "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+   "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp from the NIST-JANAF tables, interpolated)"
   },
   "hpot_exit_pressure": {
-   "value": 23177600.0,
+   "value": 23177000.0,
    "unit": "Pa",
    "quality": "estimated",
    "source_id": "PROPSIM-EST",
    "location": "examples/ssme_staged_combustion.graph.json",
-   "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+   "formula": "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp from the NIST-JANAF tables, interpolated)"
   },
   "lpft_inlet_pressure": {
-   "value": 26035400.0,
+   "value": 26034900.0,
    "unit": "Pa",
    "quality": "estimated",
    "source_id": "PROPSIM-EST",

@@ -1,0 +1,13 @@
+species_id,name,janaf_formula,phase,cas,table_id,T_ref,p_ref_Pa,T_min,T_max,n_rows
+H2,Hydrogen,H2(ref),ref,1333-74-0,H-050,298.15,1e5,0,6000,65
+O2,Oxygen,O2(ref),ref,7782-44-7,O-029,298.15,1e5,0,6000,65
+H2O,Water,H2O1(g),g,7732-18-5,H-064,298.15,1e5,0,6000,62
+CO,Carbon Monoxide,C1O1(g),g,630-08-0,C-093,298.15,1e5,0,6000,62
+CO2,Carbon Dioxide,C1O2(g),g,124-38-9,C-095,298.15,1e5,0,6000,62
+N2,Nitrogen,N2(ref),ref,7727-37-9,N-023,298.15,1e5,0,6000,65
+OH,Hydroxyl,H1O1(g),g,3352-57-6,H-038,298.15,1e5,0,6000,65
+H,Hydrogen,H1(g),g,12385-13-6,H-001,298.15,1e5,0,6000,65
+O,Oxygen,O1(g),g,17778-80-2,O-001,298.15,1e5,0,6000,65
+NO,Nitrogen Oxide,N1O1(g),g,10102-43-9,N-005,298.15,1e5,0,6000,65
+CH4,Methane,C1H4(g),g,74-82-8,C-067,298.15,1e5,0,6000,65
+CH,Methylidyne,C1H1(g),g,3315-37-5,C-043,298.15,1e5,0,6000,65

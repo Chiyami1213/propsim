@@ -338,3 +338,145 @@ def test_ssme_graph_uses_public_sources_and_closes():
     assert dp["mdot_ox"] == pytest.approx(883 * 0.45359237, rel=0.01)  # printed LPOTP flow
     pc = next(t["value"]["value"] for t in g["validation_targets"] if t["output"] == "p_c")
     assert min(dp["hpft_exit_pressure"], dp["hpot_exit_pressure"]) > pc
+
+
+# ------------------------------------------------------------
+# NIST-JANAF thermochemical tables (SRD 13) and NIST WebBook check points (SRD 69)
+# ------------------------------------------------------------
+JANAF_IDS = ["H2", "O2", "H2O", "CO", "CO2", "N2", "OH", "H", "O", "NO", "CH4", "CH"]
+
+
+def _at(sid, T, prop):
+    tab = data.janaf_table(sid)
+    return float(tab[prop][list(tab["T"]).index(T)])
+
+
+def test_janaf_species_and_files():
+    idx = data.janaf_species()
+    assert list(idx) == JANAF_IDS
+    for sid, e in idx.items():
+        t = data.janaf_table(sid)
+        assert (
+            len(t["T"]) == int(e["n_rows"])
+            and t["T"][0] == float(e["T_min"])
+            and t["T"][-1] == float(e["T_max"])
+        )
+        assert 298.15 in t["T"] and np.all(np.diff(t["T"]) > 0)
+        assert e["T_ref"] == "298.15" and e["p_ref_Pa"] == "1e5"  # JANAF reference state: 1 bar
+    with pytest.raises(KeyError):
+        data.janaf_table("XE")
+
+
+@pytest.mark.parametrize(
+    "sid, cp, S, dfH",
+    [  # standard state, 298.15 K: cp and S in J/(mol K), formation enthalpy in J/mol (textbook values)
+        ("H2", 28.836, 130.680, 0.0),
+        ("O2", 29.376, 205.147, 0.0),
+        ("N2", 29.124, 191.609, 0.0),
+        ("H2O", 33.590, 188.834, -241826.0),
+        ("CO", 29.142, 197.653, -110527.0),
+        ("CO2", 37.129, 213.795, -393522.0),
+        ("OH", 29.986, 183.708, 38987.0),
+        ("NO", 29.845, 210.758, 90291.0),
+        ("CH4", 35.639, 186.251, -74873.0),
+    ],
+)
+def test_janaf_standard_state_values(sid, cp, S, dfH):
+    assert _at(sid, 298.15, "cp") == pytest.approx(cp, abs=1e-9)
+    assert _at(sid, 298.15, "S") == pytest.approx(S, abs=1e-9)
+    assert _at(sid, 298.15, "dfH") == pytest.approx(dfH, abs=1e-6)
+    assert _at(sid, 298.15, "H_minus_H298") == 0.0
+
+
+@pytest.mark.parametrize("sid", JANAF_IDS)
+def test_janaf_tables_are_thermodynamically_consistent(sid):
+    """A mistyped digit would break the integrals: H - H(298) = int cp dT and S - S(298) = int cp/T dT."""
+    from scipy.interpolate import PchipInterpolator
+
+    t = data.janaf_table(sid)
+    T, i0 = t["T"], list(t["T"]).index(298.15)
+    f = PchipInterpolator(T, t["cp"])
+    for i in range(i0 + 1, len(T)):
+        tt = np.linspace(T[i0], T[i], 2000)
+        assert t["H_minus_H298"][i] == pytest.approx(np.trapezoid(f(tt), tt), abs=12.0, rel=0.002)
+        assert t["S"][i] - t["S"][i0] == pytest.approx(np.trapezoid(f(tt) / tt, tt), abs=0.03, rel=0.002)
+    # the heat capacity is positive and the formation enthalpy table has no gaps
+    assert np.all(t["cp"][1:] > 0) and not np.any(np.isnan(t["dfH"]))
+
+
+def test_janaf_cp_interpolation_and_range():
+    assert data.janaf_cp("H2", 900.0) == pytest.approx(_at("H2", 900.0, "cp"))  # exact at tabulated points
+    mid = float(data.janaf_cp("H2O", 850.0))
+    assert _at("H2O", 800.0, "cp") < mid < _at("H2O", 900.0, "cp")  # monotone between rows
+    assert data.janaf_cp("CO2", np.array([500.0, 1500.0])).shape == (2,)
+    with pytest.raises(ValueError):
+        data.janaf_cp("N2", 7000.0)
+
+
+def test_janaf_agrees_with_coolprop_and_cea():
+    """The hot-gas heat capacities used by the SSME example graph (H2, H2O) match CoolProp cp0 within 0.2
+    %."""
+    CP = pytest.importorskip("CoolProp.CoolProp")
+    for sid, name in (
+        ("H2", "Hydrogen"),
+        ("H2O", "Water"),
+        ("O2", "Oxygen"),
+        ("N2", "Nitrogen"),
+        ("CO2", "CarbonDioxide"),
+    ):
+        for T in (800.0, 900.0, 1000.0):
+            assert _at(sid, T, "cp") == pytest.approx(
+                CP.PropsSI("CP0MOLAR", "T", T, "P", 1e5, name), rel=2e-3
+            ), (sid, T)
+    cea = data.cea_species()
+    assert _at("CH4", 298.15, "dfH") == pytest.approx(
+        float(cea["GCH4"]["dHf"]), abs=500.0
+    )  # 0.37 %, see checks.md
+    for sid, cid in (("O2", "GOX"), ("H2", "GH2"), ("N2", "GN2")):
+        assert float(cea[cid]["dHf"]) == _at(sid, 298.15, "dfH") == 0.0
+
+
+def test_janaf_license_note_states_the_terms():
+    s = data.sources()["NIST-JANAF"]
+    assert "Secretary of Commerce" in s["license_note"] and "SRD 13" in s["license_note"]
+    assert s["url_or_doi"].startswith("https://janaf.nist.gov")
+
+
+def test_webbook_points_confirm_the_coolprop_tables():
+    """NIST WebBook against the CoolProp tables at ten grid points per fluid: 0.2 % or better, except
+    methane viscosity."""
+    expected = {"LOX": 6, "LH2": 6, "LCH4": 6, "N2O": 6}  # properties with WebBook values at each point
+    for fid, nprop in expected.items():
+        pts = data.webbook_check_points(fid)
+        assert len({r["point_id"] for r in pts}) == 10 and len({r["property"] for r in pts}) == nprop
+        tab = data.fluid_table(fid)
+        worst = {}
+        for r in pts:
+            m = np.isclose(tab["T"], float(r["T"]), atol=2e-4) & np.isclose(
+                tab["p"], float(r["p"]), rtol=1e-9
+            )
+            assert m.sum() == 1
+            if np.isnan(tab[r["property"]][m][0]):
+                continue  # N2O transport: empty in the CoolProp table
+            d = abs(float(tab[r["property"]][m][0]) / float(r["value"]) - 1)
+            worst[r["property"]] = max(worst.get(r["property"], 0.0), d)
+        for prop, d in worst.items():
+            if (fid, prop) == ("LCH4", "mu"):
+                assert 0.01 < d < 0.05  # CoolProp 2006 correlation vs NIST 2011 (conflicts.md)
+            else:
+                assert d < (0.01 if prop == "k" else 0.002), (fid, prop, d)
+
+
+def test_webbook_phase_labels_and_units():
+    for r in data.webbook_check_points():
+        assert r["phase_webbook"] in {"liquid", "vapor", "supercritical"}
+        assert data.WEBBOOK_PROPS[r["property"]] == r["unit"]
+    n2o = data.webbook_check_points("N2O")
+    tr = [r for r in n2o if r["property"] in ("mu", "k")]
+    assert len(tr) == 20 and all(
+        float(r["value"]) > 0 for r in tr
+    )  # the WebBook has N2O transport values (NISTIR 8209) ...
+    tab = data.fluid_table("N2O")
+    assert np.all(np.isnan(tab["mu"])) and np.all(
+        np.isnan(tab["k"])
+    )  # ... the CoolProp table has none: a gap, see gaps.md

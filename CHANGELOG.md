@@ -39,6 +39,11 @@ New changes go above this line, newest first.
 - Vehicle stages can be filled from the library's reference engines (RS-25, J-2 and the RL10 variants) with one
   choice; values the library does not have stay empty or are labelled as assumed or derived.
 
+- Component library, NIST data: NIST-JANAF thermochemical tables (SRD 13) for 12 hot-gas species with a loader
+  (`janaf_table`, `janaf_cp`) and self-consistency checks, 40 NIST WebBook fluid state points (SRD 69) validating the
+  CoolProp tables (agreement within 0.1 % except methane viscosity, up to 4.2 %), cross-checks in `checks.md`, and the
+  SSME example graph now takes its H2 and H2O heat capacities from JANAF. Documented gaps and source conflicts.
+
 ## 1.0.0
 
 - Live mode (physics recomputed in under 50 ms while a slider drags) and Run mode (background process with progress,

@@ -18,6 +18,7 @@ import numpy as np
 
 LIBRARY = Path(__file__).resolve().parent / "library"
 FLUIDS = LIBRARY / "fluids"
+JANAF = FLUIDS / "janaf"
 COMPONENTS = LIBRARY / "components"
 ENGINES = LIBRARY / "engines"
 CYCLES = LIBRARY / "cycles"
@@ -76,7 +77,28 @@ UNITS = {
     "rad/s",
     "kg m2",
     "1/K",
+    "J/(mol K)",
 }
+JANAF_PROPS = {"cp": "J/(mol K)", "S": "J/(mol K)", "H_minus_H298": "J/mol", "dfH": "J/mol"}
+WEBBOOK_PROPS = {
+    "rho": "kg/m3",
+    "cp": "J/(kg K)",
+    "cv": "J/(kg K)",
+    "a_sound": "m/s",
+    "mu": "Pa s",
+    "k": "W/(m K)",
+}
+JANAF_COLUMNS = [
+    "species_id",
+    "T",
+    "property",
+    "value",
+    "unit",
+    "quality",
+    "source_id",
+    "location",
+    "formula",
+]
 TABLE_COLUMNS = ["T", "p", "phase", "rho", "mu", "cp", "cv", "k", "a_sound", "h", "s"]
 SAT_COLUMNS = ["T", "p_sat", "rho_l", "rho_v", "h_l", "h_v", "cp_l", "mu_l", "k_l", "sigma"]
 
@@ -143,6 +165,97 @@ def sat_table(fluid_id: str) -> dict[str, np.ndarray]:
     if not f["sat_file"]:
         raise KeyError(f"{fluid_id} has no saturation table")
     return _numeric_table(FLUIDS / f["sat_file"])
+
+
+def webbook_check_points(fluid_id: str | None = None) -> list[dict[str, str]]:
+    """NIST WebBook fluid values at state points on the CoolProp table grids
+    (``fluids/webbook_check_points.csv``)."""
+    rows = _read_csv(FLUIDS / "webbook_check_points.csv")
+    return [r for r in rows if fluid_id is None or r["fluid_id"] == fluid_id]
+
+
+def _check_webbook(problems: list[str]) -> None:
+    rows = webbook_check_points()
+    _check_provenance(rows, "webbook_check_points.csv", problems)
+    fl = fluids()
+    for i, r in enumerate(rows, start=2):
+        if r["fluid_id"] not in fl:
+            problems.append(f"webbook_check_points.csv:{i}: unknown fluid_id {r['fluid_id']!r}")
+        if WEBBOOK_PROPS.get(r["property"]) != r["unit"]:
+            problems.append(
+                f"webbook_check_points.csv:{i}: property {r['property']!r} with unit {r['unit']!r}"
+            )
+        for c in ("T", "p"):
+            try:
+                float(r[c])
+            except ValueError:
+                problems.append(f"webbook_check_points.csv:{i}: {c} {r[c]!r} is not a number")
+
+
+@cache
+def janaf_species() -> dict[str, dict[str, str]]:
+    """NIST-JANAF species index (``fluids/janaf_species.csv``): name, JANAF formula, phase, CAS, table id,
+    T range."""
+    return {r["species_id"]: r for r in _read_csv(FLUIDS / "janaf_species.csv")}
+
+
+@cache
+def janaf_table(species_id: str) -> dict[str, np.ndarray]:
+    """NIST-JANAF table of a species at the tabulated temperatures (SI): ``T`` (K), ``cp`` and ``S``
+    (J/(mol K)),
+    ``H_minus_H298`` (H - H(298.15 K), J/mol) and ``dfH`` (formation enthalpy, J/mol); a value the table
+    does not give
+    is NaN."""
+    if species_id not in janaf_species():
+        raise KeyError(f"{species_id!r} is not a NIST-JANAF species of the library (see janaf_species())")
+    rows = _read_csv(JANAF / f"{species_id}.csv")
+    T = sorted({float(r["T"]) for r in rows})
+    out = {"T": np.array(T)}
+    for prop in JANAF_PROPS:
+        d = {float(r["T"]): float(r["value"]) for r in rows if r["property"] == prop}
+        out[prop] = np.array([d.get(t, np.nan) for t in T])
+    return out
+
+
+def janaf_cp(species_id: str, T) -> np.ndarray:
+    """Molar heat capacity (J/(mol K)) at ``T`` (K) from the JANAF table by monotone cubic interpolation of
+    the tabulated
+    values (no extrapolation: a ValueError outside the tabulated range)."""
+    from scipy.interpolate import PchipInterpolator
+
+    tab = janaf_table(species_id)
+    T = np.asarray(T, float)
+    if np.any(T < tab["T"][0]) or np.any(T > tab["T"][-1]):
+        raise ValueError(f"{species_id}: T outside the tabulated {tab['T'][0]:g} to {tab['T'][-1]:g} K")
+    return PchipInterpolator(tab["T"], tab["cp"])(T)
+
+
+def _check_janaf(problems: list[str]) -> None:
+    idx = janaf_species()
+    for sid, e in idx.items():
+        path = JANAF / f"{sid}.csv"
+        if not path.exists():
+            problems.append(f"janaf_species.csv {sid}: file janaf/{sid}.csv is missing")
+            continue
+        rows = _read_csv(path)
+        if list(rows[0].keys()) != JANAF_COLUMNS:
+            problems.append(f"janaf/{sid}.csv: columns differ from {JANAF_COLUMNS}")
+            continue
+        _check_provenance(rows, f"janaf/{sid}.csv", problems)
+        for i, r in enumerate(rows, start=2):
+            if r["species_id"] != sid:
+                problems.append(f"janaf/{sid}.csv:{i}: species_id {r['species_id']!r}")
+            if JANAF_PROPS.get(r["property"]) != r["unit"]:
+                problems.append(f"janaf/{sid}.csv:{i}: property {r['property']!r} with unit {r['unit']!r}")
+        for prop in JANAF_PROPS:
+            t = [float(r["T"]) for r in rows if r["property"] == prop]
+            if not t or any(b <= a for a, b in zip(t, t[1:])):
+                problems.append(f"janaf/{sid}.csv: {prop} temperatures missing or not increasing")
+        if len({r["T"] for r in rows}) != int(e["n_rows"]):
+            problems.append(f"janaf_species.csv {sid}: n_rows {e['n_rows']} differs from the table")
+    for p in JANAF.glob("*.csv"):
+        if p.stem not in idx:
+            problems.append(f"janaf/{p.name}: not listed in janaf_species.csv")
 
 
 def cea_species() -> dict[str, dict[str, str]]:
@@ -651,6 +764,8 @@ def validate() -> list[str]:
     _check_materials(problems)
     _check_hybrid(problems)
     _check_electric(problems)
+    _check_janaf(problems)
+    _check_webbook(problems)
 
     for p in LIBRARY.rglob("*.json"):
         try:

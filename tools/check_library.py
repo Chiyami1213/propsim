@@ -19,6 +19,10 @@ Checks (brief rule 5, the parts that apply to the blocks delivered so far):
    monotonic trends and yield below ultimate (transcription checks).
 9. Hybrid hot-fire cases: initial oxidizer flux against mdot_ox / port area (column alignment), and the
    published regression law against the measured average regression rate (information).
+10. Electric thruster throttle tables: thrust, efficiency and impulse closure.
+11. NIST-JANAF tables: heat capacity against CoolProp cp0, formation enthalpy against the CEA species, and the
+   self-consistency of each transcribed table.
+12. NIST WebBook fluid properties at 40 state points of LOX, LH2, LCH4 and N2O against the CoolProp tables.
 """
 
 from __future__ import annotations
@@ -371,6 +375,167 @@ def electric_section() -> tuple[list[str], int]:
     return lines + [""], n_flag
 
 
+JANAF_COOLPROP = {  # JANAF species -> CoolProp fluid with an ideal-gas heat capacity (CP0MOLAR)
+    "H2": "Hydrogen",
+    "H2O": "Water",
+    "O2": "Oxygen",
+    "N2": "Nitrogen",
+    "CO": "CarbonMonoxide",
+    "CO2": "CarbonDioxide",
+    "CH4": "Methane",
+}
+JANAF_CEA = {
+    "O2": "GOX",
+    "H2": "GH2",
+    "N2": "GN2",
+    "CH4": "GCH4",
+}  # JANAF species -> gas-phase cea_species.csv row
+TOL_JANAF = 1.0  # (%) flag limit for heat-capacity and formation-enthalpy differences
+
+
+def janaf_section() -> tuple[list[str], int]:
+    import CoolProp.CoolProp as CP
+    from scipy.interpolate import PchipInterpolator
+
+    lines = [
+        "## 11. NIST-JANAF cross-checks",
+        "",
+        "The 12 NIST-JANAF species (`fluids/janaf`) are transcribed as printed. They are used here to "
+        "cross-check, "
+        "not replace, the CEA tables and the CoolProp ideal-gas heat capacity cp0 that `h2_rich_gas` in "
+        "`tools/build_example_graphs.py` uses. Flag limit "
+        f"{TOL_JANAF:g} %.",
+        "",
+        "### 11.1 Heat capacity, JANAF against CoolProp cp0 (the call used by `h2_rich_gas`)",
+        "",
+        "| species | T (K) | JANAF cp (J/(mol K)) | CoolProp cp0 (J/(mol K)) | Δ % | flag |",
+        "|---|---|---|---|---|---|",
+    ]
+    n_flag = 0
+    for sid, fluid in JANAF_COOLPROP.items():
+        tab = data.janaf_table(sid)
+        for T in (800.0, 900.0, 1000.0):
+            j = float(tab["cp"][list(tab["T"]).index(T)])  # a tabulated temperature: no interpolation
+            c = CP.PropsSI("CP0MOLAR", "T", T, "P", 1e5, fluid)
+            d = pct(c, j)
+            bad = abs(d) > TOL_JANAF
+            n_flag += bad
+            lines.append(
+                f"| {sid} | {T:.0f} | {j:.3f} | {c:.3f} | {d:+.2f} | {'**check**' if bad else 'ok'} |"
+            )
+    lines += [
+        "",
+        "### 11.2 Formation enthalpy at 298.15 K, JANAF against `cea_species.csv`",
+        "",
+        "| species | JANAF ΔfH (J/mol) | CEA ΔfH (J/mol) | CEA species | Δ (J/mol) | flag |",
+        "|---|---|---|---|---|---|",
+    ]
+    cea = data.cea_species()
+    for sid, cid in JANAF_CEA.items():
+        tab = data.janaf_table(sid)
+        j = float(tab["dfH"][list(tab["T"]).index(298.15)])
+        c = float(cea[cid]["dHf"])
+        diff = c - j
+        # zero (reference elements) compares exactly; otherwise flag differences above 1 % of the magnitude
+        # or 1 kJ/mol
+        bad = abs(diff) > max(abs(j) * TOL_JANAF / 100.0, 1000.0) if j != 0 else abs(diff) > 0
+        n_flag += bad
+        lines.append(f"| {sid} | {j:.0f} | {c:.0f} | {cid} | {diff:+.0f} | {'**check**' if bad else 'ok'} |")
+    lines += [
+        "",
+        "H2O: `cea_species.csv` holds only liquid water (-285830 J/mol), JANAF the gas (-241826 J/mol); the "
+        "difference is the enthalpy of vaporization at 298.15 K (44004 J/mol), so there is nothing to "
+        "compare.",
+        "",
+        "### 11.3 Transcription self-consistency",
+        "",
+        "Each table is integrated from its own Cp column: ∫Cp dT against H - H(298.15 K) and ∫Cp/T dT "
+        "against "
+        "S - S(298.15 K), from 298.15 K up to each tabulated temperature (monotone cubic through the 100 K "
+        "spacing). A mistyped digit anywhere in the table would show up as a mismatch.",
+        "",
+        "| species | rows | T range (K) | max ΔH mismatch (J/mol) | max ΔS mismatch (J/(mol K)) |",
+        "|---|---|---|---|---|",
+    ]
+    for sid in data.janaf_species():
+        tab = data.janaf_table(sid)
+        T = tab["T"]
+        i0 = list(T).index(298.15)
+        f = PchipInterpolator(T, tab["cp"])
+        mh = ms = 0.0
+        for i in range(i0 + 1, len(T)):
+            t = np.linspace(T[i0], T[i], 2000)
+            dH = np.trapezoid(f(t), t)
+            dS = np.trapezoid(f(t) / t, t)
+            mh = max(mh, abs(tab["H_minus_H298"][i] - dH))
+            ms = max(ms, abs(tab["S"][i] - tab["S"][i0] - dS))
+        lines.append(f"| {sid} | {len(T)} | {T[0]:g} to {T[-1]:g} | {mh:.0f} | {ms:.2f} |")
+    return lines + [""], n_flag
+
+
+TOL_WEBBOOK = 1.0  # (%) CoolProp tables are replaced only where the WebBook differs by more than this
+
+
+def webbook_section() -> tuple[list[str], int]:
+    lines = [
+        "## 12. NIST WebBook fluid properties against the CoolProp tables",
+        "",
+        "Ten state points per fluid (`fluids/webbook_check_points.csv`) lie exactly on the grids of "
+        "`fluids/tables`, so "
+        "no interpolation is involved. Density, heat capacities, speed of sound, viscosity and "
+        "conductivity are "
+        "compared (enthalpy and entropy use different reference states). LH2 is compared with the WebBook "
+        f"parahydrogen entry. The CoolProp tables are replaced only where a difference exceeds "
+        f"{TOL_WEBBOOK:g} %.",
+        "",
+        "| fluid | property | points | max abs Δ % | at point (T K, p MPa, WebBook phase) | points over "
+        "limit |",
+        "|---|---|---|---|---|---|",
+    ]
+    n_flag, flagged = 0, []
+    for fid in ("LOX", "LH2", "LCH4", "N2O"):
+        tab = data.fluid_table(fid)
+        for prop in data.WEBBOOK_PROPS:
+            worst, where, n, over = 0.0, "", 0, 0
+            for r in data.webbook_check_points(fid):
+                if r["property"] != prop:
+                    continue
+                T, p = float(r["T"]), float(r["p"])
+                m = np.isclose(tab["T"], T, atol=2e-4) & np.isclose(tab["p"], p, rtol=1e-9)
+                if m.sum() != 1:
+                    raise SystemExit(f"{fid}: {m.sum()} table rows at T={T}, p={p}")
+                c = float(tab[prop][m][0])
+                if not np.isfinite(c):
+                    continue
+                d = pct(c, float(r["value"]))
+                n += 1
+                if abs(d) > abs(worst):
+                    worst, where = d, f"{T:.2f}, {p / 1e6:g}, {r['phase_webbook']}"
+                if abs(d) > TOL_WEBBOOK:
+                    over += 1
+                    flagged.append((fid, prop, T, p, c, float(r["value"]), d, r["phase_webbook"]))
+            if n:
+                n_flag += over
+                lines.append(f"| {fid} | {prop} | {n} | {abs(worst):.3f} | {where} | {over} |")
+            else:
+                nw = sum(r["property"] == prop for r in data.webbook_check_points(fid))
+                note = f"CoolProp table empty; {nw} WebBook values recorded" if nw else "no WebBook value"
+                lines.append(f"| {fid} | {prop} | 0 | n/a | {note} | 0 |")
+    if flagged:
+        lines += [
+            "",
+            "Points over the limit:",
+            "",
+            "| fluid | property | T (K) | p (MPa) | CoolProp table | WebBook | Δ % | phase |",
+            "|---|---|---|---|---|---|---|---|",
+        ]
+        lines += [
+            f"| {f} | {pr} | {T:.2f} | {p / 1e6:g} | {c:.5g} | {w:.5g} | {d:+.2f} | {ph} |"
+            for f, pr, T, p, c, w, d, ph in flagged
+        ]
+    return lines + [""], n_flag
+
+
 def main() -> int:
     problems = data.validate()
     integrity = (
@@ -389,6 +554,8 @@ def main() -> int:
     mat, n_mat = material_section()
     hyb, n_hyb = hybrid_section()
     ele, n_ele = electric_section()
+    jan, n_jan = janaf_section()
+    wbk, n_wbk = webbook_section()
     head = [
         "# Library checks",
         "",
@@ -397,19 +564,33 @@ def main() -> int:
         f"Summary: {len(problems)} integrity problems, {n_cea} theoretical-performance cases outside "
         f"{TOL_CEA:g} %, {n_sca} multi-source scalars spreading more than {TOL_SCALAR:g} %, {n_eng} engine "
         f"closure checks outside tolerance, {n_tg} turbine-gas rows flagged, {n_mat} material-fit checks "
-        f"flagged, {n_hyb} hybrid cases flagged, {n_ele} electric throttle points flagged.",
+        f"flagged, {n_hyb} hybrid cases flagged, {n_ele} electric throttle points flagged, {n_jan} "
+        f"NIST-JANAF "
+        f"cross-checks flagged, {n_wbk} WebBook fluid comparisons over {TOL_WEBBOOK:g} %.",
         "",
     ]
     OUT.write_text(
         "\n".join(
-            head + integrity + cea + sca + table_section() + eng + tg + graph_section() + mat + hyb + ele
+            head
+            + integrity
+            + cea
+            + sca
+            + table_section()
+            + eng
+            + tg
+            + graph_section()
+            + mat
+            + hyb
+            + ele
+            + jan
+            + wbk
         ),
         encoding="utf-8",
     )
     print(
         f"wrote {OUT}: {len(problems)} integrity problems, {n_cea} CEA flags, {n_sca} scalar flags, "
         f"{n_eng} engine flags, {n_tg} turbine-gas flags, {n_mat} material flags, {n_hyb} hybrid flags, "
-        f"{n_ele} electric flags"
+        f"{n_ele} electric flags, {n_jan} JANAF flags, {n_wbk} WebBook flags"
     )
     return 1 if problems else 0
 

@@ -57,6 +57,30 @@ The SSME example graph uses the 1981 summary value 2970 psia and area ratio 77.5
 station data come from the same document. The 2024 sheet describes the current RS-25 for SLS and stays in
 `engines/engine_params.csv`.
 
+## LCH4 viscosity: CoolProp 8.0.0 against the NIST WebBook
+
+At the ten grid points of `fluids/webbook_check_points.csv` the CoolProp methane viscosity differs from the WebBook by up
+to 4.2 % (8 of 10 points over 1 %; at 180.56 K and 3 MPa CoolProp 8.19e-6 Pa s, WebBook 7.86e-6 Pa s). Every other
+compared property of all four fluids agrees within 0.1 % (conductivity within 0.6 %). The cause is two different
+correlations: CoolProp uses the published Quinones-Cisneros and Deiters (J. Phys. Chem. B, 2006) model, the WebBook an
+updated, unpublished model (Quinones-Cisneros, Huber and Deiters, 2011) with a stated uncertainty under 0.3 % between 200
+and 400 K below 30 MPa. **Used: the CoolProp table** (the difference exceeds 1 %, but the newer model cannot be
+reproduced from a public document, and a table built from WebBook output would copy a large part of SRD 69). Use the
+WebBook values where better than 4 % matters; the effect on a regenerative-jacket Reynolds number is of the same order.
+
+## CH4 ideal-gas heat capacity above about 800 K: CoolProp cp0 against NIST-JANAF
+
+For methane, CoolProp's ideal-gas cp0 is 0.92 % above JANAF at 800 K, 1.15 % at 900 K and 1.41 % at 1000 K (`checks.md`,
+section 11.1). The Setzmann-Wagner methane equation of state is valid to 625 K, so these temperatures are an
+extrapolation. **Preferred above 625 K: JANAF** (or CEA). The library's LCH4 tables stop at 620 K and are unaffected. For
+H2, H2O, O2, N2, CO and CO2 the two agree within 0.1 % at 800 to 1000 K; `h2_rich_gas` (SSME example graph) now takes
+its H2 and H2O heat capacities from the JANAF tables, which moved the generated turbine pressure ratios by under 0.01 %.
+
+## CH4 formation enthalpy at 298.15 K
+
+JANAF -74873 J/mol against the CEA species `GCH4` -74600 J/mol (0.37 %, 273 J/mol). **Used: CEA**, because the shipped
+thermochemistry tables were generated with it; the difference is below the 1 % flag limit.
+
 ## Small differences, no action
 
 - LH2 and LOX critical and boiling points: CoolProp (modern equations of state) and Huzel & Huang Table 1-5 agree

@@ -28,6 +28,21 @@ design run.
 9. **Liquid isopropanol heat of formation**: the CEA database has only the gas (`IPA_GAS`); a liquid card needs the
    enthalpy of vaporization (NIST lists 45 ± 3 kJ/mol average).
 
+10. **N2O transport properties** (update to item 4): the NIST WebBook does have N2O viscosity and thermal conductivity
+    (Huber, NISTIR 8209, 2018, https://doi.org/10.6028/NIST.IR.8209; thermal conductivity data of Richter and Sage 1963).
+    Ten state points are recorded in `fluids/webbook_check_points.csv`, but `tables/N2O.csv` still has empty `mu` and `k`
+    columns. To fill them: implement the NISTIR 8209 correlations (an open NIST report) or tabulate the WebBook grid,
+    which would copy a large part of SRD 69 (see `sources.csv` for its terms).
+11. **LCH4 viscosity** follows CoolProp's published 2006 correlation; the WebBook uses a newer correlation that is
+    unpublished (Quinones-Cisneros, Huber and Deiters, 2011) and cannot be implemented independently
+    (`conflicts.md`).
+12. **NIST-JANAF species beyond the 12 transcribed** (for example NH3, N2O, C2H4, HCl, H2O2, HF, condensed species such as
+    Al2O3, and the JANAF tables of metals for solid-propellant products) are not in the library; the script
+    `tools/build_janaf_tables.py` takes more species from its `SPECIES` table. JANAF gives no fitted polynomials: heat
+    capacities between the 100 K rows are interpolated (`propsim.data.janaf_cp`).
+13. **JANAF and WebBook redistribution terms**: both are copyrighted NIST compilations (`sources.csv`). Whether recording
+    the 12 tables and 40 state points here is covered by NIST's terms is for the repository owner to confirm.
+
 ## Components (block B)
 
 1. **Valve opening and closing time laws** and stroke times: user input for now. Candidates: SSME System Engineer
@@ -98,6 +113,14 @@ design run.
 4. **Ablatives and graphite** (carbon-phenolic, silica-phenolic, carbon-carbon): density, conductivity and
    char/erosion data from NASA SP-8xxx monographs.
 5. **Missing NIST properties**: Inconel 718 and Ti-6Al-4V specific heat and modulus, copper modulus.
+
+6. **Above 300 K for the chamber-wall alloys**: no values were added in this pass because the candidate public sources
+   give the data as plots or were not read in full. Candidates: NASA CR-134806 (Esposito and Zabora, 1975, NTRS
+   19750021165: Amzirc, NARloy-Z, copper, silver, nickel, 27.6 to 810.9 K, graphs); NASA CR-134627 (NARloy-Z low-cycle
+   fatigue, 1974, tensile data at several temperatures); NASA CR-198529 (Ellis and Michal, 1996, Cu-Cr-Nb against
+   NARloy-Z, NTRS 19970002915); ANL-75-55 (evaluated enthalpy, specific heat, expansion and conductivity of 304L and 316
+   stainless steels, 300 to 3000 K, tables); NASA CR-54151 (Battelle, 316 stainless conductivity 0 to 1800 degF, NTRS
+   19650024830). The NIST cryogenic pages (`property_fits.csv`) stop at 300 K.
 
 ## Hybrid (block F)
 

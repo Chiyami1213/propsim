@@ -1522,16 +1522,12 @@ def rho_grid(fid, T, p):
 
 
 def h2_rich_gas(MR, T):
-    """Frozen H2/H2O preburner gas at O/F mass ratio MR (all O2 burned), ideal-gas cp0 from CoolProp."""
-    import CoolProp.CoolProp as CP
-
+    """Frozen H2/H2O preburner gas at O/F mass ratio MR (all O2 burned), ideal-gas cp from the NIST-JANAF tables."""
     n_h2o = MR / 31.9988 * 2  # kmol H2O per kg H2 (O2 + 2 H2 -> 2 H2O)
     n_h2 = 1 / 2.01588 - n_h2o
     x_w = n_h2o / (n_h2 + n_h2o)
     M = (1 + MR) / (n_h2 + n_h2o) * 1e-3  # kg/mol
-    cpm = (1 - x_w) * CP.PropsSI("CP0MOLAR", "T", T, "P", 1e5, "Hydrogen") + x_w * CP.PropsSI(
-        "CP0MOLAR", "T", T, "P", 1e5, "Water"
-    )
+    cpm = (1 - x_w) * float(data.janaf_cp("H2", T)) + x_w * float(data.janaf_cp("H2O", T))
     cp = cpm / M
     gam = cpm / (cpm - 8.314462618)
     return cp, gam, x_w, M
@@ -1583,7 +1579,7 @@ def ssme_rpl():
     eta_note = (
         "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from "
         "P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet "
-        "temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+        "temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp from the NIST-JANAF tables, interpolated)"
     )
     turb = {}
     for tid, m, T, MRp, P, p_in in (
