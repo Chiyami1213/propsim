@@ -107,6 +107,13 @@ design run.
 4. **Fuel properties**: density, heat of gasification and melt-layer properties of paraffin and HTPB blends.
 5. **Graphite nozzle erosion rates** and post-combustion chamber guidance.
 
-## Later blocks
+## Electric (block G)
 
-Electric propulsion arrives in a later PR; its gaps will be listed here.
+1. **Only NEXT so far.** Throttle tables for NSTAR, Hall thrusters (SPT-100, BPT-4000, HiVHAc, HERMeS/AEPS),
+   arcjets and resistojets are still needed from open NASA/NTRS or AIAA sources.
+2. **NEXT end-of-life performance**: the tables are beginning of life; degradation with throughput is not tabulated.
+3. **Thruster power on the nominal table**: Table 3 prints PPU input power only; thruster power is taken as
+   P_PPU eta_PPU (`propsim.data.thruster_power`), which carries the two-figure rounding of eta_PPU.
+4. **Mass and geometry**: thruster, PPU and feed-system masses and the gimbal envelope are not in the library.
+5. **NASA/TM-2002-211892** (Oleson et al.) Table 2 has a further NEXT throttle set, but the power column's unit is
+   not legible in the text layer, so it was not transcribed.
