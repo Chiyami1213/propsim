@@ -17,3 +17,15 @@ gc.disable()      # the GUI collects from a timer (propsim.ui.gc_guard); tests c
 def _collect_between_tests():
     yield
     gc.collect()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _isolated_settings(tmp_path_factory):
+    """Tests never touch the user's real PropSim settings (on Windows QSettings lives in the registry): the default
+    format becomes an INI file in a temporary folder for the whole session."""
+    from PySide6.QtCore import QSettings
+    root = tmp_path_factory.mktemp("settings")
+    QSettings.setDefaultFormat(QSettings.IniFormat)
+    QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, str(root))
+    yield
+    QSettings.setDefaultFormat(QSettings.NativeFormat)

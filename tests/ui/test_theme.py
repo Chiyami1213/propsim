@@ -66,8 +66,6 @@ def test_picker_palettes_collapse_to_names(app):
 
 
 def test_dialog_and_persistence(app, tmp_path):
-    QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, str(tmp_path))
-    QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, str(tmp_path))
     w = MainWindow(home=tmp_path / "h", use_settings=True)
     try:
         w.show()

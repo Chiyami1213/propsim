@@ -112,7 +112,7 @@ class Viewport3D(QWidget):
         for l_ in self.readout_lbls:
             rl.addWidget(l_)
         self.colorbar = ColorBar(self.stage)
-        self.caption = LatexLabel("", "dim", 9.0)
+        self.caption = LatexLabel("", "dim", 9.0, shrink=True)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(0)

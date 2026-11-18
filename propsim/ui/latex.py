@@ -10,10 +10,11 @@ from matplotlib import mathtext
 from matplotlib.image import imread
 from matplotlib.font_manager import FontProperties
 from matplotlib.mathtext import MathTextParser
-from PySide6.QtCore import QPointF, QSize, Qt
+from PySide6.QtCore import QEvent, QPointF, QSize, Qt
 from PySide6.QtGui import (QColor, QFont, QFontMetricsF, QGuiApplication, QIcon, QImage, QPainter, QPixmap,
                            QTransform)
-from PySide6.QtWidgets import QLabel, QPushButton
+from PySide6.QtWidgets import (QLabel, QPushButton, QSizePolicy, QStyle, QStyleOptionButton, QStylePainter,
+                               QVBoxLayout, QWidget)
 
 from .text import _MATH_SPLIT, to_math
 from .theme import theme
@@ -52,6 +53,16 @@ def _math_raster(seg: str, size_pt: float, dpi: float):
     return img, float(r.depth), float(r.width)
 
 
+def _whole_logical(px: int, dpr: float) -> int:
+    """Smallest device-pixel size >= ``px`` whose logical size (px / dpr) is a whole number, so a pixmap at a fractional
+    scale factor (125 %, 150 %...) is never resampled when a widget (icon, tab, label) shows it at its logical size."""
+    for L in range(int(np.ceil(px / dpr)), int(np.ceil(px / dpr)) + 12):
+        d = L * dpr
+        if abs(d - round(d)) < 1e-6:
+            return int(round(d))
+    return px
+
+
 @lru_cache(maxsize=8192)
 def _compose(text: str, color: str, size_pt: float, dpr: float, family: str) -> QPixmap:
     try:
@@ -78,8 +89,8 @@ def _compose(text: str, color: str, size_pt: float, dpr: float, family: str) -> 
         pieces.append(("t", " ", fm.ascent(), fm.descent(), fm.horizontalAdvance(" ")))
     asc = max(p[2] for p in pieces)
     desc = max(p[3] for p in pieces)
-    W = int(np.ceil(sum(p[4] for p in pieces))) + 2
-    H = int(np.ceil(asc + desc)) + 1
+    W = _whole_logical(int(np.ceil(sum(p[4] for p in pieces))) + 2, dpr)
+    H = _whole_logical(int(np.ceil(asc + desc)) + 1, dpr)
     out = QImage(W, H, QImage.Format_ARGB32_Premultiplied)
     out.fill(Qt.transparent)
     c = QColor(color)
@@ -135,12 +146,39 @@ def clear_cache() -> None:
     latex_pixmap_legacy.cache_clear()
 
 
+def wrap_latex(text: str, width: float, size: float = 10.0, color: str = "text") -> list[str]:
+    """Greedy line breaking of mixed text and ``$...$`` math into lines no wider than ``width`` (logical pixels); a
+    formula is never split."""
+    protected, inside = [], False
+    for ch in text:                                       # spaces inside math must not break lines
+        if ch == "$":
+            inside = not inside
+        protected.append("" if (ch == " " and inside) else ch)
+    col = theme.color(color)
+    lines, cur = [], ""
+    for w in "".join(protected).split(" "):
+        w = w.replace("", " ")
+        cand = f"{cur} {w}" if cur else w
+        if cur and latex_pixmap(cand, col, size, 1.0).width() > width:
+            lines.append(cur)
+            cur = w
+        else:
+            cur = cand
+    if cur:
+        lines.append(cur)
+    return lines
+
+
 class LatexLabel(QLabel):
-    """A label whose text is mathtext. ``color`` is a theme key ("text", "dim", "accent", ...) or hex."""
+    """A label whose text is mathtext. ``color`` is a theme key ("text", "dim", "accent", ...) or hex.  ``shrink`` lets
+    a long line be clipped instead of forcing its panel wide."""
 
     def __init__(self, text: str = "", color: str = "text", size_pt: float = 10.0, rotate: int = 0,
-                 parent=None) -> None:
+                 parent=None, shrink: bool = False) -> None:
         super().__init__(parent)
+        self._shrink = shrink
+        if shrink:
+            self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)     # its pixmap width never sizes the panel
         self._text, self._color, self._size, self._rot = text, color, size_pt, rotate
         self.setToolTip("")
         theme.changed.connect(self._render)
@@ -159,21 +197,24 @@ class LatexLabel(QLabel):
         if not self._text:
             self.clear()
             return
-        pm = latex_pixmap(self._text, theme.color(self._color), self._size)
+        pm = latex_pixmap(self._text, theme.color(self._color), self._size, self.devicePixelRatioF())
         if self._rot:
             pm_dpr = pm.devicePixelRatio()
             pm = pm.transformed(QTransform().rotate(self._rot), Qt.SmoothTransformation)
             pm.setDevicePixelRatio(pm_dpr)
         self.setPixmap(pm)
-        self.setMinimumSize(pm.deviceIndependentSize().toSize())
+        sz = pm.deviceIndependentSize().toSize()
+        self.setMinimumSize(0 if self._shrink else sz.width(), sz.height())
 
 
 class LatexButton(QPushButton):
-    """Flat button whose caption is mathtext (rendered as an icon)."""
+    """Button whose caption is mathtext. The text pixmap is rendered at this widget's own device pixel ratio and drawn on
+    whole device pixels (never scaled), so the caption stays sharp at any display scaling (100 %, 125 %, 150 %...)."""
 
     def __init__(self, text: str, color: str = "dim", size_pt: float = 9.0, parent=None) -> None:
         super().__init__(parent)
         self._text, self._color, self._size = text, color, size_pt
+        self._pm: QPixmap | None = None
         theme.changed.connect(self._render)
         self._render()
 
@@ -182,6 +223,88 @@ class LatexButton(QPushButton):
         self._render()
 
     def _render(self, *_) -> None:
-        pm = latex_pixmap(self._text, theme.color(self._color), self._size)
-        self.setIcon(QIcon(pm))
-        self.setIconSize(QSize(int(pm.width() / pm.devicePixelRatio()), int(pm.height() / pm.devicePixelRatio())))
+        self._pm = latex_pixmap(self._text, theme.color(self._color), self._size, self.devicePixelRatioF())
+        self.updateGeometry()
+        self.update()
+
+    def event(self, e) -> bool:
+        t = getattr(QEvent.Type, "DevicePixelRatioChange", None)
+        if t is not None and e.type() == t:                   # moved to a screen with another scaling
+            self._render()
+        return super().event(e)
+
+    def showEvent(self, e) -> None:
+        super().showEvent(e)
+        if self._pm is not None and abs(self._pm.devicePixelRatio() - self.devicePixelRatioF()) > 1e-6:
+            self._render()
+
+    def sizeHint(self) -> QSize:
+        d = self._pm.devicePixelRatio()
+        content = QSize(int(np.ceil(self._pm.width() / d)), int(np.ceil(self._pm.height() / d)))
+        opt = QStyleOptionButton()
+        self.initStyleOption(opt)
+        opt.text, opt.icon = "", QIcon()
+        return self.style().sizeFromContents(QStyle.CT_PushButton, opt, content, self).expandedTo(QSize(0, 0))
+
+    def paintEvent(self, _) -> None:
+        p = QStylePainter(self)
+        opt = QStyleOptionButton()
+        self.initStyleOption(opt)
+        opt.text, opt.icon = "", QIcon()
+        p.drawControl(QStyle.CE_PushButtonBevel, opt)
+        pm, dpr = self._pm, self.devicePixelRatioF()
+        w, h = pm.width() / pm.devicePixelRatio(), pm.height() / pm.devicePixelRatio()
+        x = round((self.width() - w) / 2 * dpr) / dpr                # snap to the device pixel grid
+        y = round((self.height() - h) / 2 * dpr) / dpr
+        if not self.isEnabled():
+            p.setOpacity(0.4)
+        p.drawPixmap(QPointF(x, y), pm)
+
+
+class LatexParagraph(QWidget):
+    """Mixed text and math that wraps to the available width, one :class:`LatexLabel` per line; it never forces its
+    panel wider.  Same ``setLatex`` / ``latex`` interface as :class:`LatexLabel`."""
+
+    def __init__(self, text: str = "", color: str = "text", size_pt: float = 10.0, parent=None) -> None:
+        super().__init__(parent)
+        self._text, self._color, self._size, self._w = text, color, size_pt, 0
+        self._lay = QVBoxLayout(self)
+        self._lay.setContentsMargins(0, 0, 0, 0)
+        self._lay.setSpacing(1)
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        theme.changed.connect(self._rebuild)
+        self._rebuild()
+
+    def setLatex(self, text: str, color: str | None = None) -> None:
+        self._text = text
+        if color:
+            self._color = color
+        self._rebuild()
+
+    def latex(self) -> str:
+        return self._text
+
+    def _rebuild(self, *_) -> None:
+        while self._lay.count():
+            w = self._lay.takeAt(0).widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
+        lines = wrap_latex(self._text, max(self.width() or 360, 60), self._size, self._color) if self._text else []
+        h = 0
+        for ln in lines:
+            lbl = LatexLabel(ln, self._color, self._size, shrink=True)
+            self._lay.addWidget(lbl)
+            lbl.show()
+            h += lbl.minimumHeight() + 1
+        self.setFixedHeight(max(h - 1, 0))
+        self._w = self.width()
+
+    def resizeEvent(self, e) -> None:
+        super().resizeEvent(e)
+        if abs(self.width() - self._w) > 3:
+            self._rebuild()
+
+    def sizeHint(self) -> QSize:
+        return QSize(120, self.height())

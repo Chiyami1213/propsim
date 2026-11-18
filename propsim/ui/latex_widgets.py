@@ -63,8 +63,15 @@ class LatexComboBox(QComboBox):
     def __init__(self, size_pt: float = 9.5, parent=None) -> None:
         super().__init__(parent)
         self.size_pt = size_pt
+        # a long item label must never widen the panel that hosts the box: size to a minimum width, the popup shows it all
+        self.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.setMinimumContentsLength(8)
         self.view().setItemDelegate(LatexItemDelegate(size_pt, "text", "accent", self))
         theme.changed.connect(self.update)
+
+    def showPopup(self) -> None:
+        self.view().setMinimumWidth(max(self.view().sizeHintForColumn(0) + 28, self.width()))
+        super().showPopup()
 
     def paintEvent(self, e) -> None:
         text = self.currentText()

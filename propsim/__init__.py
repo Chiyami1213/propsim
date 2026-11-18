@@ -2,3 +2,4 @@
 __version__ = "1.0.0"
 REPO_URL = "https://github.com/Chiyami1213/propsim"
 HELP_URL = REPO_URL + "#readme"
+GUIDE_URL = REPO_URL + "/blob/main/GUIDE.md"

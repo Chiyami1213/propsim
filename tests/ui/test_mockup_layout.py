@@ -48,13 +48,13 @@ def test_run_completed_and_seeked(win):
 
 def test_regions_exist_and_proportions(win):
     assert (win.width(), win.height()) == (1600, 1000)
-    assert win.left_dock.width() == pytest.approx(265, rel=0.10)
+    assert win.left_dock.width() == pytest.approx(335, rel=0.10)
     assert win.right_dock.width() == pytest.approx(450, rel=0.10)
     assert win.bar.height() == 40
     h = lambda d: d.height()
     assert h(win.vp_dock) / (h(win.vp_dock) + h(win.plots_dock)) == pytest.approx(0.55, rel=0.10)
     assert h(win.right_dock) / (h(win.right_dock) + h(win.log_dock)) == pytest.approx(0.75, rel=0.10)
-    assert win.vp.width() > 0.5 * win.width()
+    assert win.vp.width() > 0.45 * win.width()                          # Modules is wide enough to show full labels
     plots = win.plot_tabs.grid_plots()[:3]
     xs = [p.mapTo(win, p.rect().topLeft()).x() for p in plots]
     assert len(plots) == 3 and xs == sorted(xs)

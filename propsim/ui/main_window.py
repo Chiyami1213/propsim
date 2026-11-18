@@ -18,10 +18,11 @@ from ..modules import registry
 from ..modules.base import ModelController
 from . import latex
 from .export import save_tab_png
-from .. import HELP_URL, __version__, storage
-from .latex import LatexLabel
+from .. import GUIDE_URL, HELP_URL, __version__, storage
+from .latex import LatexLabel, LatexParagraph
 from .latex_widgets import LatexItemDelegate, LatexLog
 from .text import apa
+from .panels import PAD, GuideTree, PanelTitle, add_panel_menu
 from .params import ParamForm
 from .playback import PlaybackBar, PlaybackModel
 from .plots import PlotTabs
@@ -35,12 +36,16 @@ MODULE_TITLES = {"Hybrid": "Hybrid Rocket", "Liquid": "Liquid Engine", "Solid": 
 KEY_ROLE = Qt.UserRole + 1
 
 
+def app_settings() -> QSettings:
+    """The app's settings store: the registry on Windows; tests switch the default format to a temporary INI file."""
+    return QSettings(QSettings.defaultFormat(), QSettings.UserScope, "PropSim", "PropSim")
+
+
 def default_home() -> Path:
     """Data folder: the one chosen in the app (File > Data Folder), else PROPSIM_HOME, else %APPDATA%/PropSim."""
-    return storage.resolve_home(QSettings("PropSim", "PropSim").value("data_dir") or None)
+    return storage.resolve_home(app_settings().value("data_dir") or None)
 
 
-PAD = 10                                                  # one padding for every panel (title and content)
 LAYOUT_VERSION = 2                                        # bump when the dock set changes: old saved states are ignored
 
 
@@ -48,7 +53,7 @@ def _heading(text: str) -> QLabel:
     lbl = QLabel(apa(text))
     lbl.setObjectName("heading")
     lbl.setContentsMargins(PAD, PAD, PAD, PAD // 2)
-    return lbl
+    return lbl                                            # plain heading (dock titles use PanelTitle)
 
 
 def _panel(*widgets: QWidget, stretch: int = 0) -> QWidget:
@@ -95,6 +100,9 @@ class MainWindow(QMainWindow):
             self._restore_theme()
             self._restore_layout()
         self._layout_on_show = not self._layout_restored    # Qt redistributes dock sizes on first show
+        self._tour = None
+        if use_settings:
+            QTimer.singleShot(900, self._offer_tutorial)
         self._log(f"data folder: {self.home}")
         if migrated:
             self._log(f"copied {migrated} saved files from the previous data folder (~/.propsim)")
@@ -105,7 +113,7 @@ class MainWindow(QMainWindow):
         self.setDockOptions(QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks | QMainWindow.AllowTabbedDocks)
         self.setDockNestingEnabled(True)
         # --- modules tree ---
-        self.tree = QTreeView()
+        self.tree = GuideTree()
         self.tree.setHeaderHidden(True)
         self.tree.setEditTriggers(QTreeView.NoEditTriggers)
         self.tree_model = QStandardItemModel()
@@ -123,18 +131,18 @@ class MainWindow(QMainWindow):
         self.tree.setIndentation(18)
         self.tree.expand(self.tree_model.index(list(registry.TREE).index("Hybrid"), 0))
         self.tree.selectionModel().currentChanged.connect(self._on_tree)
-        self.left_dock = self._dock("Modules", _heading("Modules"), _panel(self.tree))
+        self.left_dock = self._dock("Modules", "Modules", _panel(self.tree))
         # --- saved runs ---
         self.runs_list = QListWidget()
         self.runs_list.itemClicked.connect(self._on_run_clicked)
         self.compare_cb = QCheckBox("Compare Overlay")
         self.compare_cb.toggled.connect(lambda _: self._refresh_tabs())
-        self.runs_dock = self._dock("SavedRuns", _heading("Saved Runs"), _panel(self.runs_list, self.compare_cb))
+        self.runs_dock = self._dock("SavedRuns", "Saved Runs", _panel(self.runs_list, self.compare_cb))
         # --- 3D view and plots ---
         self.vp = Viewport3D()
         self.plot_tabs = PlotTabs()
-        self.vp_dock = self._dock("View3D", _heading("3D View"), _panel(self.vp))
-        self.plots_dock = self._dock("Plots", _heading("Plots"), _panel(self.plot_tabs))
+        self.vp_dock = self._dock("View3D", "3D View", _panel(self.vp))
+        self.plots_dock = self._dock("Plots", "Plots", _panel(self.plot_tabs))
         # --- parameters ---
         self.params_title = LatexLabel("", "text", 10.0)            # model name, first line of the panel body
         self.scroll = QScrollArea()
@@ -147,11 +155,11 @@ class MainWindow(QMainWindow):
         hl.addWidget(self.hover)
         body = _panel(self.scroll, hb)
         body.layout().insertWidget(0, self.params_title)
-        self.right_dock = self._dock("Parameters", _heading("Parameters"), body)
+        self.right_dock = self._dock("Parameters", "Parameters", body)
         # --- run log ---
         self.log = LatexLog()
-        self.summary = LatexLabel("", "accent", 9.5)
-        self.log_dock = self._dock("RunLog", _heading("Run Log"), _panel(self.log, self.summary))
+        self.summary = LatexParagraph("", "accent", 9.5)
+        self.log_dock = self._dock("RunLog", "Run Log", _panel(self.log, self.summary))
         self.docks = [self.left_dock, self.runs_dock, self.vp_dock, self.plots_dock, self.right_dock, self.log_dock]
         self.default_layout()
         # --- bottom bar ---
@@ -165,11 +173,11 @@ class MainWindow(QMainWindow):
         self.vp.cutawayChanged.connect(lambda _: self._refresh_scene())
         self.vp.fieldChanged.connect(lambda _: self._refresh_scene())
 
-    def _dock(self, name: str, title: QWidget, widget: QWidget) -> QDockWidget:
-        d = QDockWidget(name, self)
+    def _dock(self, name: str, text: str, widget: QWidget) -> QDockWidget:
+        d = QDockWidget(apa(text), self)
         d.setObjectName(name + "Dock")
-        d.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-        d.setTitleBarWidget(title)                         # drag the panel by its title
+        d.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetClosable)
+        d.setTitleBarWidget(PanelTitle(d, text))           # drag grip top left, close button top right
         d.setWidget(widget)
         self.addDockWidget(Qt.LeftDockWidgetArea, d)
         return d
@@ -188,7 +196,7 @@ class MainWindow(QMainWindow):
         for d in self.docks:
             d.show()
         w = max(self.width(), 1200)
-        self.resizeDocks([self.left_dock, self.vp_dock, self.right_dock], [265, w - 265 - 450, 450], Qt.Horizontal)
+        self.resizeDocks([self.left_dock, self.vp_dock, self.right_dock], [335, w - 335 - 450, 450], Qt.Horizontal)
         h = max(self.height() - 40, 600)
         self.resizeDocks([self.left_dock, self.runs_dock], [int(0.62 * h), int(0.38 * h)], Qt.Vertical)
         self.resizeDocks([self.vp_dock, self.plots_dock], [int(0.55 * h), int(0.45 * h)], Qt.Vertical)
@@ -205,6 +213,13 @@ class MainWindow(QMainWindow):
         self._act(f, "Data folder", self.choose_data_folder)
         self._act(f, "Open data folder", lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.home))))
         f.addSeparator()
+        tx = f.addMenu(apa("Send thrust to vehicle"))
+        for k in (1, 2, 3):
+            self._act(tx, f"Stage {k}", lambda k=k: self.send_thrust(k))
+        rp = f.addMenu(apa("Export report"))
+        self._act(rp, "HTML report (.html)", lambda: self.export_report("html"))
+        self._act(rp, "PDF report (.pdf)", lambda: self.export_report("pdf"))
+        self._act(rp, "LaTeX tables and figures (.tex)", lambda: self.export_report("tex"))
         x = f.addMenu(apa("Export code"))
         self._act(x, "Python script (.py)", lambda: self.export(".py"))
         self._act(x, "MATLAB script (.m)", lambda: self.export(".m"))
@@ -213,6 +228,7 @@ class MainWindow(QMainWindow):
         e = mb.addMenu("&Edit")
         self._act(e, "Reset parameters to defaults", self.reset_params)
         v = mb.addMenu("&View")
+        add_panel_menu(v.addMenu(apa("Panels")), self.docks)
         self._act(v, "Color theme", self.choose_theme, "Ctrl+Shift+T")
         self._act(v, "Next color theme", self.toggle_theme, "Ctrl+T")
         self._act(v, "Restore default layout", self.reset_layout, "Ctrl+Shift+R")
@@ -222,6 +238,8 @@ class MainWindow(QMainWindow):
         va = mb.addMenu("&Validation")
         self._act(va, "Run reference + core tests", self.run_validation)
         h = mb.addMenu("&Help")
+        self._act(h, "Tutorial", self.start_tutorial, "Ctrl+F1")
+        self._act(h, "User guide", lambda: QDesktopServices.openUrl(QUrl(GUIDE_URL)))
         self._act(h, "Online help (GitHub)", lambda: QDesktopServices.openUrl(QUrl(HELP_URL)), "F1")
         self._act(h, "About PropSim", lambda: QMessageBox.about(
             self, "About PropSim", f"PropSim {__version__}\nInteractive 3D Rocket Propulsion Simulator"))
@@ -244,6 +262,33 @@ class MainWindow(QMainWindow):
     def toggle_theme(self) -> None:
         """Next color theme in the picker order."""
         theme.cycle()
+
+    def start_tutorial(self) -> None:
+        """Guided tour (arrow keys move between steps, Esc leaves); also offered once on the first launch."""
+        from .tutorial import TutorialOverlay
+        if getattr(self, "_tour", None) is not None:
+            return
+        self._tour = TutorialOverlay(self)
+        self._tour.finished.connect(self._tour_done)
+
+    def _tour_done(self, done: bool) -> None:
+        self._tour = None
+        if self.use_settings:
+            self._settings().setValue("tour_done", True)
+
+    def _offer_tutorial(self) -> None:
+        if not self.use_settings or not self.isVisible() or self._settings().value("tour_done") in (True, "true"):
+            return
+        self._settings().setValue("tour_done", True)                  # ask once, whatever the answer
+        box = QMessageBox(self)
+        box.setWindowTitle(apa("Welcome to PropSim"))
+        box.setText("Take a one-minute tour of the window? You can move between steps with the left and right arrow "
+                    "keys, and replay it any time from Help, Tutorial.")
+        go = box.addButton("Start Tour", QMessageBox.AcceptRole)
+        box.addButton("Not Now", QMessageBox.RejectRole)
+        box.exec()
+        if box.clickedButton() is go:
+            self.start_tutorial()
 
     def choose_theme(self) -> None:
         from .theme_picker import ThemeDialog
@@ -360,6 +405,7 @@ class MainWindow(QMainWindow):
             p = self.form.values()
             if hasattr(p, "to_si"):
                 p.to_si()                     # surface unit-conversion / consistency errors before the thread starts
+            self.ctrl.prepare_params(p, self.home)
         except Exception as e:                                          # noqa: BLE001
             self._log(f"invalid parameters: {e}")
             return
@@ -568,7 +614,7 @@ class MainWindow(QMainWindow):
 
     # ---- layout persistence ---------------------------------------------------------------------
     def _settings(self) -> QSettings:
-        return QSettings("PropSim", "PropSim")
+        return app_settings()
 
     def _save_theme(self, name: str) -> None:
         if self.use_settings:
@@ -595,6 +641,49 @@ class MainWindow(QMainWindow):
 
     def reset_layout(self) -> None:
         self.default_layout()
+
+    def export_report(self, kind: str, path: str | None = None) -> None:
+        """HTML / PDF report or LaTeX tables of the current model, parameters, results and plots."""
+        if self.ctrl is None:
+            return
+        live = self.ctrl.mode == "live"
+        r = self.live_state if live else self.result
+        if r is None:
+            self._log("nothing to report yet: run the simulation first")
+            return
+        p = self.form.values() if live else self.result_params
+        ext = {"html": ".html", "pdf": ".pdf", "tex": ".tex"}[kind]
+        stem = re.sub(r"[^A-Za-z0-9]+", "_", self.ctrl.title.lower()).strip("_") + "_report"
+        if not path:
+            path = QFileDialog.getSaveFileName(self, apa("Export report"), str(self.home / "exports" / f"{stem}{ext}"),
+                                               f"*{ext}")[0]
+        if not path:
+            return
+        from .. import report
+        log = [] if live else list(r.log)
+        try:
+            files = report.export(kind, path, self.ctrl, p, r, log)
+        except Exception as e:                                          # noqa: BLE001 - report, never crash the app
+            self._log(f"report failed: {e}")
+            return
+        self._log("exported report " + ", ".join(f.name for f in files))
+
+    def send_thrust(self, stage: int) -> None:
+        """Save the thrust curve of the current hybrid / solid / liquid Run result as the thrust profile of a vehicle stage
+        (``<data folder>/profiles/stage<k>.json``); the vehicle model flies it when that stage's source is *profile*."""
+        from ..core.trajectory import profiles
+        if self.ctrl is None or self.ctrl.mode != "run" or self.result is None:
+            self._log("run a hybrid, solid or liquid model first, then send its thrust to the vehicle")
+            return
+        try:
+            prof = profiles.from_result(self.ctrl.key, self.result)
+        except ValueError as e:
+            self._log(str(e))
+            return
+        path = profiles.save(prof, self.home / "profiles" / f"stage{stage}.json")
+        I, m = profiles.impulse(prof)
+        self._log(f"thrust profile of {self.ctrl.title} saved for vehicle stage {stage}: burn {prof['t'][-1]:.2f} (s), "
+                  f"peak {max(prof['F']) / 1e3:.2f} (kN), impulse {I / 1e3:.1f} (kN·s), propellant {m:.2f} (kg) -> {path.name}")
 
     # ---- data folder and session backup -------------------------------------------------------------
     def set_home(self, path: Path) -> None:

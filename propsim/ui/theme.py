@@ -94,6 +94,7 @@ QLabel#heading {{ color: {t['dim']}; font-weight: bold; font-size: 9pt; letter-s
 QLabel#groupTitle {{ color: {t['accent']}; font-weight: bold; }}
 QLabel#value {{ color: {t['dim']}; font-size: 9pt; }}
 QLabel#caption {{ color: {t['dim']}; font-size: 8.5pt; }}
+QFrame#tourcard {{ background: {t['panel']}; border: 1.5px solid {t['accent']}; border-radius: 12px; }}
 QFrame#hoverbox {{ background: {t['hover_bg']}; border: 1px solid {t['hover_edge']}; border-radius: 5px; }}
 QFrame#readout {{ background: {t['card']}; border: 1px solid {t['edge']}; border-radius: 6px; }}
 QPlainTextEdit, QTextBrowser {{ background: {t['panel']}; border: none; color: {t['dim']};
@@ -130,9 +131,14 @@ QTabBar::tab:selected {{ background: {t['select_bg']}; color: {t['text']}; }}
 QTabWidget::pane {{ border: none; }}
 QScrollArea {{ border: none; background: transparent; }}
 QScrollArea > QWidget > QWidget {{ background: transparent; }}
-QScrollBar:vertical {{ background: {t['panel']}; width: 8px; }}
-QScrollBar::handle:vertical {{ background: {t['groove']}; border-radius: 4px; min-height: 20px; }}
-QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; width: 0; }}
+QScrollBar:vertical {{ background: {t['panel']}; width: 10px; margin: 0; border: none; }}
+QScrollBar:horizontal {{ background: {t['panel']}; height: 10px; margin: 0; border: none; }}
+QScrollBar::handle:vertical {{ background: {t['groove']}; border-radius: 5px; min-height: 28px; margin: 1px 1px; }}
+QScrollBar::handle:horizontal {{ background: {t['groove']}; border-radius: 5px; min-width: 28px; margin: 1px 1px; }}
+QScrollBar::handle:hover {{ background: {t['faint']}; }}
+QScrollBar::handle:pressed {{ background: {t['dim']}; }}
+QScrollBar::add-page, QScrollBar::sub-page {{ background: transparent; }}
+QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; width: 0; background: transparent; border: none; }}
 QSplitter::handle {{ background: {t['bg']}; }}
 QToolTip {{ background: {t['panel']}; color: {t['text']}; border: 1px solid {t['edge']}; }}
 """
