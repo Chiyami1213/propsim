@@ -27,7 +27,7 @@ MODELS = {
                       "study and an animated schematic (opens its own window)",
     "common.nozzle": "nozzle area ratio gives the thrust coefficient curve, mach and pressure along the bell, and a 3d nozzle",
     "hybrid.regression": "compares fuel regression-rate laws against oxidizer mass flux and port size",
-    "grain.hybrid": "designs a hybrid port and grain stack (custom ports, inhibitors, per-grain fuel) with a 3d view and "
+    "grain.hybrid": "designs a hybrid motor: port and grain stack (custom ports, inhibitors, per-grain fuel) with a 3d view and "
                     "cross-section plots (opens its own window)",
     "hybrid.flow": "core flow in the port: taylor-culick and bidirectional-vortex velocity fields",
     "hybrid.fuel": "fuel and oxidizer properties and how they set regression and mixture ratio",
@@ -36,7 +36,7 @@ MODELS = {
     "hybrid.burn1d": "burn with the port resolved along its length: axial regression, throttling and throat erosion",
     "hybrid.n2o": "nitrous oxide blowdown from a self-pressurizing tank feeding a hybrid burn",
     "solid.burnrate": "burn rate law and the equilibrium chamber pressure against the burning-area ratio k_n",
-    "grain.solid": "designs a solid grain section or stack (star, wagon wheel, finocyl, custom shapes, inhibitors) with burnback "
+    "grain.solid": "designs a solid motor: grain section or stack (star, wagon wheel, finocyl, custom shapes, inhibitors) with burnback "
                    "tables and a 3d view (opens its own window)",
     "solid.burnback3d": "level-set burnback of a three-dimensional grain with the burning surface shown over time",
     "solid.ballistics": "internal ballistics of a solid motor: chamber pressure, thrust and burn time from the grain "

@@ -41,7 +41,7 @@ Set *Drag* to *Table* and put a file `drag.csv` with the columns `mach,cd` (Mach
 folder. *File, Open Data Folder* opens it.
 
 ### Solid grain design and internal ballistics
-*Solid, Grain Designer* (Live) shows the burning area, K_n and equilibrium pressure through the burn of one section
+*Design, Solid motor designer* (a window) shows the burning area, K_n and equilibrium pressure through the burn of one section
 kind: BATES (circular bore), star, wagon wheel, finocyl, centre plus 4 or 6 bores, moon burner (bore offset by $e$),
 C-slot, D-grain (flat at $e$ from the axis), X-core, end burner (no port) or a custom shape list. *Segments* repeats
 the grain $N_{seg}$ times and *Ends* says which end faces burn, so a classic BATES motor is a circular bore with *Both
@@ -66,7 +66,7 @@ $(p_c/p_{ref})^{0.8}$); without a sweep the plots overlay all three treatments. 
 Ballistics* for those.
 
 ### Build your own liquid engine cycle
-*Liquid, Cycle sandbox* (or **Design, Liquid engine designer**, Ctrl+E) opens a flow-diagram editor. Pick parts from
+*Liquid, Engine designer* (or **Design, Liquid engine designer**, Ctrl+E) opens a flow-diagram editor. Pick parts from
 the component library on the left (tanks, lines, valves, pumps, inducers, turbines, gas generators, injectors,
 chambers, cooling jackets, nozzles, shafts) by double-clicking or dragging, then drag from one port to another to
 connect them. Fluid ports join outlet to inlet; shaft ports join a turbine to its pumps. Choose the oxidizer and fuel in
@@ -143,7 +143,7 @@ shows only the names when its window is narrow. The choice is remembered.
 ## Designs and analysis
 
 Build the engine or motor first, then test it. The **Design** menu opens the liquid engine designer (cycle sandbox) and
-the solid and hybrid grain designers. **Use in Analysis** makes the current design the active one; opening an analysis
+the solid and hybrid motor designers. **Use in Analysis** makes the current design the active one; opening an analysis
 module of the same kind (Liquid: feed transient, pump-fed cycles, chugging; Solid: ballistics, burnback, CP motor;
 Hybrid: the burns) then starts from the design's values, limited to the module's slider range (the log says which).
 **File, Open Design** reopens a saved grain design; **Analysis, Use Active Design in This Module** reloads the open
@@ -164,7 +164,7 @@ Double-click a parameter slider to put it back to its default value.
 |---|---|
 | Ctrl+R / Esc | Run / Cancel |
 | Ctrl+O, Ctrl+S | Open case, Save case |
-| Ctrl+E | Liquid engine designer (cycle sandbox) |
+| Ctrl+E | Liquid engine designer |
 | F10 | Color theme picker |
 | F12 | Restore default panel layout |
 | F11 | Full screen on and off |

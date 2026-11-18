@@ -4,8 +4,8 @@ A *design* is a small JSON document (``*.psimdesign.json``) with a ``kind`` (liq
 name, where it came from (a library engine or the user) and the data of its designer:
 
 * ``liquid``  the cycle-sandbox document (graph, design targets and free parameters)
-* ``solid``   the grain and propellant parameters of the solid grain designer
-* ``hybrid``  the port and grain parameters of the hybrid grain designer
+* ``solid``   the grain and propellant parameters of the solid motor designer
+* ``hybrid``  the port and grain parameters of the hybrid motor designer
 
 ``updates(design, model_key)`` gives the parameter values an analysis module takes from the design (display units, the
 names of that module's own parameters); anything the design does not define keeps the module's default.  No Qt here.

@@ -84,3 +84,20 @@ def test_dialog_and_persistence(app, tmp_path):
     finally:
         theme.set("dark")
         W.shutdown()
+
+
+def test_window_frames_follow_the_theme(qapp, tmp_path):
+    """The light theme must not leave black system title bars on dialogs."""
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QGuiApplication
+    from propsim.ui.main_window import MainWindow
+    from propsim.ui.theme import theme
+    w = MainWindow(home=tmp_path, use_settings=False)
+    try:
+        theme.set("light")
+        assert QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Light
+        theme.set("dark")
+        assert QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
+    finally:
+        theme.set("dark")
+    del w

@@ -98,6 +98,7 @@ def build_qss(t: dict[str, str]) -> str:
 QMainWindow, QDockWidget, QToolBar, QDialog {{ background: {t['bg']}; }}
 QMainWindow::separator {{ background: {t['bg']}; width: 4px; height: 4px; }}
 QMenuBar {{ background: {t['bg']}; color: {t['dim']}; }}
+QMenuBar::item {{ padding: 4px 8px; margin: 0 1px; background: transparent; border-radius: 4px; }}
 QMenuBar::item:selected {{ background: {t['select_bg']}; }}
 QMenu {{ background: {t['panel']}; border: 1px solid {t['edge']}; padding: 4px 0; }}
 QMenu::item {{ padding: 5px 40px 5px 14px; }}

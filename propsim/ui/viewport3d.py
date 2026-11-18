@@ -234,10 +234,17 @@ class Viewport3D(QWidget):
         self.colorbar.set(cmap, lo, hi, title)
 
     def _toggle_legend(self) -> None:
-        self.set_legend_visible(not self._legend_on)
+        """The Legend button: what the user asks for wins over the automatic hiding when the view is small."""
+        show = not self.legend.isVisible()
+        self._legend_on = show
+        self._legend_pref = show
+        self.legend.want(show)
+        self._place()
 
     def set_legend_visible(self, on: bool) -> None:
+        """Default state (Preferences): shown when it fits, or never."""
         self._legend_on = on
+        self._legend_pref = None if on else False
         self.legend.want(on)
         self._place()
 
@@ -328,7 +335,9 @@ class Viewport3D(QWidget):
         fits = (self.legend.y() > self.readout.geometry().bottom() + 6 and
                 not (self.colorbar.isVisible() and self.colorbar.geometry().right() + 6 > self.legend.x() and
                      self.colorbar.geometry().bottom() > self.legend.y()))
-        self.legend.setVisible(bool(self.legend._rows) and self._legend_on and fits)
+        pref = getattr(self, "_legend_pref", None)
+        show = bool(self.legend._rows) and self._legend_on and (fits or pref is True)
+        self.legend.setVisible(show)
         self.readout.raise_()
         self.colorbar.raise_()
         self.legend.raise_()

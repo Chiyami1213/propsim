@@ -27,21 +27,21 @@ class CycleSandboxTool:
 
 
 class GrainDesignerSolidTool:
-    """Tree entry that opens the grain designer window in solid mode (``propsim.ui.grain_designer``)."""
+    """Tree entry that opens the motor designer window in solid mode (``propsim.ui.grain_designer``)."""
 
     key = "grain.solid"
 
 
 class GrainDesignerHybridTool:
-    """Tree entry that opens the grain designer window in hybrid mode."""
+    """Tree entry that opens the motor designer window in hybrid mode."""
 
     key = "grain.hybrid"
 
 
 TOOL_KEYS = (CycleSandboxTool.key, GrainDesignerSolidTool.key, GrainDesignerHybridTool.key)
-# Live models that the grain designer window hosts: not in the tree, still reachable by key
+# Live models that the motor designer window hosts: not in the tree, still reachable by key
 # (also the models the designers replaced: the injector and jacket are components of the liquid engine designer, the
-# burn rate and K_n curves are a tab of the solid grain designer)
+# burn rate and K_n curves are a tab of the solid motor designer)
 EXTRA: dict[str, type[ModelController]] = {
     SolidGrainLiveModel.key: SolidGrainLiveModel, PortLiveModel.key: PortLiveModel, InjectorLiveModel.key: InjectorLiveModel,
     RegenLiveModel.key: RegenLiveModel, BurnRateLiveModel.key: BurnRateLiveModel}
@@ -51,13 +51,13 @@ EXTRA: dict[str, type[ModelController]] = {
 TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
     "Common": [("Thermochemistry & nozzle", "live", EngineLiveModel)],
     "Liquid": [("Feed network transient", "run", FeedTransientModel), ("Pump-fed cycles", "run", CycleModel),
-               ("Chugging & L* stability", "run", ChuggingModel), ("Cycle sandbox", "tool", CycleSandboxTool)],
+               ("Chugging & L* stability", "run", ChuggingModel), ("Engine designer", "tool", CycleSandboxTool)],
     "Hybrid": [("Nozzle thrust coefficient", "live", NozzleLiveModel), ("Regression laws", "live", RegressionLiveModel),
-               ("Grain designer", "tool", GrainDesignerHybridTool),
+               ("Motor designer", "tool", GrainDesignerHybridTool),
                ("Core flow fields", "live", FlowLiveModel), ("Fuel & oxidizer", "live", FuelLiveModel),
                ("Instability & scaling", "live", StabilityLiveModel), ("0-D burn", "run", HybridBurnModel),
                ("Quasi-1D burn", "run", HybridBurn1DModel), ("N₂O blowdown", "run", N2OBlowdownModel), ("ILFI stability", "run", None)],
-    "Solid": [("Grain designer", "tool", GrainDesignerSolidTool), 
+    "Solid": [("Motor designer", "tool", GrainDesignerSolidTool), 
               ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel),
               ("CP motor (quasi-steady)", "run", CPMotorModel), ("CP motor (US units)", "run", CPMotorUSModel)],
     "Electric": [("Mission & power trades", "live", TradesLiveModel), ("Electrothermal thrusters", "live", ThermalLiveModel),

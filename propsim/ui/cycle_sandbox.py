@@ -11,6 +11,7 @@ messages.  The solver is :mod:`propsim.core.engine_graph`.
 from __future__ import annotations
 
 import copy
+import time
 import math
 
 import numpy as np
@@ -18,12 +19,13 @@ from PySide6.QtCore import QTimer, QObject, QPointF, QRectF, Qt, QThread, Signal
 from PySide6.QtGui import QAction, QBrush, QColor, QFont, QFontMetricsF, QKeySequence, QLinearGradient, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QGraphicsItem, QGraphicsPathItem, QGraphicsScene, QGraphicsView, QHBoxLayout,
-                               QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
+                               QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPlainTextEdit, QProgressBar,
                                QPushButton, QSplitter, QTableWidget, QTableWidgetItem, QTabWidget, QToolBar,
                                QDockWidget, QStyle, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from ..core.engine_graph import edit as E
 from .pid import INSTRUMENTS, draw_bubble, draw_symbol, mechanical_pen, tag_for
+from .busy import busy
 from .panels import PAD, PanelTitle, draw_guide
 from .text import apa
 from .theme import theme
@@ -312,11 +314,10 @@ class _LegendOverlay(QWidget):
         """(kind, text, color key or None, pen style): ``ramp`` rows draw the quantity color ramp."""
         colored = getattr(self.canvas, "legend", None)
         out: list[tuple] = []
-        if colored:
+        if colored:                                              # the ramp in use, and still the propellant lines
             out.append(("ramp", f"Process line, colored by {colored[0].split(' (')[0].lower()}", None, Qt.SolidLine))
-        else:
-            out += [("line", "Oxidizer line", "ox", Qt.SolidLine), ("line", "Fuel line", "fuel", Qt.SolidLine),
-                    ("line", "Combustion gas line", "gas", Qt.SolidLine)]
+        out += [("line", "Oxidizer line", "ox", Qt.SolidLine), ("line", "Fuel line", "fuel", Qt.SolidLine),
+                ("line", "Combustion gas line", "gas", Qt.SolidLine)]
         out += [("line", "Mechanical link (shaft)", "shaft", Qt.DashDotLine), ("line", "Heat transfer (wall)", "heat", Qt.DotLine),
                 ("bubble", "Instrument bubble", None, Qt.SolidLine)]
         return out
@@ -757,7 +758,7 @@ class CycleSandbox(QMainWindow):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Engine Cycle Sandbox")
+        self.setWindowTitle("Liquid Engine Designer")
         self.resize(1500, 920)
         self.doc = E.new_document()
         self.sol = None
@@ -849,12 +850,24 @@ class CycleSandbox(QMainWindow):
         self.play_btn.setText("Pause Flow" if on else "Play Flow")
         self.canvas.set_playing(on)
 
+    def changeEvent(self, e) -> None:
+        super().changeEvent(e)
+        from PySide6.QtCore import QEvent
+        if e.type() == QEvent.WindowStateChange:
+            self._state_t = time.monotonic()
+
+    def _dock_floated(self, dock: QDockWidget, floating: bool) -> None:
+        """A dock that pops out right after the window was maximized or put in full screen is put back."""
+        if floating and time.monotonic() - getattr(self, "_state_t", -10.0) < 1.5:
+            QTimer.singleShot(0, lambda: dock.setFloating(False))
+
     def _dock(self, name: str, title: str, widget: QWidget) -> QDockWidget:
         d = QDockWidget(apa(title), self)
         d.setObjectName("sb" + name)
         d.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetClosable)
         d.setTitleBarWidget(PanelTitle(d, title))               # drag grip top left, close button top right
         d.setWidget(widget)
+        d.topLevelChanged.connect(lambda fl, d=d: self._dock_floated(d, fl))
         return d
 
     def default_layout(self) -> None:
@@ -979,6 +992,11 @@ class CycleSandbox(QMainWindow):
         tb.addAction(self._action("Fit", self.canvas.fit, "F"))
         self.status = QLabel("")
         self.statusBar().addWidget(self.status, 1)
+        self.busy = QProgressBar()                                   # busy bar while a solve runs
+        self.busy.setRange(0, 0)
+        self.busy.setFixedWidth(220)
+        self.busy.hide()
+        self.statusBar().addPermanentWidget(self.busy)
 
     def _action(self, text, slot, key=None) -> QAction:
         a = QAction(text, self)
@@ -1081,7 +1099,8 @@ class CycleSandbox(QMainWindow):
         path, _ = QFileDialog.getOpenFileName(self, "Open engine", "", "PropSim engine (*.json)")
         if path:
             try:
-                self.set_doc(E.load(path))
+                with busy(self, "Opening engine"):
+                    self.set_doc(E.load(path))
                 self.path = path
             except (OSError, ValueError, KeyError) as exc:
                 QMessageBox.warning(self, "Open engine", str(exc))
@@ -1091,7 +1110,8 @@ class CycleSandbox(QMainWindow):
         if not path:
             path, _ = QFileDialog.getSaveFileName(self, "Save engine", "engine.json", "PropSim engine (*.json)")
         if path:
-            E.save(self.doc, path)
+            with busy(self, "Saving engine"):
+                E.save(self.doc, path)
             self.path = path
             self.log(f"saved {path}")
 
@@ -1218,13 +1238,13 @@ class CycleSandbox(QMainWindow):
                 t.setItem(i, j, it)
         t.itemChanged.connect(lambda it, node=node, spec=spec, t=t: self._edit_param(node, spec, t, it))
         t.setMouseTracking(True)
-        t.setMinimumHeight(240)
+        t.setMinimumHeight(110)                                    # small enough for a short window
         t.itemEntered.connect(lambda it, spec=spec, node=node: self._hint_for(it, spec, node))
         self.insp_layout.addWidget(t, 5)
         self.hint_box = QLabel("hover over a parameter for what it means")
         self.hint_box.setObjectName("hoverbox")
         self.hint_box.setWordWrap(True)
-        self.hint_box.setMinimumHeight(48)
+        self.hint_box.setMinimumHeight(40)
         self.insp_layout.addWidget(self.hint_box)
         self.insp_layout.addWidget(self._state_box(node), 2)
 
@@ -1395,6 +1415,7 @@ class CycleSandbox(QMainWindow):
         if self._thread is not None:
             return
         self.solve_btn.setEnabled(False)
+        self.busy.show()
         self.status.setText("solving …")
         self.msgs.appendPlainText("solving …")
         self._thread = QThread(self)
@@ -1418,9 +1439,10 @@ class CycleSandbox(QMainWindow):
         self._thread.wait()
         self._thread, self._job = None, None
         self.solve_btn.setEnabled(True)
+        self.busy.hide()
         if sol is None:
             self.log(f"cannot solve: {err}")
-            QMessageBox.warning(self, "Engine Cycle Sandbox", err)
+            QMessageBox.warning(self, "Liquid Engine Designer", err)
             return
         self.sol = sol
         lines = [f"{sol.message} after {sol.iterations} outer iterations (largest residual {sol.residual:.1e})"]

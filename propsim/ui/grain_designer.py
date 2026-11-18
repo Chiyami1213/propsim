@@ -1,10 +1,10 @@
-"""Grain designer window (solid and hybrid): design the grain cross-section, see the whole grain in 3D with a side-view
+"""Motor designer window (solid and hybrid): design the grain cross-section, see the whole grain in 3D with a side-view
 cutaway, and read the burning perimeter, port area, remaining propellant and (solid) K_n and pressure curves.  A separate
 window like the cycle sandbox; every panel can be dragged.  "Open in Main Window" carries the design into the simulators."""
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QComboBox, QDockWidget, QLabel, QMainWindow, QPushButton, QScrollArea, QToolBar,
+from PySide6.QtWidgets import (QComboBox, QDockWidget, QLabel, QMainWindow, QProgressBar, QPushButton, QScrollArea, QToolBar,
                                QVBoxLayout, QWidget)
 
 from ..modules.hybrid_live import PortLiveModel
@@ -24,7 +24,7 @@ class GrainDesigner(QMainWindow):
     def __init__(self, main=None, mode: str = "solid", parent=None) -> None:
         super().__init__(parent or main)
         self.main = main
-        self.setWindowTitle("Grain Designer")
+        self.setWindowTitle("Motor Designer")
         self.resize(1500, 900)
         self.mode = mode
         self.ctrl = None
@@ -79,6 +79,11 @@ class GrainDesigner(QMainWindow):
         pm.addAction("Restore Default Layout", self.default_layout)
         panels.setMenu(pm)
         tb.addWidget(panels)
+        self.busy = QProgressBar()                                  # busy bar while the design is evaluated
+        self.busy.setRange(0, 0)
+        self.busy.setFixedWidth(180)
+        self.busy.hide()
+        self.statusBar().addPermanentWidget(self.busy)
         self.vp.cutawayChanged.connect(lambda _: self.refresh())
         self.vp.fieldChanged.connect(lambda _: self.refresh())
         self.set_mode(mode)
@@ -116,18 +121,24 @@ class GrainDesigner(QMainWindow):
         self.ctrl.reset_scene()
         self.vp.set_fields(self.ctrl.fields)
         self.vp.legend_labels = self.ctrl.legend_labels
-        self.setWindowTitle(f"Grain Designer - {MODES[mode][0]}")
+        self.setWindowTitle(f"Motor Designer - {MODES[mode][0]}")
         self.refresh()
 
     def refresh(self, *_) -> None:
         if self.ctrl is None or self.form is None:
             return
-        p = self.form.values()
-        r = self.ctrl.evaluate(p)
-        self.plots.set_tabs(self.ctrl.tabs(p, r))
-        self.ctrl.update_scene(self.vp, p, r, None)
-        self.vp.set_readout(self.ctrl.readout(p, r, None))
-        self.vp.set_caption(self.ctrl.caption(p, r, None))
+        from PySide6.QtWidgets import QApplication
+        self.busy.show()
+        QApplication.processEvents()
+        try:
+            p = self.form.values()
+            r = self.ctrl.evaluate(p)
+            self.plots.set_tabs(self.ctrl.tabs(p, r))
+            self.ctrl.update_scene(self.vp, p, r, None)
+            self.vp.set_readout(self.ctrl.readout(p, r, None))
+            self.vp.set_caption(self.ctrl.caption(p, r, None))
+        finally:
+            self.busy.hide()
 
     # ---- designs ------------------------------------------------------------------------------------------
     def make_design(self):
@@ -153,7 +164,9 @@ class GrainDesigner(QMainWindow):
         path, _ = QFileDialog.getSaveFileName(self, "Save Design", start, "PropSim design (*.psimdesign.json)")
         if path:
             d = self.make_design()
-            d.save(path)
+            from .busy import busy
+            with busy(self, "Saving design"):
+                d.save(path)
             if self.main is not None:
                 self.main.set_design(d)
 

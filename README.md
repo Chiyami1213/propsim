@@ -68,7 +68,7 @@ application, with live parameter studies, time-domain simulations, synchronized 
 
 - **Nozzle thrust coefficient** (Live): nozzle area ratio gives the C_F curve, Mach and pressure distributions, and a 3D bell nozzle.
 - **Regression laws** (Live): regression-law explorer.
-- **Grain designer** (Editor window, Hybrid): port and multiport grain, custom ports with inhibitors, grain stacks; 3D grain with a side-view cutaway.
+- **Hybrid motor designer** (Design menu, editor window): port and multiport grain, custom ports with inhibitors, grain stacks; 3D grain with a side-view cutaway.
 - **Core flow fields** (Live): core flow fields (Taylor-Culick and bidirectional-vortex mantle).
 - **Fuel & oxidizer** (Live): fuel and oxidizer properties.
 - **Instability & scaling** (Live): ILFI instability and similarity scaling.
@@ -78,7 +78,7 @@ application, with live parameter studies, time-domain simulations, synchronized 
 
 **Solid**
 
-- **Grain designer** (Editor window, Solid): grain sections (BATES, star, wagon wheel, finocyl, moon burner, C-slot, D-grain, X-core, end burner and more) with burnback tables, segments and burning ends, 3D grain with a side-view cutaway, Open in Main Window.
+- **Solid motor designer** (Design menu, editor window): grain sections (BATES, star, wagon wheel, finocyl, moon burner, C-slot, D-grain, X-core, end burner and more) with burnback tables, segments and burning ends, 3D grain with a side-view cutaway, Open in Main Window.
 - **3D burnback** (Run): 3-D level-set burnback.
 - **Internal ballistics** (Run): internal ballistics.
 - **CP motor (quasi-steady)** (Run): quasi-steady cylindrical-perforated motor marched in web: end-face burning, three throat-erosion treatments and parameter sweeps.
@@ -279,7 +279,7 @@ Questions and bug reports: [GitHub Issues](https://github.com/Chiyami1213/propsi
     <td><img src="docs/gallery/32-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/cycle-sandbox.png" alt="Cycle sandbox: flow-diagram editor for building and solving liquid engine cycles"><br><sub><b>Cycle sandbox</b> (Liquid, Editor)</sub></td>
+    <td><img src="docs/gallery/cycle-sandbox.png" alt="Liquid engine designer: flow-diagram editor for building and solving liquid engine cycles"><br><sub><b>Cycle sandbox</b> (Liquid, Editor)</sub></td>
     <td><img src="docs/gallery/grain-designer-solid.png" alt="Grain designer (solid): design the port and grain stack, see the whole grain in 3D with a side-view cutaway, and read the burning perimeter, port area and remaining propellant"><br><sub><b>Grain designer</b> (Solid, Editor)</sub></td>
   </tr>
   <tr>

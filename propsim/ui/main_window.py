@@ -22,6 +22,7 @@ from .. import GUIDE_URL, HELP_URL, __version__, storage
 from .latex import LatexLabel, LatexParagraph
 from .latex_widgets import LatexItemDelegate, LatexLog
 from .text import apa
+from .busy import busy, busy_action
 from .panels import PAD, GuideTree, PanelTitle, add_panel_menu
 from .params import ParamForm
 from .playback import PlaybackBar, PlaybackModel
@@ -249,8 +250,8 @@ class MainWindow(QMainWindow):
         self.full_screen_act = self._act(v, "Full screen", self.toggle_full_screen, "F11")
         d = mb.addMenu("&Design")                          # build the engine or motor first, then analyze it
         self._act(d, "Liquid engine designer", self.open_cycle_sandbox, "Ctrl+E")
-        self._act(d, "Solid grain designer", lambda: self.open_grain_designer("solid"), "Ctrl+G")
-        self._act(d, "Hybrid grain designer", lambda: self.open_grain_designer("hybrid"))
+        self._act(d, "Solid motor designer", lambda: self.open_grain_designer("solid"), "Ctrl+G")
+        self._act(d, "Hybrid motor designer", lambda: self.open_grain_designer("hybrid"))
         for name in ("Nuclear thermal designer", "Electric propulsion designer"):
             self._act(d, name + " (planned)", lambda: None).setEnabled(False)
         s = mb.addMenu("&Analysis")                        # test and analyze a design with the analysis modules
@@ -322,9 +323,20 @@ class MainWindow(QMainWindow):
         PreferencesDialog(self).exec()
 
     # =================================================================== theme
+    @staticmethod
+    def _sync_color_scheme() -> None:
+        """Window frames and title bars (the system's, dark by default on a dark Windows) follow the app theme, so a
+        dialog in the light theme does not get a black title bar."""
+        from PySide6.QtGui import QGuiApplication
+        try:
+            QGuiApplication.styleHints().setColorScheme(Qt.ColorScheme.Light if theme.name == "light" else Qt.ColorScheme.Dark)
+        except (AttributeError, RuntimeError):                  # Qt older than 6.8: the system scheme stays
+            pass
+
     def _apply_theme(self) -> None:
         latex.clear_cache()
         QApplication.instance().setStyleSheet(build_qss(theme.t))
+        self._sync_color_scheme()
         for w in self.findChildren(LatexLabel):
             w._render()
 
@@ -366,6 +378,7 @@ class MainWindow(QMainWindow):
         else:
             self._log("the active design does not apply to this module")
 
+    @busy_action("Opening design")
     def open_design(self, path: str | None = None) -> None:
         """Open a saved design, make it active and show it in its designer."""
         from .. import design as D
@@ -439,14 +452,14 @@ class MainWindow(QMainWindow):
             self.select_model(key)
 
     def open_tool(self, key: str) -> None:
-        """Open the window of a tree "tool" entry (cycle sandbox, solid or hybrid grain designer)."""
+        """Open the window of a tree "tool" entry (cycle sandbox, solid or hybrid motor designer)."""
         if key == registry.CycleSandboxTool.key:
             self.open_cycle_sandbox()
         else:
             self.open_grain_designer("solid" if key == registry.GrainDesignerSolidTool.key else "hybrid")
 
     def open_grain_designer(self, mode: str = "solid") -> None:
-        """Open (or raise) the grain designer window, in solid or hybrid mode."""
+        """Open (or raise) the solid or hybrid motor designer window, in solid or hybrid mode."""
         from .grain_designer import GrainDesigner
         if getattr(self, "grain_win", None) is None:
             self.grain_win = GrainDesigner(self, mode)
@@ -701,6 +714,7 @@ class MainWindow(QMainWindow):
         self._refresh_runs_list()
 
     # =================================================================== files
+    @busy_action("Opening case")
     def open_case(self, path: str | None = None) -> None:
         path = path or QFileDialog.getOpenFileName(self, apa("Open case"), str(self.home / "cases"), "PropSim case (*.psim.json)")[0]
         if not path:
@@ -709,6 +723,7 @@ class MainWindow(QMainWindow):
         self.case_name = Path(path).name
         self.select_model(model, params)
 
+    @busy_action("Saving case")
     def save_case(self, path: str | None = None) -> None:
         if self.ctrl is None:
             return
@@ -722,6 +737,7 @@ class MainWindow(QMainWindow):
             self.case_name = Path(path).name
             self._sync_title()
 
+    @busy_action("Opening result")
     def open_result(self, path: str | None = None) -> None:
         path = path or QFileDialog.getOpenFileName(self, apa("Open result"), str(self.runs_dir), "PropSim result (*.psim.h5)")[0]
         if path:
@@ -733,6 +749,7 @@ class MainWindow(QMainWindow):
             self.form.set_values(self.ctrl.Params())
             self._on_params_changed()
 
+    @busy_action("Exporting")
     def export(self, kind: str, path: str | None = None) -> None:
         """PNG (Matplotlib figure of the current tab), CSV, .mat, .h5, and code (.py / .m scripts). ``path`` bypasses the dialog (tests)."""
         if self.ctrl is None:
@@ -829,6 +846,7 @@ class MainWindow(QMainWindow):
     def reset_layout(self) -> None:
         self.default_layout()
 
+    @busy_action("Exporting report")
     def export_report(self, kind: str, path: str | None = None) -> None:
         """HTML / PDF report or LaTeX tables of the current model, parameters, results and plots."""
         if self.ctrl is None:

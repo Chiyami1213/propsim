@@ -144,13 +144,27 @@ class CycleAnimation(QWidget):
         if not path:
             return None
         from PIL import Image
+        from PySide6.QtWidgets import QApplication, QProgressDialog
+        prog = QProgressDialog("Exporting the cycle animation", None, 0, frames + 1, self)
+        prog.setWindowTitle("Export Cycle Animation")
+        prog.setMinimumDuration(0)
+        prog.setWindowModality(Qt.WindowModal)
         imgs = []
-        for i in range(frames):
-            buf = QBuffer()
-            buf.open(QIODevice.WriteOnly)
-            self.frame(i / frames).save(buf, "PNG")
-            imgs.append(Image.open(BytesIO(bytes(buf.data()))).convert("P", palette=Image.ADAPTIVE))
-        imgs[0].save(path, save_all=True, append_images=imgs[1:], duration=40, loop=0)
+        try:
+            for i in range(frames):
+                prog.setValue(i)
+                QApplication.processEvents()
+                buf = QBuffer()
+                buf.open(QIODevice.WriteOnly)
+                self.frame(i / frames).save(buf, "PNG")
+                imgs.append(Image.open(BytesIO(bytes(buf.data()))).convert("P", palette=Image.ADAPTIVE))
+            prog.setLabelText("Writing the file")
+            prog.setValue(frames)
+            QApplication.processEvents()
+            imgs[0].save(path, save_all=True, append_images=imgs[1:], duration=40, loop=0)
+        finally:
+            prog.setValue(frames + 1)
+            prog.close()
         return Path(path)
 
     def save_image(self, path: str | None = None) -> Path | None:

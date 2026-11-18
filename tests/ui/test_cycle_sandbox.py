@@ -288,3 +288,80 @@ def test_ambient_presets_and_helper_box(qapp):
     assert hasattr(w, "hint_box")
     from PySide6.QtCore import Qt
     assert w.ox_box.itemData(0, Qt.ToolTipRole)
+
+
+def test_designer_title_busy_bar_and_docks_stay_docked(qapp):
+    import time
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.show()
+    assert w.windowTitle() == "Liquid Engine Designer"
+    w.solve()
+    assert not w.busy.isHidden()                               # busy bar while solving
+    w.wait()
+    assert w.busy.isHidden()
+    w._state_t = time.monotonic()                              # just maximized
+    d = w.dock_insp
+    d.setFloating(True)
+    for _ in range(20):
+        qapp.processEvents()
+    assert not d.isFloating()                                  # put back after the window state change
+
+
+def test_legend_keeps_propellant_lines_when_colored_by_pressure(qapp):
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.solve()
+    w.wait()
+    w.show()
+    w.color_box.setCurrentText("Pressure (MPa)")
+    w.canvas._place_legend()
+    names = [r[1] for r in w.canvas.legend_box.rows()]
+    assert names[0].startswith("Process line, colored by pressure")
+    assert "Oxidizer line" in names and "Fuel line" in names
+
+
+def test_busy_bar_for_export_and_import(qapp, tmp_path):
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    from propsim.ui.main_window import MainWindow
+    w = MainWindow(home=tmp_path, use_settings=False)
+    w.show()
+    seen = []
+    from propsim.ui import busy as B
+    real = B.busy
+    from contextlib import contextmanager
+
+    @contextmanager
+    def spy(win, text="Working"):
+        seen.append(text)
+        with real(win, text) as bar:
+            yield bar
+    B.busy = spy
+    import propsim.ui.main_window as MW
+    MW.busy = spy
+    try:
+        w.select_model("hybrid.regression")
+        w.export("CSV", str(tmp_path / "x.csv"))               # a given path: the bar starts at once
+        w.save_case(str(tmp_path / "c.psim.json"))
+        w.open_case(str(tmp_path / "c.psim.json"))
+    finally:
+        B.busy = real
+        MW.busy = real
+    assert (tmp_path / "x.csv").exists() and {"Exporting", "Saving case", "Opening case"} <= set(seen)
+    assert w.statusBar().isHidden() or not w.statusBar().currentMessage()
+    sb = CycleSandbox()
+    gif = sb.anim.export_gif(str(tmp_path / "a.gif"), frames=3)
+    assert gif.exists()
+
+
+def test_3d_legend_toggle_comes_back_even_in_a_small_view(qapp):
+    from propsim.ui.viewport3d import Viewport3D
+    v = Viewport3D()
+    v.resize(500, 260)
+    v.show()
+    v.legend.set_rows([("#ffffff", "Part")])
+    v._place()
+    v._toggle_legend()
+    assert not v.legend.isVisible()
+    v._toggle_legend()                                         # off then on again: it must be back
+    assert v.legend.isVisible()

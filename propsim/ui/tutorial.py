@@ -39,7 +39,7 @@ def _steps() -> list[Step]:
              lambda w: w.tree),
         Step("3D View",
              ["Rotate with the left mouse button, pan with the right, zoom with the wheel. The toolbar sets the cutaway "
-              "angle (a side view of the port in the grain designers), picks the field painted on the model, toggles the "
+              "angle (a side view of the port in the motor designers), picks the field painted on the model, toggles the "
               "colorbar and the legend that names its solid-colored blocks, and saves a snapshot. F11 switches full "
               "screen on and off, and F2 saves a screenshot of the whole window to the data folder."],
              lambda w: w.vp),
@@ -73,12 +73,12 @@ def _steps() -> list[Step]:
               "lets you rebind every menu command. F10 opens the color theme picker with Graphite, Ocean, Forest, Plum "
               "and Light. Your choices are remembered."],
              lambda w: w.menuBar()),
-        Step("Grains and Ports",
-             ["The Solid and Hybrid grain designers build custom ports with inhibitors and stacks of grains with their "
+        Step("Motor Designers",
+             ["The Solid and Hybrid motor designers build custom ports with inhibitors and stacks of grains with their "
               "own propellant. The 3D view shows the whole grain, which you can turn with the mouse; Cutaway gives a "
               "side view of the port."],
              lambda w: w.tree),
-        Step("Engine Cycle Sandbox",
+        Step("Liquid Engine Designer",
              ["Design, Liquid Engine Designer (Ctrl+E) opens a flow-diagram editor drawn with ANSI/ISA-5.1 P&ID symbols. Build "
               "or load a cycle, Solve it, and press Play Flow to animate it. The Cycle Animation panel redraws a "
               "gas-generator, expander, staged-combustion or pressure-fed engine as a schematic and exports a GIF. "
