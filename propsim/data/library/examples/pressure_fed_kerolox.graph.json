@@ -1,0 +1,758 @@
+{
+ "schema_version": "1.0",
+ "graph_id": "pressure_fed_kerolox",
+ "name": "Pressure-fed kerolox engine (A-4 feed system, LOX/RP-1, 7.5 klbf vacuum)",
+ "description": "Regulated pressure-fed LOX/RP-1 engine. Feed pressures, pressure drops, chamber pressure, thrust level and nozzle come from the Huzel & Huang A-4 stage engine (Table 3-5); the propellants are changed to LOX/RP-1, so throat area and flows are derived from the shipped CEA tables. No published pressure-fed kerolox engine is in the library yet.",
+ "cycle": "pressure_fed",
+ "reference_engine": null,
+ "propellants": {
+  "oxidizer": "LOX",
+  "fuel": "RP1"
+ },
+ "nodes": [
+  {
+   "id": "ox_tank",
+   "type": "tank_regulated",
+   "label": "LOX tank",
+   "params": {
+    "p_set": {
+     "value": 1137640.0,
+     "unit": "Pa",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "engines/engine_params.csv HH_A4.ox_tank.p"
+    },
+    "V_tank": {
+     "value": 2.51919,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "mdot 6.85 kg/s x 410 s (A-4 duration, Table 3-5) / rho / 0.975 (A-4 ullage 2.5 %)"
+    },
+    "fill_fraction": {
+     "value": 0.975,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77, 2.5 percent ullage volume",
+     "formula": "1 - 0.025"
+    },
+    "T_prop": {
+     "value": 90.0,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "LOX near normal boiling point; RP-1 at 20 degC"
+    }
+   },
+   "ui": {
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "id": "ox_line",
+   "type": "line",
+   "label": "ox feed line",
+   "params": {
+    "length": {
+     "value": 1.5,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "tank to valve, layout not published"
+    },
+    "diameter": {
+     "value": 0.04,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "chosen for about 4.8 m/s"
+    },
+    "roughness": {
+     "value": 1.5240000000000001e-05,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-3 p.283 (machined or commercial cold-rolled)",
+     "formula": "0.00005 ft x 0.3048"
+    },
+    "K_fittings": {
+     "value": 2.04335,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (line pressure drop)",
+     "formula": "dp_line / (rho v^2 / 2) - f L / D with f = 0.0163 (Haaland)"
+    }
+   },
+   "ui": {
+    "x": 150,
+    "y": 0
+   }
+  },
+  {
+   "id": "ox_valve",
+   "type": "valve_ball",
+   "label": "main ox valve",
+   "params": {
+    "diameter": {
+     "value": 0.0314387,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (main valve pressure drop)",
+     "formula": "A = mdot sqrt(K / (2 rho dp)), K = 0.81 (Table 7-4 p.286 (ball, 90 deg open))"
+    },
+    "K_open": {
+     "value": 0.81,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (ball, 90 deg open)"
+    }
+   },
+   "ui": {
+    "x": 300,
+    "y": 0
+   }
+  },
+  {
+   "id": "ox_orifice",
+   "type": "orifice",
+   "label": "ox calibration orifice",
+   "params": {
+    "diameter": {
+     "value": 0.0321777,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (calibration orifice drop)",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    }
+   },
+   "ui": {
+    "x": 400,
+    "y": 0
+   }
+  },
+  {
+   "id": "ox_manifold",
+   "type": "manifold",
+   "label": "ox manifold",
+   "params": {
+    "volume": {
+     "value": 0.0005,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "manifold volume, not published"
+    }
+   },
+   "ui": {
+    "x": 500,
+    "y": 0
+   }
+  },
+  {
+   "id": "ox_injector",
+   "type": "injector",
+   "label": "ox injector",
+   "params": {
+    "A_total": {
+     "value": 0.000460018,
+     "unit": "m2",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (injector pressure drop) with the derived flow",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp))"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.25,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "injector dp / chamber pressure"
+    }
+   },
+   "ui": {
+    "x": 600,
+    "y": 0
+   }
+  },
+  {
+   "id": "fuel_tank",
+   "type": "tank_regulated",
+   "label": "RP1 tank",
+   "params": {
+    "p_set": {
+     "value": 1068690.0,
+     "unit": "Pa",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "engines/engine_params.csv HH_A4.fuel_tank.p"
+    },
+    "V_tank": {
+     "value": 1.51673,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "mdot 2.915 kg/s x 410 s (A-4 duration, Table 3-5) / rho / 0.975 (A-4 ullage 2.5 %)"
+    },
+    "fill_fraction": {
+     "value": 0.975,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77, 2.5 percent ullage volume",
+     "formula": "1 - 0.025"
+    },
+    "T_prop": {
+     "value": 293.15,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "LOX near normal boiling point; RP-1 at 20 degC"
+    }
+   },
+   "ui": {
+    "x": 0,
+    "y": 300
+   }
+  },
+  {
+   "id": "fuel_line",
+   "type": "line",
+   "label": "fuel feed line",
+   "params": {
+    "length": {
+     "value": 1.5,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "tank to valve, layout not published"
+    },
+    "diameter": {
+     "value": 0.03,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "chosen for about 5.1 m/s"
+    },
+    "roughness": {
+     "value": 1.5240000000000001e-05,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-3 p.283 (machined or commercial cold-rolled)",
+     "formula": "0.00005 ft x 0.3048"
+    },
+    "K_fittings": {
+     "value": 1.58379,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (line pressure drop)",
+     "formula": "dp_line / (rho v^2 / 2) - f L / D with f = 0.0208 (Haaland)"
+    }
+   },
+   "ui": {
+    "x": 150,
+    "y": 300
+   }
+  },
+  {
+   "id": "fuel_valve",
+   "type": "valve_ball",
+   "label": "main fuel valve",
+   "params": {
+    "diameter": {
+     "value": 0.0223671,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (main valve pressure drop)",
+     "formula": "A = mdot sqrt(K / (2 rho dp)), K = 0.81 (Table 7-4 p.286 (ball, 90 deg open))"
+    },
+    "K_open": {
+     "value": 0.81,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (ball, 90 deg open)"
+    }
+   },
+   "ui": {
+    "x": 300,
+    "y": 300
+   }
+  },
+  {
+   "id": "fuel_orifice",
+   "type": "orifice",
+   "label": "fuel calibration orifice",
+   "params": {
+    "diameter": {
+     "value": 0.0228929,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (calibration orifice drop)",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    }
+   },
+   "ui": {
+    "x": 400,
+    "y": 300
+   }
+  },
+  {
+   "id": "fuel_manifold",
+   "type": "manifold",
+   "label": "fuel manifold",
+   "params": {
+    "volume": {
+     "value": 0.0004,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/pressure_fed_kerolox.graph.json",
+     "formula": "manifold volume, not published"
+    }
+   },
+   "ui": {
+    "x": 500,
+    "y": 300
+   }
+  },
+  {
+   "id": "fuel_injector",
+   "type": "injector",
+   "label": "fuel injector",
+   "params": {
+    "A_total": {
+     "value": 0.000232844,
+     "unit": "m2",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (injector pressure drop) with the derived flow",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp))"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.25,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "injector dp / chamber pressure"
+    }
+   },
+   "ui": {
+    "x": 600,
+    "y": 300
+   }
+  },
+  {
+   "id": "chamber",
+   "type": "chamber",
+   "label": "thrust chamber",
+   "params": {
+    "Lstar": {
+     "value": 1.143,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 4-1 p.87, LOX/RP-1 L* 40 to 50 in",
+     "formula": "mid value of the range, 45 in to m"
+    },
+    "A_t": {
+     "value": 0.0245089,
+     "unit": "m2",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77 (thrust, chamber pressure, C_F efficiency)",
+     "formula": "A_t = F / (eta_CF C_F,vac P_c); Thermo('LOX/RP-1', source='tables').chamber(MR=2.35, pc=689476) gives c* 1765.9 m/s, gamma 1.1278; vacuum C_F 1.9547 at eps 35"
+    },
+    "contraction_ratio": {
+     "value": 2.0,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "engines/engine_params.csv HH_A4.thrust_chamber.contraction_ratio"
+    },
+    "eta_cstar": {
+     "value": 0.98,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "engines/engine_params.csv HH_A4.thrust_chamber.eta_cstar"
+    }
+   },
+   "ui": {
+    "x": 700,
+    "y": 150
+   }
+  },
+  {
+   "id": "nozzle",
+   "type": "nozzle_bell",
+   "label": "nozzle",
+   "params": {
+    "expansion_ratio": {
+     "value": 35.0,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "engines/engine_params.csv HH_A4.thrust_chamber.expansion_ratio"
+    },
+    "eta_CF": {
+     "value": 1.01,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "engines/engine_params.csv HH_A4.thrust_chamber.eta_CF"
+    },
+    "bell_fraction": {
+     "value": 0.7,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-5 p.77",
+     "formula": "engines/engine_params.csv HH_A4.thrust_chamber.bell_fraction"
+    }
+   },
+   "ui": {
+    "x": 800,
+    "y": 150
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "ox_tank.outlet->ox_line.inlet",
+   "from": {
+    "node": "ox_tank",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_line",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_line.outlet->ox_valve.inlet",
+   "from": {
+    "node": "ox_line",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_valve",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_valve.outlet->ox_orifice.inlet",
+   "from": {
+    "node": "ox_valve",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_orifice",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_orifice.outlet->ox_manifold.inlet",
+   "from": {
+    "node": "ox_orifice",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_manifold",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_manifold.outlet->ox_injector.inlet",
+   "from": {
+    "node": "ox_manifold",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_injector.outlet->chamber.ox_in",
+   "from": {
+    "node": "ox_injector",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "chamber",
+    "port": "ox_in"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "fuel_tank.outlet->fuel_line.inlet",
+   "from": {
+    "node": "fuel_tank",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_line",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "RP1"
+  },
+  {
+   "id": "fuel_line.outlet->fuel_valve.inlet",
+   "from": {
+    "node": "fuel_line",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_valve",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "RP1"
+  },
+  {
+   "id": "fuel_valve.outlet->fuel_orifice.inlet",
+   "from": {
+    "node": "fuel_valve",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_orifice",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "RP1"
+  },
+  {
+   "id": "fuel_orifice.outlet->fuel_manifold.inlet",
+   "from": {
+    "node": "fuel_orifice",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_manifold",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "RP1"
+  },
+  {
+   "id": "fuel_manifold.outlet->fuel_injector.inlet",
+   "from": {
+    "node": "fuel_manifold",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "RP1"
+  },
+  {
+   "id": "fuel_injector.outlet->chamber.fuel_in",
+   "from": {
+    "node": "fuel_injector",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "chamber",
+    "port": "fuel_in"
+   },
+   "kind": "fluid",
+   "medium": "RP1"
+  },
+  {
+   "id": "chamber.throat->nozzle.inlet",
+   "from": {
+    "node": "chamber",
+    "port": "throat"
+   },
+   "to": {
+    "node": "nozzle",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  }
+ ],
+ "boundary_conditions": [
+  {
+   "node": "nozzle",
+   "port": "inlet",
+   "kind": "ambient_pressure",
+   "value": {
+    "value": 0.0,
+    "unit": "Pa",
+    "quality": "published",
+    "source_id": "HH-SP125",
+    "location": "Table 3-5 p.77, vacuum conditions"
+   }
+  }
+ ],
+ "sequence": [
+  {
+   "t": {
+    "value": 0.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/pressure_fed_kerolox.graph.json",
+    "formula": "start signal defines t = 0"
+   },
+   "node": "ox_valve",
+   "command": "open",
+   "ramp": {
+    "value": 0.05,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/pressure_fed_kerolox.graph.json",
+    "formula": "ball valve stroke, not published"
+   },
+   "note": "oxidizer lead; the A-4 hypergols need no igniter, a LOX/RP-1 version does"
+  },
+  {
+   "t": {
+    "value": 0.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/pressure_fed_kerolox.graph.json",
+    "formula": "igniter on with the oxidizer lead"
+   },
+   "node": "chamber",
+   "command": "ignite"
+  },
+  {
+   "t": {
+    "value": 0.1,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/pressure_fed_kerolox.graph.json",
+    "formula": "fuel follows the oxidizer by 0.1 s, not published"
+   },
+   "node": "fuel_valve",
+   "command": "open",
+   "ramp": {
+    "value": 0.05,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/pressure_fed_kerolox.graph.json",
+    "formula": "ball valve stroke, not published"
+   }
+  },
+  {
+   "t": {
+    "value": 20.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/pressure_fed_kerolox.graph.json",
+    "formula": "short firing for the example"
+   },
+   "node": "*",
+   "command": "cutoff"
+  }
+ ],
+ "dashboard": "dashboards/default_panels.json",
+ "validation_targets": [
+  {
+   "node": "chamber",
+   "output": "p_c",
+   "value": {
+    "value": 689476.0,
+    "unit": "Pa",
+    "quality": "published",
+    "source_id": "HH-SP125",
+    "location": "Table 3-5 p.77",
+    "formula": "engines/engine_params.csv HH_A4.thrust_chamber.pc_ns"
+   }
+  },
+  {
+   "node": "nozzle",
+   "output": "thrust",
+   "value": {
+    "value": 33361.7,
+    "unit": "N",
+    "quality": "published",
+    "source_id": "HH-SP125",
+    "location": "Table 3-5 p.77",
+    "formula": "engines/engine_params.csv HH_A4.thrust_chamber.thrust"
+   }
+  }
+ ],
+ "known_limitations": [
+  "A-4 is N2O4/N2H4; its feed-system pressure drops are reused for LOX/RP-1 at the derived flow rates.",
+  "The mixture ratio 2.35 is the A-1 thrust-chamber value, not an optimum for 100 psia.",
+  "LOX/RP-1 is not hypergolic: the sequence adds an igniter, timing estimated."
+ ]
+}

@@ -77,7 +77,7 @@
         "source_id": "HH-SP125",
         "location": "Table 3-2 p.65 (750K A-1 stage engine), turbine"
       },
-      "min": 1.2,
+      "min": 1.05,
       "max": 40.0,
       "meaning": "Inlet / exit pressure"
     },
@@ -92,7 +92,7 @@
         "location": "Table 3-2 p.65 (750K A-1 stage engine), turbine",
         "formula": "1400 degF to K"
       },
-      "min": 300.0,
+      "min": 100.0,
       "max": 1300.0,
       "meaning": "Inlet total temperature"
     }

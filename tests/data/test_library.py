@@ -197,3 +197,55 @@ def test_cycle_records_match_schema():
 
     for c in data.cycles().values():
         assert c["propsim_cycle"] in (*CYCLES, None)
+
+
+def _validator(name: str):
+    from referencing import Registry, Resource
+
+    schemas = data.LIBRARY / "schemas"
+    sv = json.loads((schemas / "sourced_value.schema.json").read_text(encoding="utf-8"))
+    sch = json.loads((schemas / name).read_text(encoding="utf-8"))
+    registry = Registry().with_resource(sv["$id"], Resource.from_contents(sv))
+    return jsonschema.Draft202012Validator(sch, registry=registry)
+
+
+def test_example_graphs_match_schema():
+    v = _validator("graph.schema.json")
+    gs = data.graphs()
+    assert set(gs) == {"gg_kerolox", "pressure_fed_kerolox", "expander_hydrolox"}
+    for gid, g in gs.items():
+        errors = sorted(v.iter_errors(g), key=str)
+        assert not errors, f"{gid}: {errors[0].message}"
+
+
+def test_default_panels_match_schema():
+    v = _validator("dashboard.schema.json")
+    doc = json.loads((data.DASHBOARDS / "default_panels.json").read_text(encoding="utf-8"))
+    assert not list(v.iter_errors(doc))
+    assert set(data.default_panels()) == set(data.components())
+
+
+def test_graph_check_catches_bad_wiring():
+    """The integrity check rejects a reversed edge, a wrong unit and a missing user-input parameter."""
+    import copy
+
+    g = copy.deepcopy(data.graphs()["pressure_fed_kerolox"])
+    e = g["edges"][0]
+    e["from"], e["to"] = e["to"], e["from"]
+    g["nodes"][0]["params"]["p_set"]["unit"] = "K"
+    del g["nodes"][1]["params"]["length"]
+    problems: list[str] = []
+    data._check_graph(g, problems)
+    text = "\n".join(problems)
+    assert "against port directions" in text
+    assert "expected 'Pa'" in text
+    assert "user-input parameter 'length' missing" in text
+
+
+def test_gg_kerolox_uses_published_a1_values():
+    g = data.graphs()["gg_kerolox"]
+    nodes = {n["id"]: n for n in g["nodes"]}
+    assert nodes["chamber"]["params"]["A_t"]["value"] == pytest.approx(487 * 6.4516e-4, rel=1e-5)
+    assert nodes["ox_pump"]["params"]["D_tip"]["quality"] == "published"
+    targets = {(t["node"], t["output"]): t["value"]["value"] for t in g["validation_targets"]}
+    assert targets["nozzle", "thrust"] == pytest.approx(747000 * 4.4482216, rel=1e-6)

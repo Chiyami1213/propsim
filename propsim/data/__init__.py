@@ -22,6 +22,10 @@ COMPONENTS = LIBRARY / "components"
 ENGINES = LIBRARY / "engines"
 CYCLES = LIBRARY / "cycles"
 CONDITIONS = {"sl", "vac", "n/a", "unstated"}
+EXAMPLES = LIBRARY / "examples"
+DASHBOARDS = LIBRARY / "dashboards"
+# valve timing parameters may come from the graph sequence instead of the node
+SEQUENCED = {"t_open", "ramp_open", "t_close", "ramp_close"}
 
 QUALITIES = {"published", "derived", "estimated"}
 # SI unit strings allowed in ``unit`` columns. "1" marks a dimensionless value.
@@ -184,6 +188,172 @@ def cycle_table(name: str) -> list[dict[str, str]]:
     return _read_csv(CYCLES / f"{name}.csv")
 
 
+@cache
+def graphs() -> dict[str, dict]:
+    """``graph_id`` -> example engine graph (``examples/*.graph.json``, ``schemas/graph.schema.json``)."""
+    out = {}
+    for p in sorted(EXAMPLES.glob("*.graph.json")):
+        g = json.loads(p.read_text(encoding="utf-8"))
+        out[g["graph_id"]] = g
+    return out
+
+
+@cache
+def default_panels() -> dict[str, list[dict]]:
+    """Component type -> standard panels (``dashboards/default_panels.json``); ``$node`` is a placeholder."""
+    return json.loads((DASHBOARDS / "default_panels.json").read_text(encoding="utf-8"))["panels_by_type"]
+
+
+def _check_sv(v: dict, unit: str | None, tag: str, problems: list[str]) -> None:
+    if unit is not None and v["unit"] != unit:
+        problems.append(f"{tag}: unit {v['unit']!r}, expected {unit!r}")
+    if v["unit"] not in UNITS:
+        problems.append(f"{tag}: unit {v['unit']!r} not allowed")
+    if v["value"] is None:
+        problems.append(f"{tag}: value is null")
+        return
+    if v["quality"] not in QUALITIES or v["source_id"] not in sources() or not v["location"]:
+        problems.append(f"{tag}: incomplete provenance")
+    if v["quality"] in ("derived", "estimated") and not v.get("formula"):
+        problems.append(f"{tag}: {v['quality']} value without formula")
+
+
+def _check_graph(g: dict, problems: list[str]) -> None:
+    where = f"examples/{g['graph_id']}.graph.json"
+    comps = components()
+    fl = fluids()
+    nodes = {n["id"]: n for n in g["nodes"]}
+    if len(nodes) != len(g["nodes"]):
+        problems.append(f"{where}: duplicate node ids")
+    if g["cycle"] not in cycles():
+        problems.append(f"{where}: unknown cycle {g['cycle']!r}")
+    if g.get("reference_engine") and g["reference_engine"] not in engines():
+        problems.append(f"{where}: unknown reference engine {g['reference_engine']!r}")
+    for role, fid in g["propellants"].items():
+        if fid not in fl:
+            problems.append(f"{where}: {role} {fid!r} not in fluids.csv")
+    sequenced = {s["node"] for s in g["sequence"]}
+
+    def ports(nid: str) -> dict[str, dict]:
+        return {p["name"]: p for p in comps[nodes[nid]["type"]]["ports"]}
+
+    def outputs(nid: str) -> set[str]:
+        return {o["name"] for o in comps[nodes[nid]["type"]]["outputs_for_plots"]}
+
+    for nid, n in nodes.items():
+        if n["type"] not in comps:
+            problems.append(f"{where} {nid}: unknown component type {n['type']!r}")
+            continue
+        spec = {p["name"]: p for p in comps[n["type"]]["parameters"]}
+        for name, v in n["params"].items():
+            if name not in spec:
+                problems.append(f"{where} {nid}: {n['type']} has no parameter {name!r}")
+                continue
+            _check_sv(v, spec[name]["unit"], f"{where} {nid}.{name}", problems)
+            lo, hi = spec[name].get("min"), spec[name].get("max")
+            if v["value"] is not None and (
+                (lo is not None and v["value"] < lo) or (hi is not None and v["value"] > hi)
+            ):
+                problems.append(f"{where} {nid}.{name} = {v['value']} outside [{lo}, {hi}]")
+        for name, prm in spec.items():
+            if prm.get("user_input") and name not in n["params"]:
+                if not (name in SEQUENCED and nid in sequenced):
+                    problems.append(f"{where} {nid}: user-input parameter {name!r} missing")
+    connected = set()
+    for e in g["edges"]:
+        ends = []
+        for side in ("from", "to"):
+            nid, port = e[side]["node"], e[side]["port"]
+            if nid not in nodes or nodes[nid]["type"] not in comps:
+                problems.append(f"{where} edge {e['id']}: unknown node {nid!r}")
+                break
+            p = ports(nid).get(port)
+            if p is None:
+                problems.append(f"{where} edge {e['id']}: {nid} has no port {port!r}")
+                break
+            ends.append(p)
+            connected.add((nid, port))
+        if len(ends) != 2:
+            continue
+        a, b = ends
+        if a["kind"] != e["kind"] or b["kind"] != e["kind"]:
+            problems.append(f"{where} edge {e['id']}: port kinds {a['kind']}/{b['kind']} vs edge {e['kind']}")
+        if e["kind"] == "fluid":
+            if a["direction"] == "in" or b["direction"] == "out":
+                problems.append(f"{where} edge {e['id']}: flows against port directions")
+            if e["medium"] not in fl and e["medium"] != "combustion_gas":
+                problems.append(f"{where} edge {e['id']}: unknown medium {e['medium']!r}")
+    for bc in g["boundary_conditions"]:
+        tag = f"{where} boundary {bc['node']}.{bc['port']}"
+        if bc["node"] not in nodes or bc["port"] not in ports(bc["node"]):
+            problems.append(f"{tag}: unknown node or port")
+            continue
+        _check_sv(
+            bc["value"],
+            "K" if bc["kind"] == "fixed_temperature" else "kg/s" if bc["kind"] == "fixed_mass_flow" else "Pa",
+            tag,
+            problems,
+        )
+    for nid, n in nodes.items():
+        for p in comps[n["type"]]["ports"]:
+            if (
+                p["kind"] == "fluid"
+                and (nid, p["name"]) not in connected
+                and not any(bc["node"] == nid and bc["port"] == p["name"] for bc in g["boundary_conditions"])
+            ):
+                if p["name"] != "pressurant_in":
+                    problems.append(f"{where} {nid}.{p['name']}: fluid port neither connected nor bounded")
+    for i, st in enumerate(g["sequence"]):
+        tag = f"{where} sequence[{i}]"
+        if st["node"] != "*" and st["node"] not in nodes:
+            problems.append(f"{tag}: unknown node {st['node']!r}")
+        for k in ("t", "value", "ramp"):
+            if k in st:
+                _check_sv(st[k], "s" if k != "value" else None, f"{tag}.{k}", problems)
+        if "when" in st:
+            w = st["when"]
+            if w["node"] not in nodes or w["output"] not in outputs(w["node"]):
+                problems.append(f"{tag}: trigger on unknown output {w['node']}.{w['output']}")
+            else:
+                unit = next(
+                    o["unit"]
+                    for o in comps[nodes[w["node"]]["type"]]["outputs_for_plots"]
+                    if o["name"] == w["output"]
+                )
+                _check_sv(w["value"], unit, f"{tag}.when", problems)
+    for i, vt in enumerate(g.get("validation_targets", [])):
+        tag = f"{where} validation_targets[{i}]"
+        if vt["node"] not in nodes or vt["output"] not in outputs(vt["node"]):
+            problems.append(f"{tag}: unknown output {vt['node']}.{vt['output']}")
+            continue
+        unit = next(
+            o["unit"]
+            for o in comps[nodes[vt["node"]]["type"]]["outputs_for_plots"]
+            if o["name"] == vt["output"]
+        )
+        _check_sv(vt["value"], unit, tag, problems)
+    for k, v in g.get("design_point", {}).items():
+        _check_sv(v, None, f"{where} design_point.{k}", problems)
+
+
+def _check_panels(problems: list[str]) -> None:
+    comps = components()
+    for t, panels in default_panels().items():
+        if t not in comps:
+            problems.append(f"default_panels.json: unknown component type {t!r}")
+            continue
+        outs = {o["name"]: o["unit"] for o in comps[t]["outputs_for_plots"]}
+        for pn in panels:
+            for s in pn.get("y_left", []) + pn.get("y_right", []):
+                if s["output"] not in outs:
+                    problems.append(f"default_panels.json {pn['id']}: {t} has no output {s['output']!r}")
+                elif s["unit"] != outs[s["output"]]:
+                    problems.append(f"default_panels.json {pn['id']}: {s['output']} unit {s['unit']!r}")
+    missing = set(comps) - set(default_panels())
+    if missing:
+        problems.append(f"default_panels.json: no panels for {sorted(missing)}")
+
+
 def _check_component(rec: dict, where: str, problems: list[str]) -> None:
     src = sources()
 
@@ -333,6 +503,10 @@ def validate() -> list[str]:
         ]
     for p in sorted(CYCLES.glob("*.csv")):
         _check_provenance(_read_csv(p), f"cycles/{p.name}", problems, unit_col=None, value_col=None)
+
+    for g in graphs().values():
+        _check_graph(g, problems)
+    _check_panels(problems)
 
     for p in LIBRARY.rglob("*.json"):
         try:

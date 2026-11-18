@@ -14,6 +14,11 @@ New changes go above this line, newest first.
   full feed, turbopump and gas-generator data, top-level data for RL10 variants, RS-25, F-1 and J-2, five cycle
   records with sourced efficiency ranges, fuel-rich turbine gas properties, and closure checks (c*, thrust, C_F,
   pump and turbine power, cycle efficiency) in `propsim.data.closure`.
+- Component library, block H (graphs and dashboards): JSON Schemas for engine graphs (nodes, typed edges,
+  boundary conditions, timed and event-triggered start sequence) and dashboards, default panels for every component
+  type, and three example graphs (gas-generator kerolox from the Huzel & Huang A-1, pressure-fed kerolox, expander
+  hydrolox) with every value published, derived or flagged estimated; graph wiring and units checked by
+  `propsim.data.validate`.
 
 ## 1.0.0
 

@@ -108,3 +108,13 @@ Not checked (the sources give no flow rates or throat area): RL10A_4_2, RL10B_2,
 R against c_p (γ - 1) / γ; the printed columns agree within about 5 % (rounding). Rows outside 6 %:
 
 - LOX/RP1 at 949.8 K: R = 315.3 J/(kg K), +16.7 % (see `conflicts.md`)
+
+## 7. Example graphs: parameter provenance
+
+Every node parameter, boundary value and sequence time is a sourced value (integrity: section 1). Counts per quality:
+
+| graph | nodes | edges | published | derived | estimated |
+|---|---|---|---|---|---|
+| `expander_hydrolox` | 19 | 21 | 25 | 12 | 28 |
+| `gg_kerolox` | 29 | 32 | 44 | 25 | 31 |
+| `pressure_fed_kerolox` | 14 | 13 | 18 | 12 | 16 |
