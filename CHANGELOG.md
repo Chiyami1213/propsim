@@ -30,6 +30,9 @@ New changes go above this line, newest first.
 - Component library, block G (electric): NEXT gridded-ion throttle tables (56 beginning-of-life points, nominal
   with PPU efficiency and extended thruster-only, NASA/TM-2008-214986) in SI, read by `propsim.data.throttle_table`,
   with thrust, efficiency and lifetime-impulse closure checks.
+- Component library, SSME example graph: fuel-rich staged combustion with two preburners and four turbopumps at
+  rated power level, built only from public NASA documents (1981 Space Shuttle News Reference, NASA TP-3700); chamber
+  temperature from the shipped CEA tables matches the published 3590 K.
 
 - Vehicle stages can be filled from the library's reference engines (RS-25, J-2 and the RL10 variants) with one
   choice; values the library does not have stay empty or are labelled as assumed or derived.

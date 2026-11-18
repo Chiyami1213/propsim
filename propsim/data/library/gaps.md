@@ -71,8 +71,11 @@ design run.
 
 ## Graphs and dashboards (block H)
 
-1. **SSME staged-combustion example graph** is not included yet: its station data (pressures, temperatures and flows)
-   come from documents marked proprietary or private-use, and the repository is public. A public NASA source is needed.
+1. **SSME example graph** uses public NASA data only (1981 Space Shuttle News Reference at rated power, NASA
+   TP-3700 heat balance for the preburner split). Still missing from public sources: turbine efficiencies and exit
+   pressures, injector and valve pressure drops, coolant channel geometry, shaft inertias, the 104.5 % power level
+   station set and the controller start schedule. The main valve losses through the printed 2.5 in passages
+   (oxidizer about 820 psi) look high; the passage size may refer to a different part of the valve.
 2. **Estimated values in the examples** (counts in `checks.md` section 7): line lengths, manifold volumes, tank
    sizes, valve stroke times and sequence thresholds are not published for the Huzel & Huang engines. The pressure-fed
    kerolox and expander hydrolox graphs adapt published engines to other propellants or another cycle.

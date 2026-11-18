@@ -4,6 +4,7 @@ Run from the repository root (rewrites the files under propsim/data/library)::
 
     python tools/build_example_graphs.py propsim/data/library
 """
+
 # ruff: noqa: E501  (long provenance strings)
 
 import json
@@ -1506,6 +1507,715 @@ def expander_hydrolox():
 
 
 # =====================================================================================================
+# 4. SSME staged combustion at rated power level, public NASA sources only
+# =====================================================================================================
+SNR = "NASA-SNR-1981"
+TP37 = "NASA-TP-3700"
+CPS = "COOLPROP-8.0.0"
+
+
+def rho_grid(fid, T, p):
+    t = data.fluid_table(fid)
+    sel = t["p"] == p
+    i = int(np.argmin(np.abs(t["T"][sel] - T)))
+    return float(t["rho"][sel][i]), float(t["T"][sel][i])
+
+
+def h2_rich_gas(MR, T):
+    """Frozen H2/H2O preburner gas at O/F mass ratio MR (all O2 burned), ideal-gas cp0 from CoolProp."""
+    import CoolProp.CoolProp as CP
+
+    n_h2o = MR / 31.9988 * 2  # kmol H2O per kg H2 (O2 + 2 H2 -> 2 H2O)
+    n_h2 = 1 / 2.01588 - n_h2o
+    x_w = n_h2o / (n_h2 + n_h2o)
+    M = (1 + MR) / (n_h2 + n_h2o) * 1e-3  # kg/mol
+    cpm = (1 - x_w) * CP.PropsSI("CP0MOLAR", "T", T, "P", 1e5, "Hydrogen") + x_w * CP.PropsSI(
+        "CP0MOLAR", "T", T, "P", 1e5, "Water"
+    )
+    cp = cpm / M
+    gam = cpm / (cpm - 8.314462618)
+    return cp, gam, x_w, M
+
+
+def ssme_rpl():
+    gid = "ssme_staged_combustion"
+    sv = lambda v, unit, loc, formula=None: pub(v, unit, loc, formula, src=SNR)  # noqa: E731
+    dv = lambda v, unit, loc, formula, src=SNR: der(v, unit, loc, formula, src=src)  # noqa: E731
+    # --- published operating point (Space Shuttle News Reference, rated power level) ---
+    F_vac, isp_vac = 470000 * LB * G0, 455.2
+    pc = 2970 * PSI
+    MR, eps, cr = 6.0, 77.5, 2.96
+    mdot = F_vac / (isp_vac * G0)
+    m_o, m_f = mdot * MR / (1 + MR), mdot / (1 + MR)
+    pumps = {  # id: (fluid, rpm, power bhp, p_in psia, p_out psia, flow lb/s, location)
+        "lpftp": ("LH2", 14700, 2400, 30, 232, 147, "p.2-12, low-pressure fuel turbopump"),
+        "hpftp": ("LH2", 35000, 62270, 176, 6210, 147, "pp.2-12 to 2-13, high-pressure fuel turbopump"),
+        "lpotp": ("LOX", 5150, 1470, 100, 415, 883, "p.2-13, low-pressure oxidizer turbopump"),
+        "hpotp": (
+            "LOX",
+            29057,
+            20977,
+            360,
+            4632,
+            1066,
+            "p.2-13, high-pressure oxidizer turbopump (main pump)",
+        ),
+        "pbp": (
+            "LOX",
+            29057,
+            1472,
+            4437,
+            7635,
+            86,
+            "p.2-13, high-pressure oxidizer turbopump (preburner pump)",
+        ),
+    }
+    rho_o, T_o = rho_grid("LOX", 90.0, 1e6)
+    rho_f, T_f = rho_grid("LH2", 20.3, 1e6)
+    rho = {"LOX": rho_o, "LH2": rho_f}
+    # --- preburner split (NASA TP-3700 Table A.6, heat-balance column, 100 % power) ---
+    fpb_f, fpb_o, opb_f, opb_o = 78.18 * LB, 67.78 * LB, 35.1 * LB, 23.67 * LB
+    MR_fpb, MR_opb = fpb_o / fpb_f, opb_o / opb_f
+    m_fpb, m_opb = fpb_f + fpb_o, opb_f + opb_o
+    T_fpb, T_opb = 961.0, 817.0  # turbine inlet temperatures, SNR p.2-13
+    p_fpb, p_opb = 5164 * PSI, 5228 * PSI
+    eta_t = 0.75
+    eta_note = (
+        "eta_t 0.75 estimated for the two-stage reaction turbines (no public value); pressure ratio from "
+        "P = mdot eta_t cp T_in (1 - PR^-((gamma-1)/gamma)) with the published turbopump power and inlet "
+        "temperature and the frozen H2/H2O gas of the preburner mixture ratio (cp0 from CoolProp)"
+    )
+    turb = {}
+    for tid, m, T, MRp, P, p_in in (
+        ("hpft", m_fpb, T_fpb, MR_fpb, pumps["hpftp"][2] * BHP, p_fpb),
+        ("hpot", m_opb, T_opb, MR_opb, (pumps["hpotp"][2] + pumps["pbp"][2]) * BHP, p_opb),
+    ):
+        cp, gam, x_w, M = h2_rich_gas(MRp, T)
+        ratio = P / (m * eta_t * cp * T)
+        PR = (1 - ratio) ** (-gam / (gam - 1))
+        turb[tid] = dict(
+            m=m, T=T, MR=MRp, P=P, cp=cp, gam=gam, x_w=x_w, M=M, PR=PR, p_in=p_in, p_out=p_in / PR
+        )
+    p_hgm = min(turb["hpft"]["p_out"], turb["hpot"]["p_out"])
+    # LPFT: driven by the hydrogen that cooled the main chamber (about 25 % of the fuel, SNR p.2-9)
+    import CoolProp.CoolProp as CP
+
+    m_lpft = 0.25 * m_f
+    T_lpft = 469.1 * 5 / 9  # main-chamber coolant temperature, TP-3700 Table A.6 heat balance
+    P_lpft = pumps["lpftp"][2] * BHP
+    eta_lpft = 0.6
+    p_lpft_in = turb["hpft"]["p_out"] * 1.2
+    for _ in range(100):
+        cp_l = CP.PropsSI("C", "T", T_lpft, "P", p_lpft_in, "Hydrogen")
+        cv_l = CP.PropsSI("O", "T", T_lpft, "P", p_lpft_in, "Hydrogen")
+        g_l = cp_l / cv_l
+        PR_l = (1 - P_lpft / (m_lpft * eta_lpft * cp_l * T_lpft)) ** (-g_l / (g_l - 1))
+        p_lpft_in = p_hgm * PR_l
+    # LPOT: hydraulic turbine driven by HPOTP discharge oxygen, flow = HPOTP flow - LPOTP flow
+    m_lpot = (pumps["hpotp"][5] - pumps["lpotp"][5]) * LB
+    p_lpot_in, p_lpot_out = 4488 * PSI, pumps["lpotp"][4] * PSI
+    P_lpot = pumps["lpotp"][2] * BHP
+    eta_lpot = P_lpot / (m_lpot * (p_lpot_in - p_lpot_out) / rho_o)
+    # chamber: c* from the shipped CEA tables, eta_c* library default, eta_CF closes the published Isp
+    ch = Thermo("LOX/LH2", source="tables").chamber(MR, pc)
+    g = float(ch.gamma)
+    cf_vac = float(CF_ideal(g, exit_state(eps, g)[1], 0.0, eps))
+    Cdef = data.components()["chamber"]["parameters"][3]["default"]
+    eta_c = Cdef["value"]
+    At = mdot * eta_c * float(ch.cstar) / pc
+    eta_CF = isp_vac * G0 / (eta_c * float(ch.cstar) * cf_vac)
+    th = (
+        f"Thermo('LOX/LH2', source='tables').chamber(MR=6, pc=2970 psia) gives c* {float(ch.cstar):.1f} m/s, "
+        f"T_c {float(ch.Tc):.0f} K (published about 3590 K, p.2-9), gamma {g:.4f}; vacuum C_F {cf_vac:.4f} at "
+        f"eps 77.5; mdot = F_vac / (Isp_vac g0) = {mdot:.1f} kg/s"
+    )
+    # valves: published flow-passage sizes, ball-valve K from the library
+    Kb = data.components()["valve_ball"]["parameters"][1]["default"]
+    Kp = data.components()["valve_poppet"]["parameters"][1]["default"]
+    A_main = math.pi * (2.5 * IN) ** 2 / 4
+    dp_mov = Kb["value"] * 0.5 * rho_o * (m_o / (rho_o * A_main)) ** 2
+    dp_mfv = Kb["value"] * 0.5 * rho_f * (m_f / (rho_f * A_main)) ** 2
+    dp_inj_o = pumps["hpotp"][4] * PSI - dp_mov - pc
+    dp_inj_f = p_hgm - pc
+    Cd = 0.75
+    Cd_v = data.components()["injector"]["parameters"][1]["default"]
+    # hot-gas density at the injector: ideal gas at the HPFT exit temperature
+    T_hg = T_fpb * (
+        1 - eta_t * (1 - turb["hpft"]["PR"] ** (-(turb["hpft"]["gam"] - 1) / turb["hpft"]["gam"]))
+    )
+    rho_hg = p_hgm * turb["hpft"]["M"] / (8.314462618 * T_hg)
+    m_hg = m_f + fpb_o + opb_o
+    m_o_mcc = m_o - fpb_o - opb_o
+
+    nodes = []
+    for side, fid, T, p_in, y in (("ox", "LOX", 90.0, 100, 0), ("fuel", "LH2", 20.3, 30, 500)):
+        m = m_o if side == "ox" else m_f
+        burn = 8.5 * 60
+        nodes.append(
+            node(
+                f"{side}_tank",
+                "tank_regulated",
+                f"{fid} tank",
+                {
+                    "p_set": sv(
+                        p_in * PSI,
+                        "Pa",
+                        pumps["lpotp" if side == "ox" else "lpftp"][6],
+                        f"{p_in} psia low-pressure pump inlet; suction line not modelled",
+                    ),
+                    "V_tank": est(
+                        m * burn / rho[fid] / 0.95,
+                        "m3",
+                        gid,
+                        "rated-power flow x 8.5 min (nominal operating time, SNR p.2-4) / rho / 0.95; "
+                        "one engine's share, not the External Tank",
+                    ),
+                    "fill_fraction": est(0.95, "1", gid, "5 % ullage assumed"),
+                    "T_prop": est(T, "K", gid, "near the normal boiling point"),
+                },
+                0,
+                y,
+            )
+        )
+    pump_x = {
+        "lpftp": (150, 500),
+        "hpftp": (300, 500),
+        "lpotp": (150, 0),
+        "hpotp": (300, 0),
+        "pbp": (450, 100),
+    }
+    for pid, (fid, rpm, bhp, pi, po, flow, loc) in pumps.items():
+        m, dp, w = flow * LB, (po - pi) * PSI, rpm * RPM
+        H = dp / (rho[fid] * G0)
+        eta = m * dp / (rho[fid] * bhp * BHP)
+        psi = 0.46
+        nodes.append(
+            node(
+                f"{pid}_pump",
+                "pump_centrifugal",
+                {
+                    "lpftp": "low-pressure fuel pump",
+                    "hpftp": "high-pressure fuel pump (3 stages)",
+                    "lpotp": "low-pressure oxidizer pump",
+                    "hpotp": "high-pressure oxidizer main pump",
+                    "pbp": "preburner boost pump",
+                }[pid],
+                {
+                    "D_tip": est(
+                        2 * math.sqrt(G0 * H / psi) / w,
+                        "m",
+                        gid,
+                        f"D = 2 sqrt(g0 H / psi) / omega with H = {H:.0f} m from the published pressure "
+                        f"rise, psi = 0.46 (A-1 head coefficient)"
+                        + ("; per-stage head is a third of this" if pid == "hpftp" else ""),
+                    ),
+                    "psi_design": est(
+                        psi, "1", gid, "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+                    ),
+                    "eta_design": dv(
+                        eta,
+                        "1",
+                        loc,
+                        f"eta = mdot dp / (rho P) = {m:.1f} kg/s x {dp / 1e6:.3f} MPa / ({rho[fid]:.1f} "
+                        f"kg/m3 x {bhp} bhp); incompressible, inlet density from fluids/tables/{fid}.csv"
+                        + ("; LH2 compressibility raises the true value" if fid == "LH2" else ""),
+                    ),
+                    "N_design": sv(w, "rad/s", loc, f"{rpm} rpm"),
+                    "Q_design": sv(
+                        m / rho[fid],
+                        "m3/s",
+                        loc,
+                        f"{flow} lb/s / {rho[fid]:.1f} kg/m3"
+                        + ("; printed '~9 kg/s (86 lb/s)', the lb/s figure is used" if pid == "pbp" else ""),
+                    ),
+                },
+                *pump_x[pid],
+                options={
+                    "stages": "3" if pid == "hpftp" else "1",
+                    "impeller": "axial" if pid in ("lpftp", "lpotp") else "centrifugal",
+                },
+            )
+        )
+    tloc = "p.2-13 turbine inlet pressure and temperature"
+    for tid, label, pump_id, x, y in (
+        ("hpft", "high-pressure fuel turbine", "hpftp", 450, 400),
+        ("hpot", "high-pressure oxidizer turbine", "hpotp", 450, 200),
+    ):
+        t = turb[tid]
+        C0 = math.sqrt(2 * t["cp"] * t["T"] * (1 - t["PR"] ** (-(t["gam"] - 1) / t["gam"])))
+        w = pumps[pump_id][1] * RPM
+        nodes.append(
+            node(
+                f"{tid}_turbine",
+                "turbine_impulse",
+                label,
+                {
+                    "D_mean": est(
+                        2 * 0.5 * C0 / w,
+                        "m",
+                        gid,
+                        f"U/C0 = 0.5 assumed for a two-stage reaction turbine, C0 = {C0:.0f} m/s",
+                    ),
+                    "eta_design": est(eta_t, "1", gid, eta_note),
+                    "pressure_ratio": est(
+                        t["PR"],
+                        "1",
+                        gid,
+                        eta_note + f"; mdot {t['m']:.2f} kg/s (TP-3700 preburner flows), power "
+                        f"{t['P'] / 1e6:.3f} MW (SNR p.2-12/2-13), cp {t['cp']:.0f} J/(kg K), "
+                        f"gamma {t['gam']:.3f}; exit {t['p_out'] / PSI:.0f} psia",
+                    ),
+                    "T_inlet": sv(t["T"], "K", tloc, f"{t['T']:.0f} K as printed"),
+                },
+                x,
+                y,
+                options={"arrangement": "reaction_2stage"},
+            )
+        )
+    nodes.append(
+        node(
+            "lpft_turbine",
+            "turbine_impulse",
+            "low-pressure fuel turbine",
+            {
+                "D_mean": est(0.2, "m", gid, "not published; order of the LPFTP impeller size"),
+                "eta_design": est(eta_lpft, "1", gid, "two-stage hydrogen turbine, no public value"),
+                "pressure_ratio": est(
+                    PR_l,
+                    "1",
+                    gid,
+                    f"power 2400 bhp (p.2-12) with mdot = 25 % of the fuel flow (p.2-9) = "
+                    f"{m_lpft:.2f} kg/s, inlet {T_lpft:.1f} K (TP-3700 Table A.6 main-chamber "
+                    f"coolant temperature, 469.1 degR), real-gas cp/cv from CoolProp, eta 0.6; "
+                    f"exit at the hot-gas manifold {p_hgm / PSI:.0f} psia",
+                ),
+                "T_inlet": dv(
+                    T_lpft, "K", "Table A.6 p.26, TCMBF heat-balance column", "469.1 degR x 5/9", src=TP37
+                ),
+            },
+            300,
+            650,
+            options={"arrangement": "reaction_2stage"},
+        )
+    )
+    nodes.append(
+        node(
+            "lpot_turbine",
+            "turbine_impulse",
+            "low-pressure oxidizer turbine (hydraulic)",
+            {
+                "D_mean": est(0.2, "m", gid, "not published; order of the LPOTP size"),
+                "eta_design": dv(
+                    eta_lpot,
+                    "1",
+                    "p.2-13, LPOTP power and turbine drive pressure",
+                    f"eta = P / (mdot dp / rho) with P = 1470 bhp, mdot = HPOTP - LPOTP flow = "
+                    f"{m_lpot:.1f} kg/s, dp = 4488 - 415 psia, rho {rho_o:.1f} kg/m3",
+                ),
+                "pressure_ratio": dv(
+                    p_lpot_in / p_lpot_out,
+                    "1",
+                    "p.2-13",
+                    "4488 psia drive / 415 psia LPOTP " "discharge, where the drive flow rejoins",
+                ),
+            },
+            150,
+            150,
+            options={"arrangement": "hydraulic_6stage"},
+        )
+    )
+    for sid, d, x, y in (
+        ("lpftp", "LPFTP", 200, 600),
+        ("hpftp", "HPFTP", 380, 450),
+        ("lpotp", "LPOTP", 200, 80),
+        ("hpotp", "HPOTP", 380, 120),
+    ):
+        nodes.append(
+            node(
+                f"{sid}_shaft",
+                "shaft",
+                f"{d} shaft",
+                {"aux_power": est(0.0, "W", gid, "no auxiliary drive")},
+                x,
+                y,
+            )
+        )
+    for gg, label, MRp, m, p, x, y in (
+        ("fpb", "fuel preburner", MR_fpb, m_fpb, p_fpb, 600, 450),
+        ("opb", "oxidizer preburner", MR_opb, m_opb, p_opb, 600, 250),
+    ):
+        o, f = (fpb_o, fpb_f) if gg == "fpb" else (opb_o, opb_f)
+        nodes.append(
+            node(
+                gg,
+                "gas_generator",
+                label,
+                {
+                    "mixture_ratio": dv(
+                        MRp,
+                        "1",
+                        "Table A.6 p.26, heat-balance column",
+                        f"oxygen / hydrogen flow = {o / LB:.2f} / {f / LB:.2f} lb/s",
+                        src=TP37,
+                    ),
+                    "p_injector_end": dv(
+                        p,
+                        "Pa",
+                        tloc,
+                        f"set to the {'HPFT' if gg == 'fpb' else 'HPOT'} inlet "
+                        f"pressure {p / PSI:.0f} psia (preburner and turbine inlet share a duct)",
+                    ),
+                },
+                x,
+                y,
+            )
+        )
+    for vid, label, d_in, A, K, m, rr, x, y in (
+        ("mov", "main oxidizer valve", None, A_main, Kb, m_o_mcc, rho_o, 600, 0),
+        ("mfv", "main fuel valve", None, A_main, Kb, m_f, rho_f, 450, 550),
+        (
+            "fpov",
+            "fuel preburner oxidizer valve",
+            None,
+            math.pi * (1.1 * IN) ** 2 / 4,
+            Kp,
+            fpb_o,
+            rho_o,
+            550,
+            350,
+        ),
+        ("opov", "oxidizer preburner oxidizer valve", None, 1.1 * 0.285 * IN**2, Kp, opb_o, rho_o, 550, 200),
+    ):
+        loc = {
+            "mov": "p.2-13, main oxidizer valve 2.5 in flow passage",
+            "mfv": "p.2-13, main fuel valve 2.5 in " "flow passage",
+            "fpov": "p.2-13, fuel preburner oxidizer valve 1.1 in flow passage",
+            "opov": "p.2-13, oxidizer preburner oxidizer valve 1.1 x 0.285 in slot",
+        }[vid]
+        nodes.append(
+            node(
+                vid,
+                "valve_ball" if vid in ("mov", "mfv") else "valve_poppet",
+                label,
+                {
+                    "diameter": sv(
+                        dia(A),
+                        "m",
+                        loc,
+                        (
+                            "slot area 1.1 x 0.285 in2 as an equivalent round passage"
+                            if vid == "opov"
+                            else "in x 0.0254"
+                        ),
+                    ),
+                    "K_open": Kb if vid in ("mov", "mfv") else Kp,
+                },
+                x,
+                y,
+            )
+        )
+    for jid, label, n, loc, x, y in (
+        (
+            "mcc_jacket",
+            "main combustion chamber coolant channels",
+            390,
+            "p.2-9, 390 coolant channels",
+            750,
+            600,
+        ),
+        ("nozzle_jacket", "nozzle coolant tubes", 1080, "p.2-10, 1080 tubes", 600, 600),
+    ):
+        nodes.append(
+            node(
+                jid,
+                "regen_jacket",
+                label,
+                {
+                    "n_channels": sv(n, "1", loc),
+                },
+                x,
+                y,
+            )
+        )
+        if jid == "mcc_jacket":
+            D_t = dia(At)
+            w_ch = 0.5 * math.pi * D_t / n
+            geo = {
+                "channel_width": est(
+                    w_ch,
+                    "m",
+                    gid,
+                    f"half of the throat circumference pi D_t / 390 (D_t {D_t:.4f} m "
+                    "from A_t), the rest ribs; not in a public NASA source",
+                ),
+                "channel_height": est(2.5 * w_ch, "m", gid, "aspect ratio 2.5 assumed for milled channels"),
+                "wall_thickness": est(
+                    0.7e-3, "m", gid, "0.7 mm hot-gas wall assumed for a milled copper liner"
+                ),
+            }
+        else:
+            w_t = math.pi * 2.4 / n
+            geo = {
+                "channel_width": dv(
+                    w_t,
+                    "m",
+                    "p.2-10, 1080 tubes, 2.4 m exit diameter",
+                    "tube width at the exit = pi x 2.4 m / 1080; round tube mapped to a square channel",
+                ),
+                "channel_height": dv(
+                    w_t, "m", "p.2-10, 1080 tubes, 2.4 m exit diameter", "equal to the width (round tube)"
+                ),
+                "wall_thickness": est(
+                    0.3e-3, "m", gid, "0.3 mm tube wall assumed; not in a public NASA source"
+                ),
+            }
+        nodes[-1]["params"].update(geo)
+    nodes.append(
+        node(
+            "hgm",
+            "manifold",
+            "hot-gas manifold",
+            {
+                "volume": est(0.1, "m3", gid, "not published; order of the twin-duct hot-gas manifold"),
+            },
+            800,
+            350,
+        )
+    )
+    nodes.append(
+        node(
+            "ox_manifold",
+            "manifold",
+            "oxidizer dome",
+            {
+                "volume": est(0.02, "m3", gid, "not published"),
+            },
+            750,
+            0,
+        )
+    )
+    for side, A_m, dp, rr, m, x, y in (
+        ("ox", None, dp_inj_o, rho_o, m_o_mcc, 850, 100),
+        ("fuel", None, dp_inj_f, rho_hg, m_hg, 850, 300),
+    ):
+        nodes.append(
+            node(
+                f"{side}_injector",
+                "injector",
+                f"main injector, {'oxidizer' if side == 'ox' else 'hot-gas fuel'} side",
+                {
+                    "A_total": est(
+                        area_orifice(m, rr, dp, Cd),
+                        "m2",
+                        gid,
+                        f"A = mdot / (Cd sqrt(2 rho dp)), Cd 0.75, mdot {m:.1f} kg/s, dp {dp / PSI:.0f} psi "
+                        + (
+                            "= HPOTP discharge 4632 psia - main valve loss - P_c"
+                            if side == "ox"
+                            else f"= hot-gas manifold (turbine exit estimate) - P_c, gas density {rr:.1f} kg/m3"
+                        ),
+                    ),
+                    "Cd": Cd_v,
+                    "dp_over_pc_design": est(
+                        dp / pc, "1", gid, "injector dp / chamber pressure from the balance"
+                    ),
+                },
+                x,
+                y,
+                options={"type": "coaxial"},
+            )
+        )
+    nodes.append(
+        node(
+            "chamber",
+            "chamber",
+            "main combustion chamber",
+            {
+                "A_t": dv(
+                    At,
+                    "m2",
+                    "p.2-4 vacuum thrust, Isp and chamber pressure",
+                    f"A_t = mdot eta_c* c* / P_c, eta_c* {eta_c} (library default); {th}",
+                ),
+                "contraction_ratio": sv(cr, "1", "p.2-9, contraction area ratio 2.96"),
+                "eta_cstar": Cdef,
+            },
+            950,
+            200,
+        )
+    )
+    nodes.append(
+        node(
+            "nozzle",
+            "nozzle_bell",
+            "nozzle",
+            {
+                "expansion_ratio": sv(eps, "1", "p.2-4 and p.2-10, area ratio 77.5"),
+                "eta_CF": dv(
+                    eta_CF,
+                    "1",
+                    "p.2-4 vacuum Isp 455.2 s",
+                    f"eta_CF = Isp_vac g0 / (eta_c* c* C_F,vac); {th}",
+                ),
+            },
+            1050,
+            200,
+        )
+    )
+    L, H, G = "LOX", "LH2", "combustion_gas"
+    edges = [
+        edge("ox_tank.outlet", "lpotp_pump.inlet", medium=L),
+        edge("lpotp_pump.outlet", "hpotp_pump.inlet", medium=L),
+        edge("hpotp_pump.outlet", "mov.inlet", medium=L),
+        edge("hpotp_pump.outlet", "lpot_turbine.inlet", medium=L),
+        edge("hpotp_pump.outlet", "pbp_pump.inlet", medium=L),
+        edge("lpot_turbine.outlet", "hpotp_pump.inlet", medium=L),
+        edge("mov.outlet", "ox_manifold.inlet", medium=L),
+        edge("ox_manifold.outlet", "ox_injector.inlet", medium=L),
+        edge("ox_injector.outlet", "chamber.ox_in", medium=L),
+        edge("pbp_pump.outlet", "fpov.inlet", medium=L),
+        edge("pbp_pump.outlet", "opov.inlet", medium=L),
+        edge("fpov.outlet", "fpb.ox_in", medium=L),
+        edge("opov.outlet", "opb.ox_in", medium=L),
+        edge("fuel_tank.outlet", "lpftp_pump.inlet", medium=H),
+        edge("lpftp_pump.outlet", "hpftp_pump.inlet", medium=H),
+        edge("hpftp_pump.outlet", "mfv.inlet", medium=H),
+        edge("mfv.outlet", "mcc_jacket.coolant_in", medium=H),
+        edge("mfv.outlet", "nozzle_jacket.coolant_in", medium=H),
+        edge("mcc_jacket.coolant_out", "lpft_turbine.inlet", medium=H),
+        edge("lpft_turbine.outlet", "hgm.inlet", medium=H),
+        edge("nozzle_jacket.coolant_out", "fpb.fuel_in", medium=H),
+        edge("nozzle_jacket.coolant_out", "opb.fuel_in", medium=H),
+        edge("fpb.outlet", "hpft_turbine.inlet", medium=G),
+        edge("opb.outlet", "hpot_turbine.inlet", medium=G),
+        edge("hpft_turbine.outlet", "hgm.inlet", medium=G),
+        edge("hpot_turbine.outlet", "hgm.inlet", medium=G),
+        edge("hgm.outlet", "fuel_injector.inlet", medium=G),
+        edge("fuel_injector.outlet", "chamber.fuel_in", medium=G),
+        edge("chamber.throat", "nozzle.inlet", medium=G),
+        edge("chamber.wall", "mcc_jacket.wall", kind="thermal"),
+        edge("chamber.wall", "nozzle_jacket.wall", kind="thermal"),
+    ]
+    for sid, turb_id, pump_ids in (
+        ("lpftp", "lpft", ["lpftp"]),
+        ("hpftp", "hpft", ["hpftp"]),
+        ("lpotp", "lpot", ["lpotp"]),
+        ("hpotp", "hpot", ["hpotp", "pbp"]),
+    ):
+        edges.append(edge(f"{turb_id}_turbine.shaft", f"{sid}_shaft.drive", kind="shaft"))
+        for p in pump_ids:
+            edges.append(edge(f"{sid}_shaft.load", f"{p}_pump.shaft", kind="shaft"))
+    seq_loc = "start command to 90 % thrust in about 3.6 s (NSTS 1988 News Reference, not in the library)"
+    seq = [
+        {
+            "t": est(0.0, "s", gid, "start command defines t = 0"),
+            "node": "mfv",
+            "command": "open",
+            "ramp": est(0.5, "s", gid, "fuel lead; valve stroke not published"),
+            "note": "the real start is a closed-loop schedule by the engine controller",
+        },
+        {
+            "t": est(0.3, "s", gid, "after fuel lead, not published"),
+            "node": "fpov",
+            "command": "open",
+            "ramp": est(1.0, "s", gid, seq_loc),
+        },
+        {
+            "t": est(0.4, "s", gid, "after fuel lead, not published"),
+            "node": "opov",
+            "command": "open",
+            "ramp": est(1.0, "s", gid, seq_loc),
+        },
+        {"t": est(0.4, "s", gid, "with the preburner valves"), "node": "fpb", "command": "ignite"},
+        {"t": est(0.4, "s", gid, "with the preburner valves"), "node": "opb", "command": "ignite"},
+        {
+            "t": est(0.6, "s", gid, "not published"),
+            "node": "mov",
+            "command": "open",
+            "ramp": est(2.0, "s", gid, seq_loc),
+        },
+        {"t": est(0.6, "s", gid, "with the main oxidizer valve"), "node": "chamber", "command": "ignite"},
+        {
+            "t": est(510.0, "s", gid, "about 8.5 min nominal operating time (SNR p.2-4)"),
+            "node": "*",
+            "command": "cutoff",
+        },
+    ]
+    dp_balance = (
+        f"Main valve losses with K {Kb['value']} through the published 2.5 in passages: oxidizer {dp_mov / PSI:.0f} "
+        f"psi, fuel {dp_mfv / PSI:.0f} psi."
+    )
+    return {
+        "schema_version": "1.0",
+        "graph_id": gid,
+        "name": "SSME staged combustion at rated power level (public NASA data)",
+        "description": "LOX/LH2 fuel-rich staged combustion with two preburners and four turbopumps, built only from "
+        "public NASA documents: station pressures, speeds, powers, flows and turbine inlet temperatures from the "
+        "1981 Space Shuttle News Reference (rated power level), preburner flow split from the heat-balance column "
+        "of NASA TP-3700 Table A.6, chamber c* from the shipped CEA tables. Turbine efficiencies, line volumes and "
+        "the start sequence are estimates.",
+        "cycle": "staged_combustion_fuel_rich",
+        "reference_engine": "RS25",
+        "propellants": {"oxidizer": "LOX", "fuel": "LH2"},
+        "nodes": nodes,
+        "edges": edges,
+        "boundary_conditions": [
+            {
+                "node": "nozzle",
+                "port": "inlet",
+                "kind": "ambient_pressure",
+                "value": sv(0.0, "Pa", "p.2-4, vacuum thrust and Isp"),
+            },
+        ],
+        "sequence": seq,
+        "dashboard": "dashboards/default_panels.json",
+        "validation_targets": [
+            {"node": "chamber", "output": "p_c", "value": sv(pc, "Pa", "p.2-4 summary, 2970 psia")},
+            {
+                "node": "nozzle",
+                "output": "thrust",
+                "value": sv(F_vac, "N", "p.2-4 summary, 470 000 lbf vacuum", "lbf x 4.448222"),
+            },
+            {"node": "nozzle", "output": "isp", "value": sv(isp_vac, "s", "p.2-4 summary, vacuum")},
+            {"node": "chamber", "output": "T_c", "value": sv(3590.0, "K", "p.2-9, about 3590 K")},
+            {
+                "node": "hpftp_pump",
+                "output": "speed",
+                "value": sv(35000 * RPM, "rad/s", pumps["hpftp"][6], "35 000 rpm"),
+            },
+            {
+                "node": "hpotp_pump",
+                "output": "speed",
+                "value": sv(29057 * RPM, "rad/s", pumps["hpotp"][6], "29 057 rpm"),
+            },
+        ],
+        "design_point": {
+            "mdot_total": dv(mdot, "kg/s", "p.2-4", "F_vac / (Isp_vac g0)"),
+            "mdot_fuel": dv(m_f, "kg/s", "p.2-4", "mdot / (1 + MR); LPFTP/HPFTP flow printed as 67 kg/s"),
+            "mdot_ox": dv(m_o, "kg/s", "p.2-4", "mdot MR / (1 + MR); LPOTP flow printed as 401 kg/s"),
+            "hpft_exit_pressure": est(turb["hpft"]["p_out"], "Pa", gid, eta_note),
+            "hpot_exit_pressure": est(turb["hpot"]["p_out"], "Pa", gid, eta_note),
+            "lpft_inlet_pressure": est(p_lpft_in, "Pa", gid, "LPFT power balance, see lpft_turbine"),
+            "mov_dp": der(dp_mov, "Pa", "p.2-13 passage", dp_balance, src=SNR),
+            "mfv_dp": der(dp_mfv, "Pa", "p.2-13 passage", dp_balance, src=SNR),
+        },
+        "known_limitations": [
+            "Station data mix two public sources: the 1981 News Reference engine (rated power, 2970 psia) and the "
+            "NASA TP-3700 heat balance (3006 psia) for the preburner split; the 104.5 % power level flown later "
+            "has no complete public station set.",
+            "The low-pressure oxidizer turbine is a liquid-oxygen hydraulic turbine; the catalog has only a gas "
+            "turbine, so its pressure ratio and efficiency are carried but its gas equations do not apply.",
+            "The nozzle coolant tubes take heat from the chamber wall port; the catalog has no nozzle wall port.",
+            "Chamber coolant valve, pogo accumulator, tank pressurization taps, igniters and purges are not modelled.",
+            f"Turbine efficiencies are estimates; with them the turbine exits sit at "
+            f"{turb['hpft']['p_out'] / PSI:.0f} psia (HPFT) and {turb['hpot']['p_out'] / PSI:.0f} psia (HPOT) "
+            "against 2970 psia in the chamber.",
+            "Regenerative channel geometry and shaft inertias are not in a public NASA source and are left null.",
+        ],
+    }
+
+
+# =====================================================================================================
 # Default panels per component type
 # =====================================================================================================
 PALETTE = ["#4269d0", "#efb118", "#ff725c", "#6cc5b0", "#3ca951", "#ff8ab7", "#a463f2", "#97bbf5"]
@@ -1837,7 +2547,7 @@ def dump(obj, path):
 dump(GRAPH_SCHEMA, LIB / "schemas" / "graph.schema.json")
 dump(DASH_SCHEMA, LIB / "schemas" / "dashboard.schema.json")
 dump(default_panels(), LIB / "dashboards" / "default_panels.json")
-for fn in (pressure_fed_kerolox, gg_kerolox, expander_hydrolox):
+for fn in (pressure_fed_kerolox, gg_kerolox, expander_hydrolox, ssme_rpl):
     g = fn()
     dump(g, LIB / "examples" / f"{g['graph_id']}.graph.json")
     print(g["graph_id"], len(g["nodes"]), "nodes", len(g["edges"]), "edges")
