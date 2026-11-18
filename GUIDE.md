@@ -7,7 +7,7 @@ For installation and system requirements see the [README](README.md).
 
 | Panel | What it does |
 |---|---|
-| **Modules** | The tree of models, grouped by Common, Liquid, Hybrid, Solid, Electric and Vehicle. *(Live)* and *(Run)* tell you the kind of model. |
+| **Modules** | The tree of models, grouped by Common, Liquid, Hybrid, Solid, Electric, Nuclear and Vehicle. *(Live)* and *(Run)* tell you the kind of model. |
 | **Saved Runs** | Every Run result is saved automatically. Click one to reload it; tick *Compare Overlay* to draw several saved runs of one model together. |
 | **3D View** | Rotate (left mouse), pan (right mouse), zoom (wheel). Buttons: reset, cutaway angle, which field paints the model, colorbar, snapshot. |
 | **Plots** | Tabs of gridded plots with LaTeX labels. Run models show a cursor at the playback time. |
@@ -129,6 +129,11 @@ Double-click a parameter slider to put it back to its default value.
   `[M L⁻¹ T⁻²]`; all calculations are in SI.
 - Thermochemistry uses bundled NASA CEA tables. The Hall discharge model does not reproduce the breathing mode and the
   ion-optics model uses a fixed emission plane; the README lists these limitations.
+- The nuclear models follow Emrich, *Principles of Nuclear Rocket Propulsion* (2nd ed.). Performance uses frozen flow
+  (no dissociation); criticality is one-group diffusion, with reflected spheres and cylinders handled through the
+  slab reflector savings; the fuel element is an equivalent annular cell; reactor kinetics lumps the core into fuel,
+  moderator and propellant with linear reactivity coefficients, so a startup from very low power over-weights the
+  hydrogen-density feedback. Hydrogen above 1000 K uses CoolProp's extrapolation.
 - The vehicle model is a point mass over a spherical, non-rotating Earth: no lift, a generic drag curve unless you give
   a table, and the 2-D plane is the launch azimuth. The atmosphere is the U.S. Standard Atmosphere 1976.
 
