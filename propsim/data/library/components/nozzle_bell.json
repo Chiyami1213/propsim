@@ -36,7 +36,7 @@
         "location": "Table 3-2 p.65 (750K A-1 stage engine)"
       },
       "min": 0.9,
-      "max": 1.0,
+      "max": 1.05,
       "meaning": "Thrust coefficient efficiency (divergence, friction, kinetics)"
     },
     {

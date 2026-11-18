@@ -14,6 +14,7 @@ Checks (brief rule 5, the parts that apply to the blocks delivered so far):
 5. Reference engines: c*, thrust, C_F, mixture-ratio, pump/turbine power and cycle-efficiency closure
    (``propsim.data.closure``).
 6. Turbine drive gas (Huzel & Huang Table 6-4): R against c_p (gamma - 1) / gamma.
+7. Example graphs: count of published, derived and estimated values per graph.
 """
 
 from __future__ import annotations
@@ -194,6 +195,29 @@ def turbine_gas_section() -> tuple[list[str], int]:
     return lines + [""], len(bad)
 
 
+def graph_section() -> list[str]:
+    lines = [
+        "## 7. Example graphs: parameter provenance",
+        "",
+        "Every node parameter, boundary value and sequence time is a sourced value (integrity: section 1). "
+        "Counts per quality:",
+        "",
+        "| graph | nodes | edges | published | derived | estimated |",
+        "|---|---|---|---|---|---|",
+    ]
+    for gid, g in data.graphs().items():
+        vals = [v for n in g["nodes"] for v in n["params"].values()]
+        vals += [b["value"] for b in g["boundary_conditions"]]
+        vals += [st[k] for st in g["sequence"] for k in ("t", "ramp", "value") if k in st]
+        vals += [st["when"]["value"] for st in g["sequence"] if "when" in st]
+        q = {k: sum(v["quality"] == k for v in vals) for k in ("published", "derived", "estimated")}
+        lines.append(
+            f"| `{gid}` | {len(g['nodes'])} | {len(g['edges'])} | {q['published']} | {q['derived']} | "
+            f"{q['estimated']} |"
+        )
+    return lines + [""]
+
+
 def main() -> int:
     problems = data.validate()
     integrity = (
@@ -219,7 +243,10 @@ def main() -> int:
         f"closure checks outside tolerance, {n_tg} turbine-gas rows flagged.",
         "",
     ]
-    OUT.write_text("\n".join(head + integrity + cea + sca + table_section() + eng + tg), encoding="utf-8")
+    OUT.write_text(
+        "\n".join(head + integrity + cea + sca + table_section() + eng + tg + graph_section()),
+        encoding="utf-8",
+    )
     print(
         f"wrote {OUT}: {len(problems)} integrity problems, {n_cea} CEA flags, {n_sca} scalar flags, "
         f"{n_eng} engine flags, {n_tg} turbine-gas flags"

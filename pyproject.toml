@@ -39,7 +39,8 @@ include = ["propsim*"]
 propsim = ["assets/*", "core/thermo/data/*.npz", "data/library/*.csv", "data/library/*.md", "data/library/schemas/*.json",
            "data/library/fluids/*.csv", "data/library/fluids/tables/*.csv", "data/library/fluids/sat/*.csv",
            "data/library/components/*.json", "data/library/components/tables/*.csv",
-           "data/library/engines/*.csv", "data/library/cycles/*.csv", "data/library/cycles/*.json"]
+           "data/library/engines/*.csv", "data/library/cycles/*.csv", "data/library/cycles/*.json",
+           "data/library/examples/*.json", "data/library/dashboards/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

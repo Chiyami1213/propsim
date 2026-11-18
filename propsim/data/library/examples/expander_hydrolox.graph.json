@@ -1,0 +1,1101 @@
+{
+ "schema_version": "1.0",
+ "graph_id": "expander_hydrolox",
+ "name": "Expander hydrolox engine (A-2 chamber and pumps, closed expander drive, 150 klbf vacuum)",
+ "description": "LOX/LH2 closed expander cycle: fuel heated in the regenerative jacket drives the fuel and oxidizer turbines in series and is then injected. The chamber, injector drops, pumps and speeds are the Huzel & Huang A-2 values (Table 3-3); the A-2 itself is a tap-off engine, so the turbine drive is derived from a power balance with an estimated jacket exit temperature.",
+ "cycle": "expander_closed",
+ "reference_engine": null,
+ "propellants": {
+  "oxidizer": "LOX",
+  "fuel": "LH2"
+ },
+ "nodes": [
+  {
+   "id": "ox_tank",
+   "type": "tank_regulated",
+   "label": "LOX tank",
+   "params": {
+    "p_set": {
+     "value": 241317.0,
+     "unit": "Pa",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "set to the published A-2 pump inlet pressure (Table 3-3); suction line not modelled"
+    },
+    "V_tank": {
+     "value": 29.7738,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "mdot x 250 s (Table 3-3) / rho / 0.95"
+    },
+    "fill_fraction": {
+     "value": 0.95,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "5 % ullage assumed"
+    },
+    "T_prop": {
+     "value": 90.0,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "near the normal boiling point"
+    }
+   },
+   "ui": {
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "id": "fuel_tank",
+   "type": "tank_regulated",
+   "label": "LH2 tank",
+   "params": {
+    "p_set": {
+     "value": 172369.0,
+     "unit": "Pa",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "set to the published A-2 pump inlet pressure (Table 3-3); suction line not modelled"
+    },
+    "V_tank": {
+     "value": 91.8831,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "mdot x 250 s (Table 3-3) / rho / 0.95"
+    },
+    "fill_fraction": {
+     "value": 0.95,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "5 % ullage assumed"
+    },
+    "T_prop": {
+     "value": 20.3,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "near the normal boiling point"
+    }
+   },
+   "ui": {
+    "x": 0,
+    "y": 400
+   }
+  },
+  {
+   "id": "ox_pump",
+   "type": "pump_centrifugal",
+   "label": "oxidizer pump",
+   "params": {
+    "D_tip": {
+     "value": 0.271786,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 head and speed",
+     "formula": "D = 2 sqrt(g0 H / psi) / omega, psi = 0.46 (estimated)"
+    },
+    "psi_design": {
+     "value": 0.46,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+    },
+    "eta_design": {
+     "value": 0.64,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.ox_pump.efficiency"
+    },
+    "N_design": {
+     "value": 900.59,
+     "unit": "rad/s",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.ox_pump.speed"
+    },
+    "Q_design": {
+     "value": 0.11314,
+     "unit": "m3/s",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "thrust-chamber oxidizer flow / rho"
+    }
+   },
+   "ui": {
+    "x": 150,
+    "y": 0
+   }
+  },
+  {
+   "id": "fuel_pump",
+   "type": "pump_centrifugal",
+   "label": "fuel pump",
+   "params": {
+    "D_tip": {
+     "value": 0.431843,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 speed; head from the expander balance",
+     "formula": "D = 2 sqrt(g0 H / psi) / omega, H = 17483 m, psi = 0.46 (estimated); a real pump this size would use two or more stages"
+    },
+    "psi_design": {
+     "value": 0.46,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "A-1 oxidizer pump head coefficient (Sample Calculation (6-7))"
+    },
+    "eta_design": {
+     "value": 0.8,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.fuel_pump.efficiency"
+    },
+    "N_design": {
+     "value": 2827.43,
+     "unit": "rad/s",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.fuel_pump.speed"
+    },
+    "Q_design": {
+     "value": 0.349156,
+     "unit": "m3/s",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "thrust-chamber fuel flow / rho"
+    }
+   },
+   "ui": {
+    "x": 150,
+    "y": 400
+   }
+  },
+  {
+   "id": "fuel_turbine",
+   "type": "turbine_impulse",
+   "label": "fuel turbine",
+   "params": {
+    "D_mean": {
+     "value": 0.175734,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "U/C0 = 0.3 (impulse turbine range, Fig. 6-27) with C0 = 828 m/s"
+    },
+    "eta_design": {
+     "value": 0.625,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.fuel_turbine.efficiency"
+    },
+    "pressure_ratio": {
+     "value": 1.40437,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "closed expander balance: fuel turbine then oxidizer turbine in series, inlet 240 K H2 (cp 15841, gamma 1.386 from fluids/tables/LH2.csv at 10 MPa); eta_t 0.625 (A-2 fuel turbine); turbine exit to fuel injector with the A-2 line and injector drops; this turbine supplies 5.298 MW"
+    },
+    "T_inlet": {
+     "value": 239.973,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "jacket exit temperature assumed 240 K, nearest LH2 table grid point to 250 K (no source in the library); closed expander balance: fuel turbine then oxidizer turbine in series, inlet 240 K H2 (cp 15841, gamma 1.386 from fluids/tables/LH2.csv at 10 MPa); eta_t 0.625 (A-2 fuel turbine); turbine exit to fuel injector with the A-2 line and injector drops"
+    }
+   },
+   "ui": {
+    "x": 300,
+    "y": 150
+   },
+   "options": {
+    "arrangement": "impulse_single_stage"
+   }
+  },
+  {
+   "id": "ox_turbine",
+   "type": "turbine_impulse",
+   "label": "ox turbine",
+   "params": {
+    "D_mean": {
+     "value": 0.288082,
+     "unit": "m",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "U/C0 = 0.3 (impulse turbine range, Fig. 6-27) with C0 = 432 m/s"
+    },
+    "eta_design": {
+     "value": 0.625,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.fuel_turbine.efficiency"
+    },
+    "pressure_ratio": {
+     "value": 1.09951,
+     "unit": "1",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "closed expander balance: fuel turbine then oxidizer turbine in series, inlet 240 K H2 (cp 15841, gamma 1.386 from fluids/tables/LH2.csv at 10 MPa); eta_t 0.625 (A-2 fuel turbine); turbine exit to fuel injector with the A-2 line and injector drops; this turbine supplies 1.393 MW"
+    },
+    "T_inlet": {
+     "value": 226.445,
+     "unit": "K",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "fuel turbine exit temperature; closed expander balance: fuel turbine then oxidizer turbine in series, inlet 240 K H2 (cp 15841, gamma 1.386 from fluids/tables/LH2.csv at 10 MPa); eta_t 0.625 (A-2 fuel turbine); turbine exit to fuel injector with the A-2 line and injector drops"
+    }
+   },
+   "ui": {
+    "x": 300,
+    "y": 250
+   },
+   "options": {
+    "arrangement": "impulse_single_stage"
+   }
+  },
+  {
+   "id": "ox_shaft",
+   "type": "shaft",
+   "label": "ox turbopump shaft",
+   "params": {
+    "inertia": {
+     "value": 0.05,
+     "unit": "kg m2",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "small upper-stage turbopump rotor, not published; PropSim cycle default order"
+    },
+    "aux_power": {
+     "value": 0.0,
+     "unit": "W",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "no auxiliary drive listed in Table 3-3"
+    }
+   },
+   "ui": {
+    "x": 350,
+    "y": 50
+   }
+  },
+  {
+   "id": "fuel_shaft",
+   "type": "shaft",
+   "label": "fuel turbopump shaft",
+   "params": {
+    "inertia": {
+     "value": 0.02,
+     "unit": "kg m2",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "small upper-stage turbopump rotor, not published; PropSim cycle default order"
+    },
+    "aux_power": {
+     "value": 0.0,
+     "unit": "W",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "no auxiliary drive listed in Table 3-3"
+    }
+   },
+   "ui": {
+    "x": 350,
+    "y": 350
+   }
+  },
+  {
+   "id": "ox_valve",
+   "type": "valve_butterfly",
+   "label": "main ox valve",
+   "params": {
+    "diameter": {
+     "value": 0.0718636,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 (main valve pressure drop)",
+     "formula": "A = mdot sqrt(K / (2 rho dp)), K = 0.31 (Table 7-4 p.286 (butterfly, 90 deg open))"
+    },
+    "K_open": {
+     "value": 0.31,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (butterfly, 90 deg open)"
+    }
+   },
+   "ui": {
+    "x": 450,
+    "y": 0
+   }
+  },
+  {
+   "id": "fuel_valve",
+   "type": "valve_butterfly",
+   "label": "main fuel valve",
+   "params": {
+    "diameter": {
+     "value": 0.0629754,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 (main valve pressure drop)",
+     "formula": "A = mdot sqrt(K / (2 rho dp)), K = 0.31 (Table 7-4 p.286 (butterfly, 90 deg open))"
+    },
+    "K_open": {
+     "value": 0.31,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 7-4 p.286 (butterfly, 90 deg open)"
+    }
+   },
+   "ui": {
+    "x": 450,
+    "y": 400
+   }
+  },
+  {
+   "id": "ox_loss",
+   "type": "orifice",
+   "label": "oxidizer line, orifice and dome loss",
+   "params": {
+    "diameter": {
+     "value": 0.0710559,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 (line 20 + calibration orifice 60 + dome 40 psi)",
+     "formula": "equivalent orifice A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    }
+   },
+   "ui": {
+    "x": 550,
+    "y": 0
+   }
+  },
+  {
+   "id": "regen_jacket",
+   "type": "regen_jacket",
+   "label": "regenerative jacket",
+   "params": {
+    "n_channels": {
+     "value": 178.0,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Sample Calculation (4-4) p.112, number of tubes N"
+    },
+    "channel_width": {
+     "value": 0.004699,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Sample Calculation (4-4) p.112, tube diameter at the throat",
+     "formula": "0.185 in to m; round tube mapped to a square channel"
+    },
+    "channel_height": {
+     "value": 0.004699,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Sample Calculation (4-4) p.112, tube diameter at the throat",
+     "formula": "0.185 in to m; round tube mapped to a square channel"
+    },
+    "wall_thickness": {
+     "value": 0.0002032,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Sample Calculation (4-4) p.112, tube wall thickness",
+     "formula": "0.008 in to m"
+    },
+    "k_wall": {
+     "value": 28.86,
+     "unit": "W/(m K)",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Sample Calculation (4-4) p.112, Inconel X at 1600 degR",
+     "formula": "3.86e-4 Btu/(in s degF) x 1055.056 / (0.0254 x 5/9)"
+    }
+   },
+   "ui": {
+    "x": 550,
+    "y": 400
+   }
+  },
+  {
+   "id": "jacket_loss",
+   "type": "orifice",
+   "label": "jacket hydraulic loss",
+   "params": {
+    "diameter": {
+     "value": 0.0485385,
+     "unit": "m",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 (jacket and manifold pressure drop 325 psi)",
+     "formula": "equivalent orifice with the liquid inlet density, Cd = 0.75; the heated hydrogen is supercritical, so this is a placeholder for the jacket's own loss model"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    }
+   },
+   "ui": {
+    "x": 600,
+    "y": 400
+   }
+  },
+  {
+   "id": "ox_manifold",
+   "type": "manifold",
+   "label": "ox manifold",
+   "params": {
+    "volume": {
+     "value": 0.005,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "manifold volume, not published"
+    }
+   },
+   "ui": {
+    "x": 700,
+    "y": 0
+   }
+  },
+  {
+   "id": "ox_injector",
+   "type": "injector",
+   "label": "ox injector",
+   "params": {
+    "A_total": {
+     "value": 0.00343416,
+     "unit": "m2",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 (injector pressure drop)",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.2,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "injector dp / chamber pressure"
+    }
+   },
+   "ui": {
+    "x": 800,
+    "y": 0
+   }
+  },
+  {
+   "id": "fuel_manifold",
+   "type": "manifold",
+   "label": "fuel manifold",
+   "params": {
+    "volume": {
+     "value": 0.008,
+     "unit": "m3",
+     "quality": "estimated",
+     "source_id": "PROPSIM-EST",
+     "location": "examples/expander_hydrolox.graph.json",
+     "formula": "manifold volume, not published"
+    }
+   },
+   "ui": {
+    "x": 700,
+    "y": 400
+   }
+  },
+  {
+   "id": "fuel_injector",
+   "type": "injector",
+   "label": "fuel injector",
+   "params": {
+    "A_total": {
+     "value": 0.0091287,
+     "unit": "m2",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69 (injector pressure drop)",
+     "formula": "A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75; gaseous H2 density 9.5 kg/m3 at the turbine exit"
+    },
+    "Cd": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "p.130, sample calculation with eq. (4-40)"
+    },
+    "dp_over_pc_design": {
+     "value": 0.125,
+     "unit": "1",
+     "quality": "derived",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "injector dp / chamber pressure"
+    }
+   },
+   "ui": {
+    "x": 800,
+    "y": 400
+   }
+  },
+  {
+   "id": "chamber",
+   "type": "chamber",
+   "label": "thrust chamber",
+   "params": {
+    "Lstar": {
+     "value": 0.6604,
+     "unit": "m",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.thrust_chamber.Lstar"
+    },
+    "A_t": {
+     "value": 0.0636128,
+     "unit": "m2",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.thrust_chamber.At"
+    },
+    "contraction_ratio": {
+     "value": 1.6,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.thrust_chamber.contraction_ratio"
+    },
+    "eta_cstar": {
+     "value": 0.975,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.thrust_chamber.eta_cstar"
+    }
+   },
+   "ui": {
+    "x": 900,
+    "y": 200
+   }
+  },
+  {
+   "id": "nozzle",
+   "type": "nozzle_bell",
+   "label": "nozzle",
+   "params": {
+    "expansion_ratio": {
+     "value": 40.0,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.thrust_chamber.expansion_ratio"
+    },
+    "eta_CF": {
+     "value": 1.01,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.thrust_chamber.eta_CF"
+    },
+    "bell_fraction": {
+     "value": 0.75,
+     "unit": "1",
+     "quality": "published",
+     "source_id": "HH-SP125",
+     "location": "Table 3-3 p.69",
+     "formula": "engines/engine_params.csv HH_A2.thrust_chamber.bell_fraction"
+    }
+   },
+   "ui": {
+    "x": 1000,
+    "y": 200
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "ox_tank.outlet->ox_pump.inlet",
+   "from": {
+    "node": "ox_tank",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_pump.outlet->ox_valve.inlet",
+   "from": {
+    "node": "ox_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_valve",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_valve.outlet->ox_loss.inlet",
+   "from": {
+    "node": "ox_valve",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_loss",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_loss.outlet->ox_manifold.inlet",
+   "from": {
+    "node": "ox_loss",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_manifold",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_manifold.outlet->ox_injector.inlet",
+   "from": {
+    "node": "ox_manifold",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "ox_injector.outlet->chamber.ox_in",
+   "from": {
+    "node": "ox_injector",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "chamber",
+    "port": "ox_in"
+   },
+   "kind": "fluid",
+   "medium": "LOX"
+  },
+  {
+   "id": "fuel_tank.outlet->fuel_pump.inlet",
+   "from": {
+    "node": "fuel_tank",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_pump",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "fuel_pump.outlet->fuel_valve.inlet",
+   "from": {
+    "node": "fuel_pump",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_valve",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "fuel_valve.outlet->regen_jacket.coolant_in",
+   "from": {
+    "node": "fuel_valve",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "regen_jacket",
+    "port": "coolant_in"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "regen_jacket.coolant_out->jacket_loss.inlet",
+   "from": {
+    "node": "regen_jacket",
+    "port": "coolant_out"
+   },
+   "to": {
+    "node": "jacket_loss",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "jacket_loss.outlet->fuel_turbine.inlet",
+   "from": {
+    "node": "jacket_loss",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_turbine",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "fuel_turbine.outlet->ox_turbine.inlet",
+   "from": {
+    "node": "fuel_turbine",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "ox_turbine",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "ox_turbine.outlet->fuel_manifold.inlet",
+   "from": {
+    "node": "ox_turbine",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_manifold",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "fuel_manifold.outlet->fuel_injector.inlet",
+   "from": {
+    "node": "fuel_manifold",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "fuel_injector",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "fuel_injector.outlet->chamber.fuel_in",
+   "from": {
+    "node": "fuel_injector",
+    "port": "outlet"
+   },
+   "to": {
+    "node": "chamber",
+    "port": "fuel_in"
+   },
+   "kind": "fluid",
+   "medium": "LH2"
+  },
+  {
+   "id": "chamber.wall->regen_jacket.wall",
+   "from": {
+    "node": "chamber",
+    "port": "wall"
+   },
+   "to": {
+    "node": "regen_jacket",
+    "port": "wall"
+   },
+   "kind": "thermal",
+   "medium": "heat"
+  },
+  {
+   "id": "chamber.throat->nozzle.inlet",
+   "from": {
+    "node": "chamber",
+    "port": "throat"
+   },
+   "to": {
+    "node": "nozzle",
+    "port": "inlet"
+   },
+   "kind": "fluid",
+   "medium": "combustion_gas"
+  },
+  {
+   "id": "fuel_turbine.shaft->fuel_shaft.drive",
+   "from": {
+    "node": "fuel_turbine",
+    "port": "shaft"
+   },
+   "to": {
+    "node": "fuel_shaft",
+    "port": "drive"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "fuel_shaft.load->fuel_pump.shaft",
+   "from": {
+    "node": "fuel_shaft",
+    "port": "load"
+   },
+   "to": {
+    "node": "fuel_pump",
+    "port": "shaft"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "ox_turbine.shaft->ox_shaft.drive",
+   "from": {
+    "node": "ox_turbine",
+    "port": "shaft"
+   },
+   "to": {
+    "node": "ox_shaft",
+    "port": "drive"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  },
+  {
+   "id": "ox_shaft.load->ox_pump.shaft",
+   "from": {
+    "node": "ox_shaft",
+    "port": "load"
+   },
+   "to": {
+    "node": "ox_pump",
+    "port": "shaft"
+   },
+   "kind": "shaft",
+   "medium": "torque"
+  }
+ ],
+ "boundary_conditions": [
+  {
+   "node": "nozzle",
+   "port": "inlet",
+   "kind": "ambient_pressure",
+   "value": {
+    "value": 0.0,
+    "unit": "Pa",
+    "quality": "published",
+    "source_id": "HH-SP125",
+    "location": "Table 3-3 p.69, vacuum conditions"
+   }
+  }
+ ],
+ "sequence": [
+  {
+   "t": {
+    "value": 0.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/expander_hydrolox.graph.json",
+    "formula": "start signal defines t = 0"
+   },
+   "node": "fuel_valve",
+   "command": "open",
+   "ramp": {
+    "value": 0.3,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/expander_hydrolox.graph.json",
+    "formula": "valve stroke, not published"
+   },
+   "note": "tank-head fuel flow through jacket and turbines starts the bootstrap; the A-2 itself starts with a solid-grain spinner (p.70)"
+  },
+  {
+   "t": {
+    "value": 0.5,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/expander_hydrolox.graph.json",
+    "formula": "after fuel lead, not published"
+   },
+   "node": "ox_valve",
+   "command": "open",
+   "ramp": {
+    "value": 0.3,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/expander_hydrolox.graph.json",
+    "formula": "valve stroke, not published"
+   }
+  },
+  {
+   "t": {
+    "value": 0.5,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/expander_hydrolox.graph.json",
+    "formula": "with the oxidizer valve"
+   },
+   "node": "chamber",
+   "command": "ignite"
+  },
+  {
+   "t": {
+    "value": 60.0,
+    "unit": "s",
+    "quality": "estimated",
+    "source_id": "PROPSIM-EST",
+    "location": "examples/expander_hydrolox.graph.json",
+    "formula": "short firing for the example"
+   },
+   "node": "*",
+   "command": "cutoff"
+  }
+ ],
+ "dashboard": "dashboards/default_panels.json",
+ "validation_targets": [
+  {
+   "node": "chamber",
+   "output": "p_c",
+   "value": {
+    "value": 5515810.0,
+    "unit": "Pa",
+    "quality": "published",
+    "source_id": "HH-SP125",
+    "location": "Table 3-3 p.69",
+    "formula": "engines/engine_params.csv HH_A2.thrust_chamber.pc_ns"
+   }
+  },
+  {
+   "node": "nozzle",
+   "output": "thrust",
+   "value": {
+    "value": 665009.0,
+    "unit": "N",
+    "quality": "published",
+    "source_id": "HH-SP125",
+    "location": "Table 3-3 p.69",
+    "formula": "engines/engine_params.csv HH_A2.thrust_chamber.thrust"
+   }
+  }
+ ],
+ "design_point": {
+  "fuel_pump_discharge": {
+   "value": 12311200.0,
+   "unit": "Pa",
+   "quality": "estimated",
+   "source_id": "PROPSIM-EST",
+   "location": "examples/expander_hydrolox.graph.json",
+   "formula": "closed expander balance: fuel turbine then oxidizer turbine in series, inlet 240 K H2 (cp 15841, gamma 1.386 from fluids/tables/LH2.csv at 10 MPa); eta_t 0.625 (A-2 fuel turbine); turbine exit to fuel injector with the A-2 line and injector drops"
+  },
+  "fuel_pump_power": {
+   "value": 5297930.0,
+   "unit": "W",
+   "quality": "estimated",
+   "source_id": "PROPSIM-EST",
+   "location": "examples/expander_hydrolox.graph.json",
+   "formula": "closed expander balance: fuel turbine then oxidizer turbine in series, inlet 240 K H2 (cp 15841, gamma 1.386 from fluids/tables/LH2.csv at 10 MPa); eta_t 0.625 (A-2 fuel turbine); turbine exit to fuel injector with the A-2 line and injector drops"
+  },
+  "ox_pump_power": {
+   "value": 1392650.0,
+   "unit": "W",
+   "quality": "derived",
+   "source_id": "HH-SP125",
+   "location": "Table 3-3 p.69",
+   "formula": "mdot g0 H / eta, thrust-chamber oxidizer flow"
+  }
+ },
+ "known_limitations": [
+  "Hybrid of published A-2 data and an estimated expander drive; not a flight engine.",
+  "The balance needs a fuel pump discharge of 1786 psia against 1400 psia for the A-2 tap-off engine, so the fuel pump head is higher than published.",
+  "Jacket exit temperature 240 K is an assumption; the jacket model will compute it once wired.",
+  "Fuel pump tip speed from psi = 0.46 is about 600 m/s; a real pump of this head would use two or more stages."
+ ]
+}
