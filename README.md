@@ -69,7 +69,7 @@ application, with live parameter studies, time-domain simulations, synchronized 
 
 - **Nozzle thrust coefficient** (Live): nozzle area ratio gives the C_F curve, Mach and pressure distributions, and a 3D bell nozzle.
 - **Regression laws** (Live): regression-law explorer.
-- **Port & grain** (Live): port and multiport grain.
+- **Grain designer** (Editor window, Hybrid): port and multiport grain, custom ports with inhibitors, grain stacks; 3D grain with a side-view cutaway.
 - **Core flow fields** (Live): core flow fields (Taylor-Culick and bidirectional-vortex mantle).
 - **Fuel & oxidizer** (Live): fuel and oxidizer properties.
 - **Instability & scaling** (Live): ILFI instability and similarity scaling.
@@ -79,7 +79,7 @@ application, with live parameter studies, time-domain simulations, synchronized 
 
 **Solid**
 
-- **Grain designer** (Live): grain designer (2-D section burnback tables, segments and burning ends, K_n and equilibrium pressure through the burn).
+- **Grain designer** (Editor window, Solid): grain sections (BATES, star, wagon wheel, finocyl, moon burner, C-slot, D-grain, X-core, end burner and more) with burnback tables, segments and burning ends, 3D grain with a side-view cutaway, Open in Main Window.
 - **Burn rate & K_n** (Live): burn-rate and K_n tool.
 - **3D burnback** (Run): 3-D level-set burnback.
 - **Internal ballistics** (Run): internal ballistics.
@@ -233,64 +233,64 @@ Questions and bug reports: [GitHub Issues](https://github.com/Chiyami1213/propsi
     <td><img src="docs/gallery/08-regression-laws.png" alt="Regression laws: regression-law explorer"><br><sub><b>Regression laws</b> (Hybrid, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/09-port-and-grain.png" alt="Port & grain: port and multiport grain"><br><sub><b>Port & grain</b> (Hybrid, Live)</sub></td>
-    <td><img src="docs/gallery/10-core-flow-fields.png" alt="Core flow fields: core flow fields (Taylor-Culick and bidirectional-vortex mantle)"><br><sub><b>Core flow fields</b> (Hybrid, Live)</sub></td>
+    <td><img src="docs/gallery/09-core-flow-fields.png" alt="Core flow fields: core flow fields (Taylor-Culick and bidirectional-vortex mantle)"><br><sub><b>Core flow fields</b> (Hybrid, Live)</sub></td>
+    <td><img src="docs/gallery/10-fuel-and-oxidizer.png" alt="Fuel & oxidizer: fuel and oxidizer properties"><br><sub><b>Fuel & oxidizer</b> (Hybrid, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/11-fuel-and-oxidizer.png" alt="Fuel & oxidizer: fuel and oxidizer properties"><br><sub><b>Fuel & oxidizer</b> (Hybrid, Live)</sub></td>
-    <td><img src="docs/gallery/12-instability-and-scaling.png" alt="Instability & scaling: ILFI instability and similarity scaling"><br><sub><b>Instability & scaling</b> (Hybrid, Live)</sub></td>
+    <td><img src="docs/gallery/11-instability-and-scaling.png" alt="Instability & scaling: ILFI instability and similarity scaling"><br><sub><b>Instability & scaling</b> (Hybrid, Live)</sub></td>
+    <td><img src="docs/gallery/12-0-d-burn.png" alt="0-D burn: 0-D burn (HTPB/GOX power law) with 3D grain cutaway playback"><br><sub><b>0-D burn</b> (Hybrid, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/13-0-d-burn.png" alt="0-D burn: 0-D burn (HTPB/GOX power law) with 3D grain cutaway playback"><br><sub><b>0-D burn</b> (Hybrid, Run)</sub></td>
-    <td><img src="docs/gallery/14-quasi-1d-burn.png" alt="Quasi-1D burn: quasi-1D burn: axial port evolution, throttling, throat erosion"><br><sub><b>Quasi-1D burn</b> (Hybrid, Run)</sub></td>
+    <td><img src="docs/gallery/13-quasi-1d-burn.png" alt="Quasi-1D burn: quasi-1D burn: axial port evolution, throttling, throat erosion"><br><sub><b>Quasi-1D burn</b> (Hybrid, Run)</sub></td>
+    <td><img src="docs/gallery/14-n2o-blowdown.png" alt="N₂O blowdown: N2O self-pressurized tank blowdown feeding the hybrid motor"><br><sub><b>N₂O blowdown</b> (Hybrid, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/15-n2o-blowdown.png" alt="N₂O blowdown: N2O self-pressurized tank blowdown feeding the hybrid motor"><br><sub><b>N₂O blowdown</b> (Hybrid, Run)</sub></td>
-    <td><img src="docs/gallery/16-grain-designer.png" alt="Grain designer: grain designer (2-D section burnback tables)"><br><sub><b>Grain designer</b> (Solid, Live)</sub></td>
+    <td><img src="docs/gallery/15-burn-rate-and-k-n.png" alt="Burn rate & K_n: burn-rate and K_n tool"><br><sub><b>Burn rate & K_n</b> (Solid, Live)</sub></td>
+    <td><img src="docs/gallery/16-3d-burnback.png" alt="3D burnback: 3-D level-set burnback"><br><sub><b>3D burnback</b> (Solid, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/17-burn-rate-and-k-n.png" alt="Burn rate & K_n: burn-rate and K_n tool"><br><sub><b>Burn rate & K_n</b> (Solid, Live)</sub></td>
-    <td><img src="docs/gallery/18-3d-burnback.png" alt="3D burnback: 3-D level-set burnback"><br><sub><b>3D burnback</b> (Solid, Run)</sub></td>
+    <td><img src="docs/gallery/17-internal-ballistics.png" alt="Internal ballistics: internal ballistics"><br><sub><b>Internal ballistics</b> (Solid, Run)</sub></td>
+    <td><img src="docs/gallery/18-cp-motor-quasi-steady.png" alt="CP motor (quasi-steady): quasi-steady cylindrical-perforated motor marched in web: end-face burning, three throat-erosion treatments and parameter sweeps"><br><sub><b>CP motor (quasi-steady)</b> (Solid, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/19-internal-ballistics.png" alt="Internal ballistics: internal ballistics"><br><sub><b>Internal ballistics</b> (Solid, Run)</sub></td>
-    <td><img src="docs/gallery/20-cp-motor-quasi-steady.png" alt="CP motor (quasi-steady): quasi-steady cylindrical-perforated motor marched in web: end-face burning, three throat-erosion treatments and parameter sweeps"><br><sub><b>CP motor (quasi-steady)</b> (Solid, Run)</sub></td>
+    <td><img src="docs/gallery/19-cp-motor-us-units.png" alt="CP motor (US units): the same CP motor with inputs and plots in US customary units (in, psi, lbf, lbm)"><br><sub><b>CP motor (US units)</b> (Solid, Run)</sub></td>
+    <td><img src="docs/gallery/20-mission-and-power-trades.png" alt="Mission & power trades: mission and power trades"><br><sub><b>Mission & power trades</b> (Electric, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/21-cp-motor-us-units.png" alt="CP motor (US units): the same CP motor with inputs and plots in US customary units (in, psi, lbf, lbm)"><br><sub><b>CP motor (US units)</b> (Solid, Run)</sub></td>
-    <td><img src="docs/gallery/22-mission-and-power-trades.png" alt="Mission & power trades: mission and power trades"><br><sub><b>Mission & power trades</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/21-electrothermal-thrusters.png" alt="Electrothermal thrusters: electrothermal thrusters"><br><sub><b>Electrothermal thrusters</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/22-gridded-ion-thruster.png" alt="Gridded ion thruster: gridded ion thruster"><br><sub><b>Gridded ion thruster</b> (Electric, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/23-electrothermal-thrusters.png" alt="Electrothermal thrusters: electrothermal thrusters"><br><sub><b>Electrothermal thrusters</b> (Electric, Live)</sub></td>
-    <td><img src="docs/gallery/24-gridded-ion-thruster.png" alt="Gridded ion thruster: gridded ion thruster"><br><sub><b>Gridded ion thruster</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/23-hall-thruster.png" alt="Hall thruster: Hall thruster"><br><sub><b>Hall thruster</b> (Electric, Live)</sub></td>
+    <td><img src="docs/gallery/24-ion-optics.png" alt="Ion optics: ion-optics beamlet particle simulation"><br><sub><b>Ion optics</b> (Electric, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/25-hall-thruster.png" alt="Hall thruster: Hall thruster"><br><sub><b>Hall thruster</b> (Electric, Live)</sub></td>
-    <td><img src="docs/gallery/26-ion-optics.png" alt="Ion optics: ion-optics beamlet particle simulation"><br><sub><b>Ion optics</b> (Electric, Run)</sub></td>
+    <td><img src="docs/gallery/25-hall-discharge.png" alt="Hall discharge: 1-D Hall discharge"><br><sub><b>Hall discharge</b> (Electric, Run)</sub></td>
+    <td><img src="docs/gallery/26-low-thrust-spiral.png" alt="Low-thrust spiral: low-thrust Edelbaum spiral with solar-array degradation"><br><sub><b>Low-thrust spiral</b> (Electric, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/27-hall-discharge.png" alt="Hall discharge: 1-D Hall discharge"><br><sub><b>Hall discharge</b> (Electric, Run)</sub></td>
-    <td><img src="docs/gallery/28-low-thrust-spiral.png" alt="Low-thrust spiral: low-thrust Edelbaum spiral with solar-array degradation"><br><sub><b>Low-thrust spiral</b> (Electric, Run)</sub></td>
+    <td><img src="docs/gallery/27-ntr-performance.png" alt="NTR performance: chamber temperature, pressure and area ratio give I_sp, flow, reactor power and core size against a LOX / LH₂ engine"><br><sub><b>NTR performance</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/28-reactor-criticality.png" alt="Reactor criticality: one-group bare or reflected reactor, k_eff, critical size and mass, reflector savings and the flux shape"><br><sub><b>Reactor criticality</b> (Nuclear, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/29-ntr-performance.png" alt="NTR performance: chamber temperature, pressure and area ratio give I_sp, flow, reactor power and core size against a LOX / LH₂ engine"><br><sub><b>NTR performance</b> (Nuclear, Live)</sub></td>
-    <td><img src="docs/gallery/30-reactor-criticality.png" alt="Reactor criticality: one-group bare or reflected reactor, k_eff, critical size and mass, reflector savings and the flux shape"><br><sub><b>Reactor criticality</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/29-fuel-element-thermal-hydraulics.png" alt="Fuel element thermal hydraulics: chopped-cosine power shape, propellant, wall and peak fuel temperatures and channel pressure drop"><br><sub><b>Fuel element thermal hydraulics</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/30-ntr-engine-cycles.png" alt="NTR engine cycles: hot bleed, cold bleed and expander energy balances with real hydrogen"><br><sub><b>NTR engine cycles</b> (Nuclear, Live)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/31-fuel-element-thermal-hydraulics.png" alt="Fuel element thermal hydraulics: chopped-cosine power shape, propellant, wall and peak fuel temperatures and channel pressure drop"><br><sub><b>Fuel element thermal hydraulics</b> (Nuclear, Live)</sub></td>
-    <td><img src="docs/gallery/32-ntr-engine-cycles.png" alt="NTR engine cycles: hot bleed, cold bleed and expander energy balances with real hydrogen"><br><sub><b>NTR engine cycles</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/31-xenon-and-samarium.png" alt="Xenon & samarium: iodine-xenon and promethium-samarium poisoning over a burn, coast and restart"><br><sub><b>Xenon & samarium</b> (Nuclear, Live)</sub></td>
+    <td><img src="docs/gallery/32-reactor-kinetics-and-startup.png" alt="Reactor kinetics & startup: six-group point kinetics with feedback, startup under temperature control, reactivity steps and scram"><br><sub><b>Reactor kinetics & startup</b> (Nuclear, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/33-xenon-and-samarium.png" alt="Xenon & samarium: iodine-xenon and promethium-samarium poisoning over a burn, coast and restart"><br><sub><b>Xenon & samarium</b> (Nuclear, Live)</sub></td>
-    <td><img src="docs/gallery/34-reactor-kinetics-and-startup.png" alt="Reactor kinetics & startup: six-group point kinetics with feedback, startup under temperature control, reactivity steps and scram"><br><sub><b>Reactor kinetics & startup</b> (Nuclear, Run)</sub></td>
+    <td><img src="docs/gallery/33-vehicle-and-staging.png" alt="Vehicle & staging: staging budget (ideal velocity, mass, thrust-to-weight), atmosphere, drag and wind, with a stack sketch"><br><sub><b>Vehicle & staging</b> (Vehicle, Live)</sub></td>
+    <td><img src="docs/gallery/34-point-mass-ascent.png" alt="Point-mass ascent: 2-D point-mass ascent over a spherical Earth with staging, wind, drag and imported thrust profiles"><br><sub><b>Point-mass ascent</b> (Vehicle, Run)</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/35-vehicle-and-staging.png" alt="Vehicle & staging: staging budget (ideal velocity, mass, thrust-to-weight), atmosphere, drag and wind, with a stack sketch"><br><sub><b>Vehicle & staging</b> (Vehicle, Live)</sub></td>
-    <td><img src="docs/gallery/36-point-mass-ascent.png" alt="Point-mass ascent: 2-D point-mass ascent over a spherical Earth with staging, wind, drag and imported thrust profiles"><br><sub><b>Point-mass ascent</b> (Vehicle, Run)</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/gallery/37-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
+    <td><img src="docs/gallery/35-spring-mass.png" alt="Spring-mass: damped spring-mass, a proof of the Run pipeline (not a propulsion model)"><br><sub><b>Spring-mass</b> (Toy, Run)</sub></td>
     <td><img src="docs/gallery/cycle-sandbox.png" alt="Cycle sandbox: flow-diagram editor for building and solving liquid engine cycles"><br><sub><b>Cycle sandbox</b> (Liquid, Editor)</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gallery/grain-designer-solid.png" alt="Grain designer (solid): design the port and grain stack, see the whole grain in 3D with a side-view cutaway, and read the burning perimeter, port area and remaining propellant"><br><sub><b>Grain designer</b> (Solid, Editor)</sub></td>
+    <td><img src="docs/gallery/grain-designer-hybrid.png" alt="Grain designer (hybrid): design the port and grain stack, see the whole grain in 3D with a side-view cutaway, and read the burning perimeter, port area and remaining propellant"><br><sub><b>Grain designer</b> (Hybrid, Editor)</sub></td>
   </tr>
 </table>
 

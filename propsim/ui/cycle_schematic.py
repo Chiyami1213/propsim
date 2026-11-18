@@ -90,8 +90,8 @@ def _flows(kind: str, regen: bool, g: dict) -> tuple[list, list, list]:
         flows += [([(20, 34), (20, 125)] + up + [(33.1, 76), (33.1, 27), (44, 27)], FUEL),
                   ([(80, 34), (80, 68), (56, 68), (56, 77.5)], OX), ([(50, 34), (50, 62), (50, 77.5)], GAS)]
         valves += [(20, 48), (80, 48)]
-        labels += [("Heated fuel", 47, 48, "r")]
-    labels += [("Control" + chr(10) + "valves", 83, 42 if kind == "expander" else 60, "l")]
+        labels += [("Heated fuel", 53, 56, "l")]
+    labels += [("Control" + chr(10) + "valves", 86 if kind == "expander" else 83, 48 if kind == "expander" else 60, "l")]
     return flows, valves, labels
 
 
@@ -237,17 +237,16 @@ class Schematic:
         if self.regen:                                          # regenerative cooling tubes hugging the nozzle wall
             self._line(p, [(x - 1.4, y) for x, y in left], QColor(FUEL), 1.4)
             self._line(p, [(100 - x + 1.4, y) for x, y in left], QColor(FUEL), 1.4)
-        # exhaust: plain bands that move down the nozzle
-        p.setBrush(Qt.NoBrush)
+        # exhaust: fixed plain lines across the nozzle, an arrow on each that moves to the right
         for i in range(6):
-            f = ((i + phase) % 6) / 6.0
-            y = 100 + f * 24
+            y = 103.0 + i * 4.2
             half = 50.0 - self._wall_x(y + 1.2) - 1.5          # half width of the bell at that height
             p.setPen(QPen(QColor("#ff6a2a"), 0.7))
             p.drawLine(QPointF(50 - half, y), QPointF(50 + half, y))
+            x = 50 - half + ((phase + i / 6.0) % 1.0) * 2 * half
             p.setPen(Qt.NoPen)
             p.setBrush(QColor("#ff6a2a"))
-            p.drawPolygon(QPolygonF([QPointF(50 + 3, y), QPointF(50 - 1.2, y - 1.6), QPointF(50 - 1.2, y + 1.6)]))
+            p.drawPolygon(QPolygonF([QPointF(x + 1.6, y), QPointF(x - 1.2, y - 1.6), QPointF(x - 1.2, y + 1.6)]))
             p.setBrush(Qt.NoBrush)
 
     def _labels(self, p, ink, labels) -> None:
@@ -259,7 +258,8 @@ class Schematic:
         for text, x, y, al in labels:
             p.setPen(ink)
             w = 40.0
-            rect = QRectF(x - (w / 2 if al == "c" else (0 if al == "l" else w)), y - 2.5, w, 5)
+            h = 5.0 * (text.count(chr(10)) + 1)                    # a two-line label needs a taller box
+            rect = QRectF(x - (w / 2 if al == "c" else (0 if al == "l" else w)), y - h / 2, w, h)
             p.drawText(rect, {"c": Qt.AlignCenter, "l": Qt.AlignLeft, "r": Qt.AlignRight}[al] | Qt.AlignVCenter, text)
         f.setPixelSize(5)
         p.setFont(f)

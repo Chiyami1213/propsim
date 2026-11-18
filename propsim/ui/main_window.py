@@ -248,6 +248,7 @@ class MainWindow(QMainWindow):
         self._act(s, "Cancel", self.cancel_run, "Esc")
         s.addSeparator()
         self._act(s, "Engine cycle sandbox", self.open_cycle_sandbox, "Ctrl+E")
+        self._act(s, "Grain designer", lambda: self.open_grain_designer("solid"), "Ctrl+G")
         va = mb.addMenu("&Validation")
         self._act(va, "Run reference + core tests", self.run_validation)
         h = mb.addMenu("&Help")
@@ -379,11 +380,29 @@ class MainWindow(QMainWindow):
     # =================================================================== model selection
     def _on_tree(self, cur, _prev=None) -> None:
         key = cur.data(KEY_ROLE) if cur.isValid() else None
-        if key == registry.CycleSandboxTool.key:
-            self.open_cycle_sandbox()
+        if key in registry.TOOL_KEYS:
+            self.open_tool(key)
             return
         if key and (self.ctrl is None or key != self.ctrl.key):
             self.select_model(key)
+
+    def open_tool(self, key: str) -> None:
+        """Open the window of a tree "tool" entry (cycle sandbox, solid or hybrid grain designer)."""
+        if key == registry.CycleSandboxTool.key:
+            self.open_cycle_sandbox()
+        else:
+            self.open_grain_designer("solid" if key == registry.GrainDesignerSolidTool.key else "hybrid")
+
+    def open_grain_designer(self, mode: str = "solid") -> None:
+        """Open (or raise) the grain designer window, in solid or hybrid mode."""
+        from .grain_designer import GrainDesigner
+        if getattr(self, "grain_win", None) is None:
+            self.grain_win = GrainDesigner(self, mode)
+        elif self.grain_win.mode != mode:
+            self.grain_win.mode_box.setCurrentIndex(self.grain_win.mode_box.findData(mode))
+        self.grain_win.show()
+        self.grain_win.raise_()
+        self.grain_win.activateWindow()
 
     def open_cycle_sandbox(self) -> None:
         """Open (or raise) the liquid-engine cycle sandbox window."""

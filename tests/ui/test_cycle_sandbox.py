@@ -147,3 +147,44 @@ def test_3d_panel_follows_selection_and_solution(box):
     box.canvas.nodes["mov"].setSelected(True)
     QApplication.processEvents()
     assert v.model.title == "Butterfly valve" and not v.model.fields
+
+
+def test_build_guide_lists_required_and_optional_components(qapp):
+    from propsim.ui.cycle_guide import CYCLES, checklist
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.new_doc()
+    g = w.guide
+    g._pick("expander")
+    req, opt = checklist(w.doc["graph"], "expander")
+    assert any(t == "regen_jacket" and need == 1 for t, _, need, _ in req) and opt
+    assert all(have == 0 for _, have, _, _ in req)
+    g.go(1)
+    assert not g.next.isEnabled()                              # required parts are missing
+    for t, _, need, _ in req:
+        for _ in range(need):
+            w.canvas.add_component(t)
+    g.refresh()
+    assert g.next.isEnabled() and not g.missing
+    g.go(2)
+    assert "Ports still open" in g.page_conn.text()
+    assert set(CYCLES) == {"pressure_fed", "gas_generator", "expander", "staged"}
+
+
+def test_trade_study_sweeps_and_compares(box):
+    box.load_template("gg_kerolox")
+    tp = box.trade
+    i = next(i for i in range(tp.in_box.count()) if tp.in_box.itemData(i)[1:3] == ("nozzle", "expansion_ratio"))
+    tp.in_box.setCurrentIndex(i)
+    tp.n_box.setValue(3)
+    tp.run_sweep()
+    tp.wait()
+    assert tp.result is not None and all(tp.result["converged"]) and tp.table.rowCount() == 3
+    assert tp.y_box.count() > 10 and tp.plot.spec.curves
+    tp.add_current()
+    tp.add_design("Pressure-fed", E.template("pressure_fed_kerolox"))
+    tp.run_compare()
+    tp.wait()
+    assert tp.cmp_table.columnCount() == 2
+    assert all(tp.compared[n]["converged"] for n in tp.designs)
+    assert tp.cmp_table.item(0, 0).text().replace(",", "").replace(".", "").isdigit()

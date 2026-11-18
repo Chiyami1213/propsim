@@ -14,6 +14,9 @@ New changes go above this line, newest first.
   the motor impulse class, and a *File, Export Thrust Curve (.eng)* export. Validated against Nakka's Kappa-SB static
   test KSB-002 (burn time, C_F and total impulse within 6 %) and the Shuttle RSRM burn law (AIAA 2000-3803).
 
+- Cycle sandbox: a *Trade Study* panel. *Sweep* varies a part parameter, a valve position or a design target over a
+  range (warm-started from point to point) and plots or tabulates thrust, Isp, powers, wall temperature, NPSH or any
+  part output, with CSV export. *Compare Designs* solves saved designs or templates side by side.
 - Cycle sandbox: a *3D Model* panel shows the selected component, sized from its parameters (lines, valves at their
   solved position, pumps by impeller kind and stages, turbines by arrangement, tanks with their fill, chamber and Rao
   nozzle contour, jacket channels, injectors, manifolds). Cutaway, a readout of the solved state, and wall
@@ -46,6 +49,13 @@ New changes go above this line, newest first.
   one chamber are mixed by generation mass flow (frozen composition). Both editors are dialogs reached from the
   parameter panel; the data is stored as JSON in the case file. A single grain reproduces the earlier solver. The
   3-D burnback accepts custom sections.
+- Cycle sandbox template: F-1 (Saturn V first stage) gas-generator engine, an ESTIMATE scaled from the A-1 graph to the F-1
+  thrust (library holds only its top-level figures); solves to about 7.4 MN, 7.3 MPa, O/F 2.43 against the published
+  6.77 MN, 7.58 MPa, 2.27. `tools/build_f1_graph.py` regenerates it.
+- Grain designer is now a window of its own (Simulation > Grain designer, Ctrl+G, or the Solid and Hybrid tree entries), for
+  solid and hybrid motors, with Open in Main Window.
+- Cycle sandbox: a Build Guide panel walks through choosing the cycle type, adding the required and optional components,
+  connecting them and solving; a 3D model of the selected component (PR 17).
 - Cycle sandbox: a Play Flow button animates the flow diagram itself; the Cycle Animation panel redraws the engine as a
   textbook-style schematic (pumps, turbine and shaft, gas generator or preburner, valves, chamber, nozzle and regenerative
   cooling tubes) for pressure-fed, gas-generator, expander and staged-combustion cycles, and falls back to the diagram for
