@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QDockWidget, QFileDialog
 
 from ..core import io as pio
 from ..core.result import Result
-from ..modules import registry
+from ..modules import descriptions, registry
 from ..modules.base import ModelController
 from . import latex
 from .export import save_tab_png
@@ -125,10 +125,12 @@ class MainWindow(QMainWindow):
         for mod, entries in registry.TREE.items():
             top = QStandardItem(apa(mod))
             top.setFlags(Qt.ItemIsEnabled)
+            top.setToolTip(descriptions.MODULES.get(mod, ""))
             for label, mode, cls in entries:
                 kind = {"live": "Live", "run": "Run", "tool": "Editor"}[mode]
                 it = QStandardItem(f"{apa(label)}  ({kind})")
                 it.setData(cls.key if cls else None, KEY_ROLE)
+                it.setToolTip(descriptions.MODELS.get(cls.key, "") if cls else descriptions.PLANNED)
                 it.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable if cls else Qt.NoItemFlags)
                 top.appendRow(it)
             self.tree_model.appendRow(top)
@@ -242,13 +244,17 @@ class MainWindow(QMainWindow):
         self._act(v, "Color theme", self.choose_theme, "F10")
         self._act(v, "Restore default layout", self.reset_layout, "F12")
         self.full_screen_act = self._act(v, "Full screen", self.toggle_full_screen, "F11")
-        s = mb.addMenu("&Simulation")
+        d = mb.addMenu("&Design")                          # build the engine or motor first, then analyze it
+        self._act(d, "Liquid engine designer", self.open_cycle_sandbox, "Ctrl+E")
+        self._act(d, "Solid grain designer", lambda: self.open_grain_designer("solid"), "Ctrl+G")
+        self._act(d, "Hybrid grain designer", lambda: self.open_grain_designer("hybrid"))
+        for name in ("Nuclear thermal designer", "Electric propulsion designer"):
+            self._act(d, name + " (planned)", lambda: None).setEnabled(False)
+        s = mb.addMenu("&Analysis")                        # test and analyze a design with the analysis modules
         self._act(s, "Run", self.start_run, "Ctrl+R")
         self._act(s, "Cancel", self.cancel_run, "Esc")
         s.addSeparator()
-        self._act(s, "Engine cycle sandbox", self.open_cycle_sandbox, "Ctrl+E")
-        self._act(s, "Grain designer", lambda: self.open_grain_designer("solid"), "Ctrl+G")
-        va = mb.addMenu("&Validation")
+        va = s.addMenu(apa("Validation"))
         self._act(va, "Run reference + core tests", self.run_validation)
         h = mb.addMenu("&Help")
         self._act(h, "Tutorial", self.start_tutorial, "F1")

@@ -82,6 +82,104 @@ CYCLES = {
                 "Preburner outlet to the turbine inlet; turbine outlet to the main chamber (not overboard).",
                 "Join the turbine and pumps with the shaft; injectors to the chamber; throat to the nozzle."]),
 }
+def _more_cycles() -> dict:
+    """The remaining cycles (Everyday Astronaut, Rocket Engine Cycles, 2022), built from the same component kinds."""
+    tank = ("tank_regulated", 2, "propellant tanks")
+    pumps = ("pump_centrifugal", 2, "one pump per propellant")
+    turb = ("turbine_impulse", 1, "the turbine that drives the pumps")
+    shaft = ("shaft", 1, "the shaft joining the turbine and the pumps")
+    inj = ("injector", 2, "main injectors")
+    cc = [("chamber", 1, "the combustion chamber"), ("nozzle_bell", 1, "the nozzle")]
+    opt = [("inducer", "inducers ahead of the pumps"), ("orifice", "orifices"), ("line", "feed lines"),
+           ("manifold", "manifolds")]
+    return {
+        "tap_off": dict(
+            name="Tap-off (open)",
+            about="Hot gas is bled from the side of the main chamber to spin the turbine, then dumped overboard or "
+                  "returned near the nozzle to film-cool it. No gas generator or preburner (J-2S, Blue Origin BE-3). The "
+                  "gas is usually diluted with fuel first to cool it.",
+            required=[tank, pumps, turb, shaft, ("valve_poppet", 2, "main valves"), inj] + cc,
+            optional=opt + [("regen_jacket", "cooling jacket"), ("orifice", "a dilution orifice for the tapped gas")],
+            wiring=["Tank to pump to valve to injector, for each propellant; injectors to the chamber.",
+                    "Tap a connection from the chamber (a second chamber outlet or a manifold on its wall) to the turbine "
+                    "inlet. The chamber has one throat outlet, so model the tap as a small gas line from a manifold fed "
+                    "by the chamber gas.",
+                    "Turbine outlet left open (overboard) or to the nozzle film-cooling inlet.",
+                    "Join the turbine and both pumps with the shaft."]),
+        "expander_bleed": dict(
+            name="Expander bleed (open)",
+            about="Fuel heated in the cooling jacket expands through the turbine, but only part of it: the turbine flow "
+                  "is vented overboard and the rest of the fuel goes to the chamber (BE-3U, LE-5A, LE-5B).",
+            required=[tank, pumps, turb, shaft, ("regen_jacket", 1, "the cooling jacket that heats the fuel"),
+                      ("valve_butterfly", 2, "control valves"), inj] + cc,
+            optional=opt,
+            wiring=["Fuel: tank, pump, valve, jacket coolant_in; jacket coolant_out splits into the turbine inlet "
+                    "(small branch) and the fuel injector (main branch).",
+                    "Turbine outlet left open: exhaust overboard.",
+                    "Oxidizer: tank, pump, valve, injector. Shaft joins turbine and pumps.",
+                    "Jacket wall port to the chamber wall port; injectors to the chamber."]),
+        "staged_fuel": dict(
+            name="Staged combustion, fuel-rich (closed)",
+            about="All of the fuel and a little oxidizer burn in a fuel-rich preburner; its gas drives the turbine and "
+                  "then goes on into the main chamber (RS-25, RD-0120).",
+            required=[tank, pumps, turb, shaft, ("gas_generator", 1, "the fuel-rich preburner"),
+                      ("valve_ball", 2, "preburner and main valves"), inj] + cc,
+            optional=opt + [("regen_jacket", "cooling jacket"), ("pump_centrifugal", "boost pumps")],
+            wiring=["Fuel pump outlet: nearly all to the preburner fuel_in (through the jacket if you add one).",
+                    "Oxidizer pump outlet: a small branch to the preburner ox_in, the rest to the main injector.",
+                    "Preburner outlet to the turbine inlet; turbine outlet into the main chamber.",
+                    "Shaft joins turbine and pumps (two shafts for a dual-preburner design)."]),
+        "staged_ox": dict(
+            name="Staged combustion, oxidizer-rich (closed)",
+            about="All of the oxidizer and a little fuel burn in an oxidizer-rich preburner; the hot, oxidizing gas "
+                  "drives the turbine and then enters the main chamber (RD-180, RD-170, NK-33, BE-4). Needs "
+                  "oxidizer-compatible materials in the hot path.",
+            required=[tank, pumps, turb, shaft, ("gas_generator", 1, "the oxidizer-rich preburner"),
+                      ("valve_ball", 2, "preburner and main valves"), inj] + cc,
+            optional=opt + [("regen_jacket", "cooling jacket")],
+            wiring=["Oxidizer pump outlet: nearly all to the preburner ox_in.",
+                    "Fuel pump outlet: a small branch to the preburner fuel_in, the rest through the jacket to the main "
+                    "injector.",
+                    "Preburner outlet to the turbine inlet; turbine outlet into the main chamber.",
+                    "Shaft joins turbine and pumps."]),
+        "full_flow": dict(
+            name="Full-flow staged combustion (closed)",
+            about="Two preburners, one fuel-rich and one oxidizer-rich, drive their own turbopumps; nearly all of both "
+                  "propellants pass through them and meet as gases in the main chamber (Raptor, RD-270).",
+            required=[tank, pumps, ("turbine_impulse", 2, "two turbines, one per turbopump"),
+                      ("shaft", 2, "one shaft per turbopump"),
+                      ("gas_generator", 2, "a fuel-rich and an oxidizer-rich preburner"),
+                      ("valve_ball", 2, "main valves"), inj] + cc,
+            optional=opt + [("regen_jacket", "cooling jacket")],
+            wiring=["Fuel pump to the fuel-rich preburner (all the fuel, a little oxidizer from the ox pump).",
+                    "Ox pump to the oxidizer-rich preburner (all the oxidizer, a little fuel).",
+                    "Each preburner outlet to its own turbine inlet; each turbine outlet into the main chamber.",
+                    "Fuel turbine on the fuel pump shaft, ox turbine on the ox pump shaft."]),
+        "electric_pump": dict(
+            name="Electric pump-fed",
+            about="Battery-powered electric motors drive the pumps instead of a turbine: simple turbomachinery and "
+                  "precise throttling, limited by battery mass (Rutherford). The sandbox has no motor or battery part: "
+                  "model it with the pumps and a shaft load, and set the pump power as a fixed parameter.",
+            required=[tank, pumps, ("valve_ball", 2, "main valves"), inj] + cc,
+            optional=opt + [("shaft", "a shaft with a fixed power load to stand for each motor"),
+                            ("regen_jacket", "cooling jacket")],
+            wiring=["Tank to pump to valve to injector, for each propellant; injectors to the chamber.",
+                    "Each pump's shaft port to its own shaft, with the shaft power set as the motor load.",
+                    "Chamber throat to the nozzle."]),
+        "cold_gas": dict(
+            name="Cold gas thruster (no combustion)",
+            about="High-pressure inert gas (helium or nitrogen) expands through a valve and a nozzle with no "
+                  "combustion and no turbine: simple and reliable, low performance, used for attitude control. The "
+                  "sandbox solves combustion cycles, so this is a layout guide only.",
+            required=[("tank_regulated", 1, "the gas tank"), ("valve_ball", 1, "the thruster valve"),
+                      ("nozzle_bell", 1, "the nozzle")],
+            optional=[("line", "feed line"), ("orifice", "a flow restrictor")],
+            wiring=["Gas tank outlet to the valve, valve outlet to the nozzle inlet."]),
+    }
+
+
+CYCLES.pop("staged", None)                                       # replaced by the fuel-rich and oxidizer-rich variants
+CYCLES.update(_more_cycles())
 STEPS = ["Cycle", "Components", "Connect", "Solve"]
 
 
@@ -114,6 +212,7 @@ class CycleGuide(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(8, 4, 8, 8)
         self.crumbs = QLabel("")
+        self.crumbs.setTextFormat(Qt.RichText)
         self.crumbs.setObjectName("caption")
         lay.addWidget(self.crumbs)
         self.stack = QStackedWidget()
@@ -240,7 +339,7 @@ class CycleGuide(QWidget):
     def go(self, i: int) -> None:
         self.step = max(0, min(len(STEPS) - 1, i))
         self.stack.setCurrentIndex(self.step)
-        self.crumbs.setText("  >  ".join(f"<{s}>" if k == self.step else s for k, s in enumerate(STEPS)))
+        self.crumbs.setText(" \u2192 ".join(f"<b>{s}</b>" if k == self.step else s for k, s in enumerate(STEPS)))
         self.back.setEnabled(self.step > 0)
         self.next.setText("Done" if self.step == len(STEPS) - 1 else "Next")
         self.refresh()

@@ -15,7 +15,7 @@ import math
 
 import numpy as np
 from PySide6.QtCore import QTimer, QObject, QPointF, QRectF, Qt, QThread, Signal
-from PySide6.QtGui import QAction, QBrush, QColor, QFont, QKeySequence, QPainter, QPainterPath, QPen
+from PySide6.QtGui import QAction, QBrush, QColor, QFont, QKeySequence, QLinearGradient, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QGraphicsItem, QGraphicsPathItem, QGraphicsScene, QGraphicsView, QHBoxLayout,
                                QHeaderView, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
@@ -290,16 +290,36 @@ class EdgeItem(QGraphicsPathItem):
 
 
 class _LegendOverlay(QWidget):
-    """Connection-line legend: a child widget of the canvas viewport, so it stays put while the view is dragged."""
+    """Connection-line legend: a child widget of the view, so it stays put while the view is dragged.  It shows the
+    colors actually in use: propellant colors normally, the color ramp of the chosen quantity when the diagram is
+    colored by pressure, temperature or flow."""
 
-    W, H = 250, 10 + 18 * 6 + 8
+    W = 250
 
     def __init__(self, canvas: "Canvas") -> None:
-        super().__init__(canvas)                       # a child of the view itself: scrolling the viewport never moves it
+        super().__init__(canvas)
+        self.canvas = canvas
         self.setAttribute(Qt.WA_TransparentForMouseEvents)
-        self.setFixedSize(self.W, self.H)
         theme.changed.connect(self.update)
+        self.refresh()
         self.show()
+
+    def rows(self) -> list[tuple]:
+        """(kind, text, color key or None, pen style): ``ramp`` rows draw the quantity color ramp."""
+        colored = getattr(self.canvas, "legend", None)
+        out: list[tuple] = []
+        if colored:
+            out.append(("ramp", f"Process line, colored by {colored[0].split(' (')[0].lower()}", None, Qt.SolidLine))
+        else:
+            out += [("line", "Oxidizer line", "ox", Qt.SolidLine), ("line", "Fuel line", "fuel", Qt.SolidLine),
+                    ("line", "Combustion gas line", "gas", Qt.SolidLine)]
+        out += [("line", "Mechanical link (shaft)", "shaft", Qt.DashDotLine), ("line", "Heat transfer (wall)", "heat", Qt.DotLine),
+                ("bubble", "Instrument bubble", None, Qt.SolidLine)]
+        return out
+
+    def refresh(self) -> None:
+        self.setFixedSize(self.W, 10 + 18 * len(self.rows()) + 8)
+        self.update()
 
     def paintEvent(self, _) -> None:
         p = QPainter(self)
@@ -309,29 +329,38 @@ class _LegendOverlay(QWidget):
             f = QFont(p.font())
             f.setPointSizeF(8.0)
             p.setFont(f)
-            w = self.W
-            box = QRectF(0.5, 0.5, w - 1, self.H - 1)
+            w, rows = self.W, self.rows()
+            p.setBrush(QColor(t["card"]).darker(100))
             c = QColor(t["card"])
             c.setAlpha(225)
             p.setBrush(c)
             p.setPen(QColor(t["edge"]))
-            p.drawRoundedRect(box, 6, 6)
-            for i, (name, key, style) in enumerate(Canvas.LEGEND):
+            p.drawRoundedRect(QRectF(0.5, 0.5, w - 1, self.height() - 1), 6, 6)
+            for i, (kind, name, key, style) in enumerate(rows):
                 y = 14 + 18 * i
-                p.setPen(QPen(QColor(MEDIUM_COLORS[key]), 2.4, style))
-                p.drawLine(QPointF(10, y), QPointF(52, y))
-                if style == Qt.SolidLine:                               # flow direction arrow
+                if kind == "ramp":
+                    g = QLinearGradient(10, y, 52, y)
+                    for k in range(6):
+                        g.setColorAt(k / 5.0, _ramp(k / 5.0))
+                    p.setPen(QPen(QBrush(g), 3.0))
+                    p.drawLine(QPointF(10, y), QPointF(52, y))
                     p.setPen(Qt.NoPen)
-                    p.setBrush(QColor(MEDIUM_COLORS[key]))
+                    p.setBrush(QColor(t["text"]))
                     p.drawPolygon([QPointF(36, y), QPointF(29, y - 3.5), QPointF(29, y + 3.5)])
+                elif kind == "line":
+                    p.setPen(QPen(QColor(MEDIUM_COLORS[key]), 2.4, style))
+                    p.drawLine(QPointF(10, y), QPointF(52, y))
+                    if style == Qt.SolidLine:                           # flow direction arrow
+                        p.setPen(Qt.NoPen)
+                        p.setBrush(QColor(MEDIUM_COLORS[key]))
+                        p.drawPolygon([QPointF(36, y), QPointF(29, y - 3.5), QPointF(29, y + 3.5)])
+                else:
+                    p.setPen(QPen(QColor(t["dim"]), 1.0))
+                    p.setBrush(Qt.NoBrush)
+                    p.drawEllipse(QPointF(31, y), 7, 7)
                 p.setPen(QColor(t["text"]))
+                p.setBrush(c)
                 p.drawText(QRectF(60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, name)
-            y = 14 + 18 * len(Canvas.LEGEND)
-            p.setPen(QPen(QColor(t["dim"]), 1.0))
-            p.setBrush(Qt.NoBrush)
-            p.drawEllipse(QPointF(31, y), 7, 7)
-            p.setPen(QColor(t["text"]))
-            p.drawText(QRectF(60, y - 8, w - 64, 16), Qt.AlignVCenter | Qt.AlignLeft, "Instrument bubble")
         finally:
             p.end()
 
@@ -501,6 +530,9 @@ class Canvas(QGraphicsView):
             lo, hi = min(vals.values()), max(vals.values())
             fac = {"p": 1e-6}.get(color_by, 1.0)
             self.legend = (next(k for k, v in COLOR_BY.items() if v == color_by), lo * fac, hi * fac)
+        if getattr(self, "legend_box", None) is not None:
+            self.legend_box.refresh()
+            self._place_legend()
         for e in self.edges:
             v = vals.get(e.edge["id"])
             if v is None:

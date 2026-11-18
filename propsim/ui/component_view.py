@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import numpy as np
-from PySide6.QtWidgets import QFileDialog, QVBoxLayout, QWidget
+import pyvista as pv
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 
 from ..modules.component_shapes import FIELD_TITLES, build, merged
 from .viewport3d import Viewport3D
@@ -42,7 +44,23 @@ class ComponentView(QWidget):
         self.vp = Viewport3D(self)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
-        lay.addWidget(self.vp)
+        lay.addWidget(self.vp, 1)
+        bar = QHBoxLayout()
+        bar.setContentsMargins(6, 0, 6, 4)
+        self.flow_btn = QPushButton("Play Flow")
+        self.flow_btn.setCheckable(True)
+        self.flow_btn.setToolTip("animate the flow through the component")
+        self.flow_btn.toggled.connect(self.set_flow)
+        bar.addWidget(self.flow_btn)
+        bar.addStretch(1)
+        lay.addLayout(bar)
+        self.flowing = False
+        self.phase = 0.0
+        self._timer = QTimer(self)
+        self._timer.setInterval(40)
+        self._timer.timeout.connect(self._tick)
+        self._path: np.ndarray | None = None
+        self._flow_color = "#ffffff"
         self.graph: dict | None = None
         self.nid: str | None = None
         self.sol = None
@@ -91,6 +109,8 @@ class ComponentView(QWidget):
             self.vp.set_readout([f"No model: {e}"])
             self.vp.render()
             return
+        self._path = None
+        self._state_fields()
         keys = list(self.model.fields)
         if keys != self._field_keys:
             self._field_keys = keys
@@ -134,6 +154,102 @@ class ComponentView(QWidget):
             self.vp.render()
         else:
             self.vp.reset_view(zoom=1.2)
+
+    def _port_states(self) -> tuple[dict | None, dict | None]:
+        """(inlet, outlet) solved stations of the selected component: mean pressure and temperature on its in and out
+        ports; ``None`` where the component has no such port or the solution lacks it."""
+        if self.sol is None or self.graph is None:
+            return None, None
+        from ..core.engine_graph import edit as E
+        node = next(n for n in self.graph["nodes"] if n["id"] == self.nid)
+        spec = E.library()[node["type"]]["ports"]
+        sides: dict[str, list[dict]] = {"in": [], "out": []}
+        for st in self.sol.stations:
+            for port in st["ports"]:
+                nid, _, pname = port.partition(".")
+                if nid != self.nid:
+                    continue
+                ps = next((q for q in spec if q["name"] == pname and q["kind"] == "fluid"), None)
+                if ps is not None:
+                    sides["in" if ps["direction"] == "in" else "out"].append(st)
+        mean = lambda sts: None if not sts else {"p": float(np.mean([s["p"] for s in sts])),
+                                                 "T": float(np.mean([s["T"] for s in sts]))}
+        return mean(sides["in"]), mean(sides["out"])
+
+    def _state_fields(self) -> None:
+        """Pressure and fluid-temperature fields for every component: the solved inlet and outlet values blended along
+        the flow axis (the longest extent of the model), so any part can be colored by pressure or temperature."""
+        m = self.model
+        if m is None or self.sol is None:
+            return
+        a, b = self._port_states()
+        a = a or b
+        b = b or a
+        if a is None:
+            return
+        pts = np.vstack([np.asarray(p.mesh.points) for p in m.parts if p.mesh.n_points])
+        lo, hi = pts.min(axis=0), pts.max(axis=0)
+        ax = int(np.argmax(hi - lo))
+        span = max(float(hi[ax] - lo[ax]), 1e-12)
+        for part in m.parts:
+            t = (np.asarray(part.mesh.points)[:, ax] - lo[ax]) / span
+            part.mesh.point_data["p"] = (a["p"] + (b["p"] - a["p"]) * t) * 1e-6
+            part.mesh.point_data["T_f"] = a["T"] + (b["T"] - a["T"]) * t
+        m.fields = {"p": FIELD_TITLES["p"], "T_f": FIELD_TITLES["T_f"], **m.fields}
+
+    # ---- 3D flow animation -------------------------------------------------------------------------------
+    def set_flow(self, on: bool) -> None:
+        """Play or stop the flow: arrow heads travel along the component's flow axis, in the color of its fluid."""
+        self.flowing = on
+        self.flow_btn.setText("Pause Flow" if on else "Play Flow")
+        if on:
+            self._timer.start()
+        else:
+            self._timer.stop()
+            self.vp.plotter.remove_actor("flow", render=False) if "flow" in self.vp.plotter.actors else None
+            self.vp.render()
+
+    def _flow_setup(self) -> None:
+        """Flow axis from the model: the longest extent of its parts, through the middle; color from the fluid."""
+        self._path = None
+        m = self.model
+        if m is None or self.graph is None:
+            return
+        pts = np.vstack([np.asarray(p.mesh.points) for p in m.parts if p.mesh.n_points])
+        lo, hi = pts.min(axis=0), pts.max(axis=0)
+        ax = int(np.argmax(hi - lo))
+        mid = (lo + hi) / 2.0
+        a, b = mid.copy(), mid.copy()
+        a[ax], b[ax] = lo[ax], hi[ax]
+        self._path = np.vstack([a, b])
+        node = next(n for n in self.graph["nodes"] if n["id"] == self.nid)
+        from .cycle_sandbox import MEDIUM_COLORS
+        med = next((e.get("medium") for e in self.graph["edges"]
+                    if e["kind"] == "fluid" and self.nid in (e["from"]["node"], e["to"]["node"])), None)
+        if node["type"] in ("chamber", "nozzle_bell", "gas_generator"):
+            self._flow_color = MEDIUM_COLORS["gas"]
+        elif med == self.graph["propellants"]["oxidizer"]:
+            self._flow_color = MEDIUM_COLORS["ox"]
+        elif med is not None:
+            self._flow_color = MEDIUM_COLORS["fuel"]
+        self._size = float(np.linalg.norm(hi - lo))
+
+    def _tick(self) -> None:
+        if not self.isVisible() or self.model is None:
+            return
+        if self._path is None:
+            self._flow_setup()
+            if self._path is None:
+                return
+        self.phase = (self.phase + 0.02) % 1.0
+        a, b = self._path
+        d = (b - a) / max(float(np.linalg.norm(b - a)), 1e-12)
+        n = 10
+        cones = [pv.Cone(center=a + (b - a) * ((i + self.phase) / n), direction=d, height=0.07 * self._size,
+                         radius=0.022 * self._size, resolution=12) for i in range(n)]
+        mesh = cones[0].merge(cones[1:]) if len(cones) > 1 else cones[0]
+        self.vp.plotter.add_mesh(mesh, color=self._flow_color, name="flow", smooth_shading=True)
+        self.vp.render()
 
     def _readout(self) -> list[str]:
         if self.sol is None:

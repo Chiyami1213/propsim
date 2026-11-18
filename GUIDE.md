@@ -49,7 +49,7 @@ $(p_c/p_{ref})^{0.8}$); without a sweep the plots overlay all three treatments. 
 Ballistics* for those.
 
 ### Build your own liquid engine cycle
-*Liquid, Cycle sandbox* (or **Simulation, Engine cycle sandbox**, Ctrl+E) opens a flow-diagram editor. Pick parts from
+*Liquid, Cycle sandbox* (or **Design, Liquid engine designer**, Ctrl+E) opens a flow-diagram editor. Pick parts from
 the component library on the left (tanks, lines, valves, pumps, inducers, turbines, gas generators, injectors,
 chambers, cooling jackets, nozzles, shafts) by double-clicking or dragging, then drag from one port to another to
 connect them. Fluid ports join outlet to inlet; shaft ports join a turbine to its pumps. Choose the oxidizer and fuel in
@@ -138,7 +138,7 @@ Double-click a parameter slider to put it back to its default value.
 |---|---|
 | Ctrl+R / Esc | Run / Cancel |
 | Ctrl+O, Ctrl+S | Open case, Save case |
-| Ctrl+E | Engine cycle sandbox |
+| Ctrl+E | Liquid engine designer (cycle sandbox) |
 | F10 | Color theme picker |
 | F12 | Restore default panel layout |
 | F11 | Full screen on and off |

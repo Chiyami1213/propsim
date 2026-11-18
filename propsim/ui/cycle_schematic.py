@@ -22,22 +22,39 @@ from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter, QPa
 
 from .theme import theme
 
-FUEL, OX, GAS, RICH = "#ff2a2a", "#3d6bff", "#ff9a1f", "#ff8fa3"
-KIND_NAMES = {"pressure_fed": "Pressure-fed cycle", "gas_generator": "Gas-generator cycle", "expander": "Expander cycle",
-              "staged": "Staged-combustion cycle", "custom": "Custom cycle"}
+FUEL, OX, GAS, RICH, OXRICH, ELEC = "#ff2a2a", "#3d6bff", "#ff9a1f", "#ff8fa3", "#a58bff", "#ffd23f"
+KIND_NAMES = {"pressure_fed": "Pressure-fed cycle", "gas_generator": "Gas-generator cycle (open)",
+              "tap_off": "Tap-off cycle", "expander_bleed": "Expander bleed cycle (open)",
+              "expander": "Expander cycle (closed)", "staged_fuel": "Fuel-rich staged-combustion cycle",
+              "staged_ox": "Oxidizer-rich staged-combustion cycle", "full_flow": "Full-flow staged-combustion cycle",
+              "electric_pump": "Electric pump-fed cycle", "custom": "Custom cycle"}
 
 
 def identify_cycle(graph: dict) -> str:
-    """``pressure_fed``, ``gas_generator``, ``expander``, ``staged`` or ``custom``."""
+    """One of :data:`KIND_NAMES`: from the graph's ``cycle`` field, else from the components present."""
     types = [n["type"] for n in graph.get("nodes", [])]
     has = lambda t: t in types
     c = (graph.get("cycle") or "").lower()
-    for key, kind in (("pressure", "pressure_fed"), ("expander", "expander"), ("staged", "staged"),
-                      ("gas_generator", "gas_generator")):
-        if key in c:
-            return kind
+    if "full_flow" in c or "full-flow" in c:
+        return "full_flow"
+    if "staged" in c:
+        return "staged_ox" if ("ox_rich" in c or "oxidizer_rich" in c) else "staged_fuel"
+    if "tap" in c:
+        return "tap_off"
+    if "bleed" in c:
+        return "expander_bleed"
+    if "expander" in c:
+        return "expander"
+    if "electric" in c:
+        return "electric_pump"
+    if "pressure" in c:
+        return "pressure_fed"
+    if "gas_generator" in c:
+        return "gas_generator"
     if not has("pump_centrifugal") and has("chamber"):
         return "pressure_fed"
+    if has("turbine_impulse") and sum(t == "gas_generator" for t in types) >= 2:
+        return "full_flow"
     if has("turbine_impulse") and has("gas_generator"):
         return "gas_generator"
     if has("turbine_impulse") and has("regen_jacket"):
@@ -80,18 +97,55 @@ def _flows(kind: str, regen: bool, g: dict) -> tuple[list, list, list]:
                   ([(50, 44), (50, 34)], GAS), ([(44, 27), (30, 27), (30, 38)], GAS)]
         valves += [(29, 53), (71, 53)]
         labels += [("Exhaust", 30, 42, "c"), ("GG", 50, 53.5, "c")]
-    elif kind == "staged":
+    elif kind in ("staged_fuel", "staged_ox"):
+        gas = RICH if kind == "staged_fuel" else OXRICH
         flows += [([(20, 34), (20, 53), (39, 53)], FUEL), ([(80, 34), (80, 53), (61, 53)], OX),
                   ([(20, 53)] + to_cc_fuel, FUEL), ([(80, 53), (80, 68), (56, 68), (56, 77.5)], OX),
-                  ([(50, 44), (50, 34)], RICH), ([(56, 27), (66, 27), (66, 72), (50, 72), (50, 77.5)], RICH)]
+                  ([(50, 44), (50, 34)], gas), ([(56, 27), (66, 27), (66, 72), (50, 72), (50, 77.5)], gas)]
         valves += [(29, 53), (71, 53)]
-        labels += [("Pre-burner", 50, 53.5, "c"), ("Fuel-rich gas", 68, 44, "l")]
+        labels += [("Pre-burner", 50, 53.5, "c"),
+                   ("Fuel-rich gas" if kind == "staged_fuel" else "Oxidizer-rich gas", 68, 44, "l")]
+    elif kind == "tap_off":                                    # hot gas bled from the chamber wall drives the turbine
+        flows += [([(20, 34), (20, 53)] + to_cc_fuel, FUEL), ([(80, 34), (80, 68), (56, 68), (56, 77.5)], OX),
+                  ([(36, 84), (29, 84), (29, 27), (44, 27)], GAS), ([(50, 34), (50, 52)], GAS)]
+        valves += [(20, 50), (80, 48)]
+        labels += [("Exhaust", 53, 46, "l"), ("Tapped gas", 31, 66, "l")]
+    elif kind == "expander_bleed":                             # part of the heated fuel drives the turbine, vented
+        flows += [([(20, 34), (20, 125)] + up + [(33.1, 76), (33.1, 70), (44, 70), (44, 77.5)], FUEL),
+                  ([(33.1, 70), (33.1, 27), (44, 27)], FUEL), ([(80, 34), (80, 68), (56, 68), (56, 77.5)], OX),
+                  ([(50, 34), (50, 52)], GAS)]
+        valves += [(20, 48), (80, 48)]
+        labels += [("Vented", 53, 46, "l"), ("Heated fuel", 31, 50, "r")]
+    elif kind == "full_flow":                                  # two preburners, two turbines, gas-gas injection
+        flows = [([(5, 8), (5, SH_Y), (11, SH_Y)], FUEL), ([(95, 8), (95, SH_Y), (89, SH_Y)], OX),
+                 ([(18, 34), (18, 53), (25, 53)], FUEL), ([(82, 34), (82, 53), (75, 53)], OX),
+                 ([(36, 44), (36, 34)], RICH), ([(64, 44), (64, 34)], OXRICH),
+                 ([(42, 27), (46, 27), (46, 72), (46, 77.5)], RICH), ([(58, 27), (54, 27), (54, 72), (54, 77.5)], OXRICH)]
+        valves += [(18, 46), (82, 46)]
+        labels = [("Fuel pump", 18, 4, "c"), ("Fuel" + chr(10) + "turbine", 36, 6, "c"), ("Ox" + chr(10) + "turbine", 64, 6, "c"),
+                  ("Oxidizer pump", 82, 4, "c"), (fu_name, 1, 30, "l"), (ox_name, 99, 30, "r"),
+                  ("Fuel-rich" + chr(10) + "preburner", 36, 53.5, "c"), ("Ox-rich" + chr(10) + "preburner", 64, 53.5, "c"),
+                  ("Control" + chr(10) + "valves", 83, 42, "l")]
+        return flows, valves, labels
+    elif kind == "electric_pump":                              # batteries and motors replace the turbine
+        flows = [([(5, 8), (5, SH_Y), (13, SH_Y)], FUEL), ([(95, 8), (95, SH_Y), (87, SH_Y)], OX),
+                 ([(20, 34), (20, 74)] + ([(20, 125)] + up + [(33.1, 76), (33.1, 70), (44, 70), (44, 77.5)] if regen else
+                                            [(44, 74), (44, 77.5)]), FUEL),
+                 ([(80, 34), (80, 68), (56, 68), (56, 77.5)], OX),
+                 ([(44, 20), (32, 20)], ELEC), ([(56, 20), (68, 20)], ELEC)]
+        if regen:
+            flows[2] = ([(20, 34), (20, 125)] + up + [(33.1, 76), (33.1, 70), (44, 70), (44, 77.5)], FUEL)
+        valves += [(20, 48), (80, 48)]
+        labels = [("Fuel pump", 18, 4, "c"), ("Battery", 50, 4, "c"), ("Oxidizer pump", 82, 4, "c"),
+                  (fu_name, 1, 30, "l"), (ox_name, 99, 30, "r"), ("Motor", 33, 33, "c"), ("Motor", 67, 33, "c"),
+                  ("Control" + chr(10) + "valves", 83, 48, "l")]
+        return flows, valves, labels
     else:                                                      # expander
         flows += [([(20, 34), (20, 125)] + up + [(33.1, 76), (33.1, 27), (44, 27)], FUEL),
                   ([(80, 34), (80, 68), (56, 68), (56, 77.5)], OX), ([(50, 34), (50, 62), (50, 77.5)], GAS)]
         valves += [(20, 48), (80, 48)]
         labels += [("Heated fuel", 53, 56, "l")]
-    labels += [("Control" + chr(10) + "valves", 86 if kind == "expander" else 83, 48 if kind == "expander" else 60, "l")]
+    labels += [("Control" + chr(10) + "valves", 86 if kind in ("expander", "expander_bleed", "tap_off") else 83, 48 if kind in ("expander", "expander_bleed", "tap_off") else 60, "l")]
     return flows, valves, labels
 
 
@@ -121,7 +175,7 @@ class Schematic:
         self.graph = graph
         self.kind = identify_cycle(graph)
         self.regen = any(n["type"] == "regen_jacket" for n in graph["nodes"])
-        if self.kind == "expander" and not self.regen:
+        if self.kind in ("expander", "expander_bleed") and not self.regen:
             self.kind = "custom"
 
     # ------------------------------------------------------------------------------------------ drawing
@@ -199,23 +253,37 @@ class Schematic:
                 p.setBrush(Qt.NoBrush)
                 p.drawRoundedRect(QRectF(x + 0.0, 8, 18, 28), 7, 7)
             return
-        # shaft: a plain bar with ticks that run along it
-        p.setPen(QPen(ink, 0.8))
-        p.setBrush(Qt.NoBrush)
-        p.drawRect(QRectF(26, SH_Y - 2.0, 48, 4.0))
-        p.setPen(QPen(ink, 0.5))
-        for i in range(12):
-            x = 26 + ((i + phase) % 12) * 4.0
-            p.drawLine(QPointF(x, SH_Y - 2.0), QPointF(x, SH_Y + 2.0))
-        for x, flip in ((14, False), (44, False), (74, True)):
-            path = _pump(x, 8, flip)
+        k = self.kind
+        bars = {"full_flow": [(24, 30), (70, 76)], "electric_pump": [(26, 32), (68, 74)]}.get(k, [(26, 74)])
+        pumps = {"full_flow": [(12, False), (30, False), (58, True), (76, True)],
+                 "electric_pump": [(14, False), (74, True)]}.get(k, [(14, False), (44, False), (74, True)])
+        # shafts: plain bars with ticks that run along them
+        for x0, x1 in bars:
+            p.setPen(QPen(ink, 0.8))
+            p.setBrush(Qt.NoBrush)
+            p.drawRect(QRectF(x0, SH_Y - 2.0, x1 - x0, 4.0))
+            p.setPen(QPen(ink, 0.5))
+            n = max(2, int((x1 - x0) / 4))
+            for i in range(n):
+                x = x0 + ((i + phase) % n) * (x1 - x0) / n
+                p.drawLine(QPointF(x, SH_Y - 2.0), QPointF(x, SH_Y + 2.0))
+        for x, flip in pumps:
             p.setPen(QPen(ink, 0.9))
             p.setBrush(bg)
-            p.drawPath(path)
-        if self.kind in ("gas_generator", "staged"):
-            p.setPen(QPen(ink, 0.9))
-            p.setBrush(Qt.NoBrush)
+            p.drawPath(_pump(x, 8, flip))
+        p.setPen(QPen(ink, 0.9))
+        p.setBrush(Qt.NoBrush)
+        if k in ("gas_generator", "staged_fuel", "staged_ox"):
             p.drawRoundedRect(QRectF(39, 44, 22, 18), 5, 5)
+        elif k == "full_flow":
+            p.drawRoundedRect(QRectF(25, 44, 22, 18), 5, 5)
+            p.drawRoundedRect(QRectF(53, 44, 22, 18), 5, 5)
+        elif k == "electric_pump":
+            p.drawRect(QRectF(44, 10, 12, 20))                   # battery
+            p.drawLine(QPointF(48, 10), QPointF(48, 7))
+            p.drawLine(QPointF(52, 10), QPointF(52, 7))
+            for x in (28, 66):                                    # motors
+                p.drawRect(QRectF(x, 13, 8, 14))
 
     @staticmethod
     def _wall_x(y: float) -> float:

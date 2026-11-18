@@ -42,6 +42,11 @@ New changes go above this line, newest first.
 - Cycle sandbox template: F-1 (Saturn V first stage) gas-generator engine, an ESTIMATE scaled from the A-1 graph to the F-1
   thrust (library holds only its top-level figures); solves to about 7.4 MN, 7.3 MPa, O/F 2.43 against the published
   6.77 MN, 7.58 MPa, 2.27. `tools/build_f1_graph.py` regenerates it.
+- Menu bar: new Design menu (liquid engine designer, solid and hybrid grain designers; nuclear and electric planned) and an
+  Analysis menu (Run, Cancel, Validation). Module tree entries now have hover descriptions; component 3D models get
+  pressure and fluid-temperature fields, a flow animation, and the sandbox legend shows the colors in use; more cycles
+  (tap-off, expander bleed, oxidizer-rich and full-flow staged, electric pump-fed, cold gas) in the Build Guide and
+  schematics, with Everyday Astronaut added to the library sources.
 - Grain designer is now a window of its own (Simulation > Grain designer, Ctrl+G, or the Solid and Hybrid tree entries), for
   solid and hybrid motors, with Open in Main Window.
 - Cycle sandbox: a Build Guide panel walks through choosing the cycle type, adding the required and optional components,

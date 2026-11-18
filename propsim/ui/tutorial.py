@@ -79,7 +79,7 @@ def _steps() -> list[Step]:
               "side view of the port."],
              lambda w: w.tree),
         Step("Engine Cycle Sandbox",
-             ["Liquid, Cycle Sandbox (Ctrl+E) opens a flow-diagram editor drawn with ANSI/ISA-5.1 P&ID symbols. Build "
+             ["Design, Liquid Engine Designer (Ctrl+E) opens a flow-diagram editor drawn with ANSI/ISA-5.1 P&ID symbols. Build "
               "or load a cycle, Solve it, and press Play Flow to animate it. The Cycle Animation panel redraws a "
               "gas-generator, expander, staged-combustion or pressure-fed engine as a schematic and exports a GIF. "
               "Every panel there can be dragged too."],

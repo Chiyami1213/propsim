@@ -100,7 +100,7 @@ def test_cycles_are_identified_and_flow_plays(qapp):
     from propsim.ui.cycle_schematic import identify_cycle
     w = CycleSandbox()
     want = {"gg_kerolox": "gas_generator", "expander_hydrolox": "expander", "pressure_fed_kerolox": "pressure_fed",
-            "ssme_staged_combustion": "staged"}
+            "ssme_staged_combustion": "staged_fuel"}
     for gid, kind in want.items():
         w.load_template(gid)
         assert identify_cycle(w.doc["graph"]) == kind
@@ -141,12 +141,12 @@ def test_3d_panel_follows_selection_and_solution(box):
     box.canvas.nodes["regen_jacket"].setSelected(True)
     QApplication.processEvents()
     assert v.nid == "regen_jacket" and v.model is not None
-    assert set(v.model.fields) == {"T_wg", "q", "T_cool"}       # wall and coolant temperatures from the jacket march
+    assert {"T_wg", "q", "T_cool"} <= set(v.model.fields)       # wall and coolant temperatures from the jacket march
     assert any("Heat load" in lbl.latex() for lbl in v.vp.readout_lbls)
     box.canvas.scene().clearSelection()
     box.canvas.nodes["mov"].setSelected(True)
     QApplication.processEvents()
-    assert v.model.title == "Butterfly valve" and not v.model.fields
+    assert v.model.title == "Butterfly valve" and set(v.model.fields) == {"p", "T_f"}   # no wall heat transfer on a valve
 
 
 def test_build_guide_lists_required_and_optional_components(qapp):
@@ -168,7 +168,8 @@ def test_build_guide_lists_required_and_optional_components(qapp):
     assert g.next.isEnabled() and not g.missing
     g.go(2)
     assert "Ports still open" in g.page_conn.text()
-    assert set(CYCLES) == {"pressure_fed", "gas_generator", "expander", "staged"}
+    assert {"pressure_fed", "gas_generator", "expander", "tap_off", "expander_bleed", "staged_fuel", "staged_ox",
+            "full_flow", "electric_pump", "cold_gas"} <= set(CYCLES)
 
 
 def test_trade_study_sweeps_and_compares(box):
@@ -188,3 +189,47 @@ def test_trade_study_sweeps_and_compares(box):
     assert tp.cmp_table.columnCount() == 2
     assert all(tp.compared[n]["converged"] for n in tp.designs)
     assert tp.cmp_table.item(0, 0).text().replace(",", "").replace(".", "").isdigit()
+
+
+def test_component_3d_flow_animation(qapp):
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.show()
+    nid = next(n["id"] for n in w.doc["graph"]["nodes"] if n["type"] == "valve_poppet")
+    w.view3d.show_component(w.doc["graph"], nid, None)
+    w.view3d.show()
+    w.view3d.refresh()
+    w.view3d.flow_btn.setChecked(True)
+    w.view3d._tick()
+    assert w.view3d.flowing and "flow" in w.view3d.vp.plotter.actors
+    w.view3d.flow_btn.setChecked(False)
+    assert "flow" not in w.view3d.vp.plotter.actors
+
+
+def test_component_3d_has_pressure_and_temperature_fields(qapp):
+    from propsim.core.engine_graph import solve
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.show()
+    sol = solve(w.doc["graph"], None, None)
+    for ntype in ("valve_poppet", "pump_centrifugal", "chamber"):
+        nid = next(n["id"] for n in w.doc["graph"]["nodes"] if n["type"] == ntype)
+        w.view3d.show()
+        w.view3d.show_component(w.doc["graph"], nid, sol)
+        w.view3d.refresh()
+        assert {"p", "T_f"} <= set(w.view3d._field_keys), ntype
+    assert {"q"} <= set(w.view3d._field_keys)                 # the chamber also has its heat flux
+
+
+def test_every_module_has_a_lowercase_hover_description(qapp, tmp_path):
+    from PySide6.QtCore import Qt
+    from propsim.modules import descriptions, registry
+    from propsim.ui.main_window import MainWindow
+    keys = {c.key for entries in registry.TREE.values() for _, _, c in entries if c is not None}
+    assert keys <= set(descriptions.MODELS)
+    assert set(registry.TREE) <= set(descriptions.MODULES)
+    assert all(t == t.lower() for t in list(descriptions.MODELS.values()) + list(descriptions.MODULES.values()))
+    w = MainWindow(home=tmp_path, use_settings=False)
+    tips = [w.tree_model.item(r).child(c).toolTip() for r in range(w.tree_model.rowCount())
+            for c in range(w.tree_model.item(r).rowCount())]
+    assert tips and all(tips)

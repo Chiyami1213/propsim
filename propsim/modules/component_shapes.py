@@ -555,7 +555,8 @@ def _wall_fields(c: Ctx, x: np.ndarray) -> dict[str, np.ndarray]:
 
 
 FIELD_TITLES = {"T_wg": (r"Wall $T_{wg}$ (K)", "inferno"), "q": (r"Heat flux $q$ (MW/m$^2$)", "plasma"),
-                "T_cool": (r"Coolant $T$ (K)", "viridis")}
+                "T_cool": (r"Coolant $T$ (K)", "viridis"), "p": (r"Pressure $p$ (MPa)", "turbo"),
+                "T_f": (r"Fluid $T$ (K)", "inferno")}
 
 
 def _revolved_with_fields(c: Ctx, x, ri, ro, name: str, color: str) -> tuple[Part, dict]:
