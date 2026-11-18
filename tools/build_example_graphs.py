@@ -545,6 +545,7 @@ def gg_kerolox():
             },
             700,
             400,
+            options={"hydraulics": "none"},  # the jacket_loss orifice carries the published jacket drop
         )
     )
     jdp = ev(E, "fuel_feed", "dp_jacket_manifold")
@@ -1101,6 +1102,7 @@ def expander_hydrolox():
     cp, cv = float(t["cp"][sel][i]), float(t["cv"][sel][i])
     gam = cp / cv
     Tg = float(t["T"][sel][i])
+    rho_jx = float(t["rho"][sel][i])
     # pressures along the fuel side (Pa)
     p_inj_f = pc + ev(E, "fuel_feed", "dp_injector")
     p_t_out = p_inj_f + ev(E, "fuel_feed", "dp_line")
@@ -1327,6 +1329,7 @@ def expander_hydrolox():
             },
             550,
             400,
+            options={"hydraulics": "none"},  # the jacket_loss orifice carries the published jacket drop
         )
     )
     nodes.append(
@@ -1336,11 +1339,12 @@ def expander_hydrolox():
             "jacket hydraulic loss",
             {
                 "diameter": der(
-                    dia(area_orifice(m_f, rho_f, ev(E, "fuel_feed", "dp_jacket_manifold"), Cd)),
+                    dia(area_orifice(m_f, rho_jx, ev(E, "fuel_feed", "dp_jacket_manifold"), Cd)),
                     "m",
                     "Table 3-3 p.69 (jacket and manifold pressure drop 325 psi)",
-                    "equivalent orifice with the liquid inlet density, Cd = 0.75; the heated hydrogen is "
-                    "supercritical, so this is a placeholder for the jacket's own loss model",
+                    f"equivalent orifice A = mdot / (Cd sqrt(2 rho dp)), Cd = 0.75, with the density of the heated "
+                    f"hydrogen leaving the jacket ({rho_jx:.3f} kg/m3 at {Tg:.0f} K, 10 MPa, CoolProp table); "
+                    "lumps the jacket and manifold loss (the jacket node carries heat only)",
                 ),
                 "Cd": Cd_v,
             },
@@ -1870,6 +1874,40 @@ def ssme_rpl():
                 y,
             )
         )
+    # Preburner fuel injectors: both preburners draw hydrogen from the nozzle-coolant outlet, yet run at different
+    # published pressures (5164 / 5228 psia), so each needs its own injector drop; without them the two
+    # fixed-pressure-ratio turbine drives cannot share one hot-gas manifold.
+    p_pb_up = 1.15 * max(p_fpb, p_opb)
+    rho_pb, T_pb = rho_grid("LH2", 250.0, 40e6)
+    Cd_inj = data.components()["injector"]["parameters"][1]["default"]
+    for gg, f_pb, p_pb, x, y in (("fpb", fpb_f, p_fpb, 520, 470), ("opb", opb_f, p_opb, 520, 270)):
+        dp_pb = p_pb_up - p_pb
+        A_pb = f_pb / (Cd_inj["value"] * math.sqrt(2.0 * rho_pb * dp_pb))
+        nodes.append(
+            node(
+                f"{gg}_fuel_injector",
+                "injector",
+                f"{'fuel' if gg == 'fpb' else 'oxidizer'} preburner fuel injector",
+                {
+                    "A_total": est(
+                        A_pb,
+                        "m2",
+                        gid,
+                        f"A = mdot_f / (Cd sqrt(2 rho dp)) with the TP-3700 preburner hydrogen flow {f_pb / LB:.2f} "
+                        f"lb/s, Cd {Cd_inj['value']}, upstream pressure 1.15 x the higher preburner pressure "
+                        f"(15 % stiffness, H&H p.128) and hydrogen at {T_pb:.0f} K, 40 MPa ({rho_pb:.2f} kg/m3, "
+                        "CoolProp table); injector areas are not in a public NASA source",
+                    ),
+                    "Cd": Cd_inj,
+                    "dp_over_pc_design": est(
+                        dp_pb / p_pb, "1", gid, "drop over preburner pressure for the area above"
+                    ),
+                },
+                x,
+                y,
+                options={"type": "coaxial"},
+            )
+        )
     for vid, label, d_in, A, K, m, rr, x, y in (
         ("mov", "main oxidizer valve", None, A_main, Kb, m_o_mcc, rho_o, 600, 0),
         ("mfv", "main fuel valve", None, A_main, Kb, m_f, rho_f, 450, 550),
@@ -1970,6 +2008,9 @@ def ssme_rpl():
                 ),
             }
         nodes[-1]["params"].update(geo)
+        # main combustion chamber liner to the nozzle joint, coolant tubes from there to the exit; the joint area
+        # ratio of 5 is an engineering estimate (the cycle solver splits the wall heat load there)
+        nodes[-1]["options"] = {"section": "chamber" if jid == "mcc_jacket" else "nozzle", "split_area_ratio": "5"}
     nodes.append(
         node(
             "hgm",
@@ -2084,8 +2125,10 @@ def ssme_rpl():
         edge("mfv.outlet", "nozzle_jacket.coolant_in", medium=H),
         edge("mcc_jacket.coolant_out", "lpft_turbine.inlet", medium=H),
         edge("lpft_turbine.outlet", "hgm.inlet", medium=H),
-        edge("nozzle_jacket.coolant_out", "fpb.fuel_in", medium=H),
-        edge("nozzle_jacket.coolant_out", "opb.fuel_in", medium=H),
+        edge("nozzle_jacket.coolant_out", "fpb_fuel_injector.inlet", medium=H),
+        edge("nozzle_jacket.coolant_out", "opb_fuel_injector.inlet", medium=H),
+        edge("fpb_fuel_injector.outlet", "fpb.fuel_in", medium=H),
+        edge("opb_fuel_injector.outlet", "opb.fuel_in", medium=H),
         edge("fpb.outlet", "hpft_turbine.inlet", medium=G),
         edge("opb.outlet", "hpot_turbine.inlet", medium=G),
         edge("hpft_turbine.outlet", "hgm.inlet", medium=G),
