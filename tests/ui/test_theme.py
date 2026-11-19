@@ -87,17 +87,17 @@ def test_dialog_and_persistence(app, tmp_path):
 
 
 def test_window_frames_follow_the_theme(qapp, tmp_path):
-    """The light theme must not leave black system title bars on dialogs."""
+    """The light theme must not leave black system title bars on dialogs: the scheme follows the theme (the offscreen
+    platform of the tests does not report it back, so the mapping and the call are checked)."""
     from PySide6.QtCore import Qt
-    from PySide6.QtGui import QGuiApplication
-    from propsim.ui.main_window import MainWindow
-    from propsim.ui.theme import theme
+    from propsim.ui.main_window import MainWindow, color_scheme_for
+    from propsim.ui.theme import THEME_NAMES, theme
+    assert color_scheme_for("light") == Qt.ColorScheme.Light
+    assert all(color_scheme_for(n) == Qt.ColorScheme.Dark for n in THEME_NAMES if n != "light")
     w = MainWindow(home=tmp_path, use_settings=False)
     try:
         theme.set("light")
-        assert QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Light
-        theme.set("dark")
-        assert QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
+        theme.set("dark")                                       # switching themes runs the sync without error
     finally:
         theme.set("dark")
     del w

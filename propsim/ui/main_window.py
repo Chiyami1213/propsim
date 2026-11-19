@@ -37,6 +37,11 @@ MODULE_TITLES = {"Hybrid": "Hybrid Rocket", "Liquid": "Liquid Engine", "Solid": 
 KEY_ROLE = Qt.UserRole + 1
 
 
+def color_scheme_for(theme_name: str):
+    """The system color scheme (title bars, dialogs) that goes with a theme: light for Light, dark for the others."""
+    return Qt.ColorScheme.Light if theme_name == "light" else Qt.ColorScheme.Dark
+
+
 def app_settings() -> QSettings:
     """The app's settings store: the registry on Windows; tests switch the default format to a temporary INI file."""
     return QSettings(QSettings.defaultFormat(), QSettings.UserScope, "PropSim", "PropSim")
@@ -329,7 +334,7 @@ class MainWindow(QMainWindow):
         dialog in the light theme does not get a black title bar."""
         from PySide6.QtGui import QGuiApplication
         try:
-            QGuiApplication.styleHints().setColorScheme(Qt.ColorScheme.Light if theme.name == "light" else Qt.ColorScheme.Dark)
+            QGuiApplication.styleHints().setColorScheme(color_scheme_for(theme.name))
         except (AttributeError, RuntimeError):                  # Qt older than 6.8: the system scheme stays
             pass
 
