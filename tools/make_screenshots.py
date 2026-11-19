@@ -178,6 +178,18 @@ def main() -> int:
         except Exception as e:                                           # noqa: BLE001
             manual.append(("nuclear-designer.png", "nuclear.designer", str(e)))
             print(f"{'nuclear-designer.png':48s} FAILED: {e}")
+    if not wanted or "electric.designer" in wanted:                         # the electric propulsion designer window
+        try:
+            win.open_electric_designer()
+            ed = win.electric_win
+            ed.resize(1500, 900)
+            pump(3.0)
+            img, _ = fix_black_3d(ed, ed.grab().toImage())
+            size = save_png(img, OUT / "electric-designer.png")
+            print(f"{'electric-designer.png':48s} {size / 1024:6.0f} KB")
+        except Exception as e:                                           # noqa: BLE001
+            manual.append(("electric-designer.png", "electric.designer", str(e)))
+            print(f"{'electric-designer.png':48s} FAILED: {e}")
     win.close()
     W.shutdown()
     if manual:

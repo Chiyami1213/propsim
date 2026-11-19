@@ -258,7 +258,7 @@ class MainWindow(QMainWindow):
         self._act(d, "Solid motor designer", lambda: self.open_grain_designer("solid"), "Ctrl+G")
         self._act(d, "Hybrid motor designer", lambda: self.open_grain_designer("hybrid"))
         self._act(d, "Nuclear thermal designer", self.open_nuclear_designer)
-        self._act(d, "Electric propulsion designer (planned)", lambda: None).setEnabled(False)
+        self._act(d, "Electric propulsion designer", self.open_electric_designer)
         s = mb.addMenu("&Analysis")                        # test and analyze a design with the analysis modules
         self._act(s, "Run", self.start_run, "Ctrl+R")
         self._act(s, "Cancel", self.cancel_run, "Esc")
@@ -407,6 +407,9 @@ class MainWindow(QMainWindow):
         elif d.kind == "nuclear":
             self.open_nuclear_designer()
             self.nuclear_win.load_design(d)
+        elif d.kind == "electric":
+            self.open_electric_designer()
+            self.electric_win.load_design(d)
 
     def toggle_full_screen(self) -> None:
         """F11: full-screen mode on and off (the window keeps its normal size and place for the way back)."""
@@ -465,8 +468,19 @@ class MainWindow(QMainWindow):
             self.open_cycle_sandbox()
         elif key == registry.NuclearDesignerTool.key:
             self.open_nuclear_designer()
+        elif key == registry.ElectricDesignerTool.key:
+            self.open_electric_designer()
         else:
             self.open_grain_designer("solid" if key == registry.GrainDesignerSolidTool.key else "hybrid")
+
+    def open_electric_designer(self, study: str = "ep.trades") -> None:
+        """Open (or raise) the electric propulsion designer window."""
+        from .electric_designer import ElectricDesigner
+        if getattr(self, "electric_win", None) is None:
+            self.electric_win = ElectricDesigner(self, study)
+        self.electric_win.show()
+        self.electric_win.raise_()
+        self.electric_win.activateWindow()
 
     def open_nuclear_designer(self, study: str = "nuc.perf") -> None:
         """Open (or raise) the nuclear thermal designer window."""

@@ -167,3 +167,26 @@ def test_nuclear_designer_keeps_each_study_and_feeds_the_analysis(qapp, tmp_path
     assert D.Design.load(p).data["nuc.perf"]["T0"] == 2600.0
     names = list(win.bindings)
     assert "Design: Nuclear Thermal Designer" in names
+
+
+def test_electric_designer_feeds_the_electric_runs(qapp, tmp_path):
+    import math
+    from propsim import design as D
+    from propsim.ui.main_window import MainWindow
+    win = MainWindow(home=tmp_path, use_settings=False)
+    win.open_electric_designer()
+    ed = win.electric_win
+    assert ed.windowTitle().startswith("Electric Propulsion Designer") and ed.ctrl.key == "ep.trades"
+    ed.form.set_values({"isp": 3200.0, "m0": 800.0})
+    ed.set_mode("ep.hall")
+    ed.form.set_values({"Vd": 350.0, "R_out": 45.0, "R_in": 30.0})
+    ed.set_mode("ep.trades")
+    assert ed.form.values().isp == 3200.0                      # the mission trade kept its values
+    ed.use_in_analysis()
+    assert win.design.kind == "electric"
+    win.select_model("ep.spiral")
+    assert win.form.values().isp == 3200.0 and win.form.values().m0 == 800.0
+    win.select_model("ep.hall_run")
+    v = win.form.values()
+    assert v.Vd == 350.0 and abs(v.A - math.pi * (45.0**2 - 30.0**2) / 100.0) < 0.6                  # on the slider grid
+    assert "Design: Electric Propulsion Designer" in list(win.bindings)

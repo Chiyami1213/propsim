@@ -44,7 +44,13 @@ class NuclearDesignerTool:
     key = "nuclear.designer"
 
 
-TOOL_KEYS = (CycleSandboxTool.key, GrainDesignerSolidTool.key, GrainDesignerHybridTool.key, NuclearDesignerTool.key)
+class ElectricDesignerTool:
+    """Tree entry that opens the electric propulsion designer window (``propsim.ui.electric_designer``)."""
+
+    key = "electric.designer"
+
+
+TOOL_KEYS = (ElectricDesignerTool.key, CycleSandboxTool.key, GrainDesignerSolidTool.key, GrainDesignerHybridTool.key, NuclearDesignerTool.key)
 # Live models that the motor designer window hosts: not in the tree, still reachable by key
 # (also the models the designers replaced: the injector and jacket are components of the liquid engine designer, the
 # burn rate and K_n curves are a tab of the solid motor designer)
@@ -66,7 +72,8 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
     "Solid": [("Motor designer", "tool", GrainDesignerSolidTool), 
               ("3D burnback", "run", Burnback3DModel), ("Internal ballistics", "run", SolidBallisticsModel),
               ("CP motor (quasi-steady)", "run", CPMotorModel), ("CP motor (US units)", "run", CPMotorUSModel)],
-    "Electric": [("Mission & power trades", "live", TradesLiveModel), ("Electrothermal thrusters", "live", ThermalLiveModel),
+    "Electric": [("Electric propulsion designer", "tool", ElectricDesignerTool),
+                 ("Mission & power trades", "live", TradesLiveModel), ("Electrothermal thrusters", "live", ThermalLiveModel),
                  ("Gridded ion thruster", "live", IonLiveModel), ("Hall thruster", "live", HallLiveModel),
                  ("Ion optics", "run", IonOpticsModel), ("Hall discharge", "run", HallDischargeModel),
                  ("Low-thrust spiral", "run", SpiralModel)],

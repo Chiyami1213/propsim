@@ -26,6 +26,7 @@ MODELS_FOR = {
     "liquid": ("liquid.feed", "liquid.cycle", "liquid.chugging"),
     "solid": ("solid.ballistics", "solid.burnback3d", "solid.burnrate", "solid.cpmotor", "solid.cpmotor_us"),
     "hybrid": ("hybrid.burn0d", "hybrid.burn1d", "hybrid.n2o"),
+    "electric": ("ep.trades", "ep.thermal", "ep.ion", "ep.hall", "ep.optics", "ep.hall_run", "ep.spiral"),
     "nuclear": ("nuc.perf", "nuc.crit", "nuc.element", "nuc.cycles", "nuc.poisons", "nuc.kinetics"),
 }
 
@@ -160,12 +161,35 @@ def _nuclear_updates(d: Design, key: str) -> dict:
     return own
 
 
+def _electric_updates(d: Design, key: str) -> dict:
+    """Each electric study starts from its own values; the runs take theirs from the matching study: the ion optics from
+    the gridded ion thruster, the Hall discharge from the Hall thruster, the low-thrust spiral from the mission trade."""
+    own = dict(d.data.get(key, {}))
+    ion, hall, trade = d.data.get("ep.ion", {}), d.data.get("ep.hall", {}), d.data.get("ep.trades", {})
+    mapped: dict = {}
+    if key == "ep.optics":
+        mapped = {"prop": ion.get("prop"), "V_s": ion.get("Vb"), "r_s": ion.get("r_s"), "t_s": ion.get("t_s"),
+                  "pitch": ion.get("pitch"), "frac": ion.get("frac")}
+    elif key == "ep.hall_run":
+        mapped = {"Vd": hall.get("Vd"), "mdot": hall.get("mdot"), "L": hall.get("L"), "Te_max": hall.get("Te_max")}
+        if "R_out" in hall and "R_in" in hall:
+            mapped["A"] = math.pi * (hall["R_out"] ** 2 - hall["R_in"] ** 2) / 100.0           # mm2 -> cm2
+    elif key == "ep.spiral":
+        mapped = {"m0": trade.get("m0"), "isp": trade.get("isp"), "eta": trade.get("eta")}
+    for k, v in mapped.items():
+        if v is not None and k not in own:
+            own[k] = v
+    return own
+
+
 def updates(design: Design | None, model_key: str, fields: set[str] | None = None) -> dict:
     """Parameter values (display units) a model takes from ``design``; restricted to ``fields`` when given."""
     if not applies_to(design, model_key):
         return {}
     if design.kind == "nuclear":
         u = _nuclear_updates(design, model_key)
+    elif design.kind == "electric":
+        u = _electric_updates(design, model_key)
     else:
         u = {"liquid": _liquid_updates, "solid": _solid_updates, "hybrid": _hybrid_updates}[design.kind](design)
     return {k: v for k, v in u.items() if fields is None or k in fields}

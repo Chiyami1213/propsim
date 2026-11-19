@@ -168,7 +168,9 @@ Hybrid: the burns; Nuclear: the study modules and reactor kinetics) then starts 
 **File, Open Design** reopens a saved grain design; **Analysis, Use Active Design in This Module** reloads the open
 module, and **Clear Active Design** goes back to the module defaults. The **Nuclear thermal designer** has five studies (performance, reactor criticality, fuel element, engine cycle, xenon and
 samarium) that keep their values while you switch; the kinetics and startup module takes the core temperature, pressure and
-inlet temperature from the performance study. The electric propulsion designer is planned.
+inlet temperature from the performance study. The **Electric propulsion designer** has four studies (mission trades, electrothermal, gridded ion, Hall); the ion
+optics run starts from the ion thruster geometry, the Hall discharge run from the Hall thruster and the low-thrust
+spiral from the mission trade.
 
 ## Preferences
 
