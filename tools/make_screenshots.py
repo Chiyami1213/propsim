@@ -166,6 +166,18 @@ def main() -> int:
         except Exception as e:                                           # noqa: BLE001
             manual.append((f"grain-designer-{mode}.png", f"grain.{mode}", str(e)))
             print(f"{'grain-designer-' + mode + '.png':48s} FAILED: {e}")
+    if not wanted or "nuclear.designer" in wanted:                          # the nuclear thermal designer window
+        try:
+            win.open_nuclear_designer()
+            nd = win.nuclear_win
+            nd.resize(1500, 900)
+            pump(3.0)
+            img, _ = fix_black_3d(nd, nd.grab().toImage())
+            size = save_png(img, OUT / "nuclear-designer.png")
+            print(f"{'nuclear-designer.png':48s} {size / 1024:6.0f} KB")
+        except Exception as e:                                           # noqa: BLE001
+            manual.append(("nuclear-designer.png", "nuclear.designer", str(e)))
+            print(f"{'nuclear-designer.png':48s} FAILED: {e}")
     win.close()
     W.shutdown()
     if manual:

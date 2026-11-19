@@ -38,7 +38,13 @@ class GrainDesignerHybridTool:
     key = "grain.hybrid"
 
 
-TOOL_KEYS = (CycleSandboxTool.key, GrainDesignerSolidTool.key, GrainDesignerHybridTool.key)
+class NuclearDesignerTool:
+    """Tree entry that opens the nuclear thermal designer window (``propsim.ui.nuclear_designer``)."""
+
+    key = "nuclear.designer"
+
+
+TOOL_KEYS = (CycleSandboxTool.key, GrainDesignerSolidTool.key, GrainDesignerHybridTool.key, NuclearDesignerTool.key)
 # Live models that the motor designer window hosts: not in the tree, still reachable by key
 # (also the models the designers replaced: the injector and jacket are components of the liquid engine designer, the
 # burn rate and K_n curves are a tab of the solid motor designer)
@@ -64,7 +70,7 @@ TREE: dict[str, list[tuple[str, str, type[ModelController] | None]]] = {
                  ("Gridded ion thruster", "live", IonLiveModel), ("Hall thruster", "live", HallLiveModel),
                  ("Ion optics", "run", IonOpticsModel), ("Hall discharge", "run", HallDischargeModel),
                  ("Low-thrust spiral", "run", SpiralModel)],
-    "Nuclear": [("NTR performance", "live", NTRPerformanceModel), ("Reactor criticality", "live", CriticalityModel),
+    "Nuclear": [("Nuclear thermal designer", "tool", NuclearDesignerTool), ("NTR performance", "live", NTRPerformanceModel), ("Reactor criticality", "live", CriticalityModel),
                 ("Fuel element thermal hydraulics", "live", FuelElementModel), ("NTR engine cycles", "live", CyclesModel),
                 ("Xenon & samarium", "live", PoisonsModel), ("Reactor kinetics & startup", "run", KineticsModel)],
     "Vehicle": [("Vehicle & staging", "live", VehicleLiveModel), ("Point-mass ascent", "run", AscentModel)],

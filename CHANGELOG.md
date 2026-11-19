@@ -58,6 +58,8 @@ New changes go above this line, newest first.
 - Cycle sandbox template: F-1 (Saturn V first stage) gas-generator engine, an ESTIMATE scaled from the A-1 graph to the F-1
   thrust (library holds only its top-level figures); solves to about 7.4 MN, 7.3 MPa, O/F 2.43 against the published
   6.77 MN, 7.58 MPa, 2.27. `tools/build_f1_graph.py` regenerates it.
+- Nuclear thermal designer (Design menu, Ctrl none): five studies in one window, saved as a design the nuclear analysis
+  modules start from.
 - Designs: the engine or motor is designed first. The liquid engine designer and the solid and hybrid grain designers have
   Use in Analysis (and Save/Open Design for grains, File > Open Design); the active design pre-fills the matching analysis
   modules (feed transient, pump-fed cycles, chugging; solid ballistics, burnback, CP motor; hybrid burns), limited to each

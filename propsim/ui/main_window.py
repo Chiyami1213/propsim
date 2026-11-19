@@ -257,8 +257,8 @@ class MainWindow(QMainWindow):
         self._act(d, "Liquid engine designer", self.open_cycle_sandbox, "Ctrl+E")
         self._act(d, "Solid motor designer", lambda: self.open_grain_designer("solid"), "Ctrl+G")
         self._act(d, "Hybrid motor designer", lambda: self.open_grain_designer("hybrid"))
-        for name in ("Nuclear thermal designer", "Electric propulsion designer"):
-            self._act(d, name + " (planned)", lambda: None).setEnabled(False)
+        self._act(d, "Nuclear thermal designer", self.open_nuclear_designer)
+        self._act(d, "Electric propulsion designer (planned)", lambda: None).setEnabled(False)
         s = mb.addMenu("&Analysis")                        # test and analyze a design with the analysis modules
         self._act(s, "Run", self.start_run, "Ctrl+R")
         self._act(s, "Cancel", self.cancel_run, "Esc")
@@ -404,6 +404,9 @@ class MainWindow(QMainWindow):
         elif d.kind in ("solid", "hybrid"):
             self.open_grain_designer(d.kind)
             self.grain_win.load_design(d)
+        elif d.kind == "nuclear":
+            self.open_nuclear_designer()
+            self.nuclear_win.load_design(d)
 
     def toggle_full_screen(self) -> None:
         """F11: full-screen mode on and off (the window keeps its normal size and place for the way back)."""
@@ -460,8 +463,19 @@ class MainWindow(QMainWindow):
         """Open the window of a tree "tool" entry (cycle sandbox, solid or hybrid motor designer)."""
         if key == registry.CycleSandboxTool.key:
             self.open_cycle_sandbox()
+        elif key == registry.NuclearDesignerTool.key:
+            self.open_nuclear_designer()
         else:
             self.open_grain_designer("solid" if key == registry.GrainDesignerSolidTool.key else "hybrid")
+
+    def open_nuclear_designer(self, study: str = "nuc.perf") -> None:
+        """Open (or raise) the nuclear thermal designer window."""
+        from .nuclear_designer import NuclearDesigner
+        if getattr(self, "nuclear_win", None) is None:
+            self.nuclear_win = NuclearDesigner(self, study)
+        self.nuclear_win.show()
+        self.nuclear_win.raise_()
+        self.nuclear_win.activateWindow()
 
     def open_grain_designer(self, mode: str = "solid") -> None:
         """Open (or raise) the solid or hybrid motor designer window, in solid or hybrid mode."""

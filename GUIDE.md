@@ -164,9 +164,11 @@ shows only the names when its window is narrow. The choice is remembered.
 Build the engine or motor first, then test it. The **Design** menu opens the liquid engine designer (cycle sandbox) and
 the solid and hybrid motor designers. **Use in Analysis** makes the current design the active one; opening an analysis
 module of the same kind (Liquid: feed transient, pump-fed cycles, chugging; Solid: ballistics, burnback, CP motor;
-Hybrid: the burns) then starts from the design's values, limited to the module's slider range (the log says which).
+Hybrid: the burns; Nuclear: the study modules and reactor kinetics) then starts from the design's values, limited to the module's slider range (the log says which).
 **File, Open Design** reopens a saved grain design; **Analysis, Use Active Design in This Module** reloads the open
-module, and **Clear Active Design** goes back to the module defaults. Nuclear and electric designers are planned.
+module, and **Clear Active Design** goes back to the module defaults. The **Nuclear thermal designer** has five studies (performance, reactor criticality, fuel element, engine cycle, xenon and
+samarium) that keep their values while you switch; the kinetics and startup module takes the core temperature, pressure and
+inlet temperature from the performance study. The electric propulsion designer is planned.
 
 ## Preferences
 

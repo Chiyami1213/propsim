@@ -26,6 +26,7 @@ MODELS_FOR = {
     "liquid": ("liquid.feed", "liquid.cycle", "liquid.chugging"),
     "solid": ("solid.ballistics", "solid.burnback3d", "solid.burnrate", "solid.cpmotor", "solid.cpmotor_us"),
     "hybrid": ("hybrid.burn0d", "hybrid.burn1d", "hybrid.n2o"),
+    "nuclear": ("nuc.perf", "nuc.crit", "nuc.element", "nuc.cycles", "nuc.poisons", "nuc.kinetics"),
 }
 
 
@@ -146,11 +147,27 @@ def _hybrid_updates(d: Design) -> dict:
     return u
 
 
+def _nuclear_updates(d: Design, key: str) -> dict:
+    """A nuclear design holds the parameters of each study the user worked in (``{"nuc.perf": {...}, ...}``); a study
+    starts from its own values, and the kinetics run takes the core temperature, pressure and inlet temperature of the
+    performance study."""
+    own = dict(d.data.get(key, {}))
+    if key == "nuc.kinetics":
+        perf = d.data.get("nuc.perf", {})
+        for src, dst in (("T0", "T_set"), ("pc", "P"), ("T_in", "T_in")):
+            if src in perf and dst not in own:
+                own[dst] = perf[src]
+    return own
+
+
 def updates(design: Design | None, model_key: str, fields: set[str] | None = None) -> dict:
     """Parameter values (display units) a model takes from ``design``; restricted to ``fields`` when given."""
     if not applies_to(design, model_key):
         return {}
-    u = {"liquid": _liquid_updates, "solid": _solid_updates, "hybrid": _hybrid_updates}[design.kind](design)
+    if design.kind == "nuclear":
+        u = _nuclear_updates(design, model_key)
+    else:
+        u = {"liquid": _liquid_updates, "solid": _solid_updates, "hybrid": _hybrid_updates}[design.kind](design)
     return {k: v for k, v in u.items() if fields is None or k in fields}
 
 

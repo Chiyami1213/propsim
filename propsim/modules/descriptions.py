@@ -25,6 +25,9 @@ MODELS = {
     "liquid.chugging": "low-frequency combustion stability: chugging against l*, injector drop and feed dynamics",
     "liquid.sandbox": "flow-diagram editor to build, wire and solve any liquid engine cycle, with a guided build, a trade "
                       "study and an animated schematic (opens its own window)",
+    "nuclear.designer": "designs a nuclear thermal rocket: performance, reactor criticality, fuel element, engine cycle and "
+                        "poisons studies in one window, saved as a design the nuclear analysis modules start from "
+                        "(opens its own window)",
     "common.nozzle": "nozzle area ratio gives the thrust coefficient curve, mach and pressure along the bell, and a 3d nozzle",
     "hybrid.regression": "compares fuel regression-rate laws against oxidizer mass flux and port size",
     "grain.hybrid": "designs a hybrid motor: port and grain stack (custom ports, inhibitors, per-grain fuel) with a 3d view and "

@@ -19,12 +19,18 @@ MODES = {"solid": ("Solid", SolidGrainLiveModel), "hybrid": ("Hybrid", PortLiveM
 
 
 class GrainDesigner(QMainWindow):
-    """One window, two grain families: ``mode`` picks the solid or the hybrid designer."""
+    """One window, two grain families: ``mode`` picks the solid or the hybrid designer.  Subclasses (the nuclear thermal
+    designer) change ``MODES`` (key -> (label, live model class)), the toolbar label and the window title."""
+
+    MODES = MODES
+    MODE_LABEL = " Motor type "
+    TITLE = "Motor Designer"
+    USE_TIP = "make this the active design: the solid or hybrid analysis modules start from it"
 
     def __init__(self, main=None, mode: str = "solid", parent=None) -> None:
         super().__init__(parent or main)
         self.main = main
-        self.setWindowTitle("Motor Designer")
+        self.setWindowTitle(self.TITLE)
         self.resize(1500, 900)
         self.mode = mode
         self.ctrl = None
@@ -49,16 +55,16 @@ class GrainDesigner(QMainWindow):
         tb = QToolBar("Grain")
         tb.setMovable(False)
         self.addToolBar(tb)
-        tb.addWidget(QLabel(" Motor type "))
+        tb.addWidget(QLabel(self.MODE_LABEL))
         self.mode_box = QComboBox()
-        for key, (name, _) in MODES.items():
+        for key, (name, _) in self.MODES.items():
             self.mode_box.addItem(name, key)
         self.mode_box.setCurrentIndex(self.mode_box.findData(mode))
         self.mode_box.currentIndexChanged.connect(lambda _: self.set_mode(self.mode_box.currentData()))
         tb.addWidget(self.mode_box)
         tb.addSeparator()
         use = QPushButton("Use in Analysis")
-        use.setToolTip("make this the active design: the solid or hybrid analysis modules start from it")
+        use.setToolTip(self.USE_TIP)
         use.clicked.connect(self.use_in_analysis)
         tb.addWidget(use)
         save = QPushButton("Save Design")
@@ -111,7 +117,7 @@ class GrainDesigner(QMainWindow):
     # ------------------------------------------------------------------ model
     def set_mode(self, mode: str) -> None:
         self.mode = mode
-        _, cls = MODES[mode]
+        _, cls = self.MODES[mode]
         self.ctrl = cls()                                   # its own controller: the main window's scene is untouched
         self.form = ParamForm(self.ctrl.Params)
         self.form.changed.connect(self.refresh)
@@ -121,7 +127,7 @@ class GrainDesigner(QMainWindow):
         self.ctrl.reset_scene()
         self.vp.set_fields(self.ctrl.fields)
         self.vp.legend_labels = self.ctrl.legend_labels
-        self.setWindowTitle(f"Motor Designer - {MODES[mode][0]}")
+        self.setWindowTitle(f"{self.TITLE} - {self.MODES[mode][0]}")
         self.refresh()
 
     def refresh(self, *_) -> None:
@@ -143,7 +149,7 @@ class GrainDesigner(QMainWindow):
     # ---- designs ------------------------------------------------------------------------------------------
     def make_design(self):
         from .. import design as D
-        return D.Design(self.mode, f"{MODES[self.mode][0]} grain design", self.form.values().model_dump(), "user")
+        return D.Design(self.mode, f"{self.MODES[self.mode][0]} grain design", self.form.values().model_dump(), "user")
 
     def load_design(self, d) -> None:
         """Show a saved design (its kind picks solid or hybrid)."""
@@ -160,7 +166,7 @@ class GrainDesigner(QMainWindow):
     def save_design(self) -> None:
         from PySide6.QtWidgets import QFileDialog
         home = self.main.home if self.main is not None else None
-        start = str((home / "designs") if home else "") + f"/{self.mode}_grain"
+        start = str((home / "designs") if home else "") + f"/{self.mode.split('.')[0]}_design"
         path, _ = QFileDialog.getSaveFileName(self, "Save Design", start, "PropSim design (*.psimdesign.json)")
         if path:
             d = self.make_design()

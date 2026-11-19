@@ -142,3 +142,28 @@ def test_grain_designer_window_for_both_motor_types(qapp, tmp_path):
     assert win.ctrl.key == "hybrid.port"
     keys = [c.key for entries in registry.TREE.values() for _, m, c in entries if m == "tool"]
     assert {"grain.solid", "grain.hybrid", "liquid.sandbox"} <= set(keys)
+
+
+def test_nuclear_designer_keeps_each_study_and_feeds_the_analysis(qapp, tmp_path):
+    from propsim import design as D
+    from propsim.ui.main_window import MainWindow
+    win = MainWindow(home=tmp_path, use_settings=False)
+    win.open_nuclear_designer()
+    nd = win.nuclear_win
+    assert nd.windowTitle().startswith("Nuclear Thermal Designer") and nd.ctrl.key == "nuc.perf"
+    nd.form.set_values({"T0": 2600.0, "pc": 6.0})
+    nd.set_mode("nuc.crit")                                    # move to another study ...
+    assert nd.ctrl.key == "nuc.crit" and nd.saved["nuc.perf"]["T0"] == 2600.0
+    nd.set_mode("nuc.perf")                                    # ... and come back: the values are still there
+    assert nd.form.values().T0 == 2600.0
+    d = nd.make_design()
+    assert d.kind == "nuclear" and d.data["nuc.perf"]["pc"] == 6.0
+    nd.use_in_analysis()
+    assert win.design is not None and win.design.kind == "nuclear"
+    win.select_model("nuc.kinetics")
+    v = win.form.values()
+    assert v.T_set == 2600.0 and v.P == 6.0                    # core temperature and pressure from the performance study
+    p = d.save(tmp_path / "n")
+    assert D.Design.load(p).data["nuc.perf"]["T0"] == 2600.0
+    names = list(win.bindings)
+    assert "Design: Nuclear Thermal Designer" in names

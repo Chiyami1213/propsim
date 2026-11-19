@@ -280,11 +280,11 @@ Questions and bug reports: [GitHub Issues](https://github.com/Chiyami1213/propsi
   </tr>
   <tr>
     <td><img src="docs/gallery/cycle-sandbox.png" alt="Liquid engine designer: flow-diagram editor for building and solving liquid engine cycles"><br><sub><b>Liquid engine designer</b> (Editor)</sub></td>
-    <td><img src="docs/gallery/grain-designer-solid.png" alt="Solid motor designer: design the port and grain stack, see the whole grain in 3D with a side-view cutaway, and read the burning perimeter, port area and remaining propellant"><br><sub><b>Solid motor designer</b> (Editor)</sub></td>
+    <td><img src="docs/gallery/nuclear-designer.png" alt="Nuclear thermal designer: performance, reactor criticality, fuel element, engine cycle and poison studies in one window, saved as a design for the nuclear analysis modules"><br><sub><b>Nuclear thermal designer</b> (Editor)</sub></td>
   </tr>
   <tr>
+    <td><img src="docs/gallery/grain-designer-solid.png" alt="Solid motor designer: design the port and grain stack, see the whole grain in 3D with a side-view cutaway, and read the burning perimeter, port area and remaining propellant"><br><sub><b>Solid motor designer</b> (Editor)</sub></td>
     <td><img src="docs/gallery/grain-designer-hybrid.png" alt="Hybrid motor designer: design the port and grain stack, see the whole grain in 3D with a side-view cutaway, and read the burning perimeter, port area and remaining propellant"><br><sub><b>Hybrid motor designer</b> (Editor)</sub></td>
-    <td></td>
   </tr>
 </table>
 
