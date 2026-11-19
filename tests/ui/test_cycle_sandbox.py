@@ -383,3 +383,17 @@ def test_startup_panel_runs_and_scrubs(box):
     assert box.sol.components["chamber"]["p_c"] > 3 * p0                        # the diagram follows the scrubber
     sp.slider.setValue(2)
     assert "t = " in sp.time_lbl.text()
+
+
+def test_custom_cycle_does_not_repeat_the_diagram_in_the_animation_panel(qapp):
+    from PySide6.QtCore import QRectF
+    from PySide6.QtGui import QImage, QPainter
+    from propsim.ui.cycle_sandbox import CycleSandbox
+    w = CycleSandbox()
+    w.new_doc()
+    w.canvas.add_component("tank_regulated")                   # a custom, unfinished engine
+    img = QImage(500, 400, QImage.Format_RGB32)
+    p = QPainter(img)
+    w.anim.draw(p, QRectF(0, 0, 500, 400), 0.0)                # the panel: a notice only
+    p.end()
+    assert w.anim.frame(0.0, 300, 200).width() == 300            # the export still draws the diagram

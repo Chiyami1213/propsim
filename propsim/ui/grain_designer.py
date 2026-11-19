@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (QComboBox, QDockWidget, QLabel, QMainWindow, QPro
 from ..modules.hybrid_live import PortLiveModel
 from ..modules.solid_models import SolidGrainLiveModel
 from .panels import PAD, PanelTitle
+from .latex import LatexLabel
 from .params import ParamForm
 from .plots import PlotTabs
 from .text import apa
@@ -39,9 +40,7 @@ class GrainDesigner(QMainWindow):
         self.plots = PlotTabs()
         self.params_holder = QScrollArea()
         self.params_holder.setWidgetResizable(True)
-        self.hover = QLabel("hover: move over a parameter for its meaning and [dimensions]")
-        self.hover.setObjectName("caption")
-        self.hover.setWordWrap(True)
+        self.hover = LatexLabel("hover: move over a parameter for its meaning and [dimensions]", "dim", 9.0, shrink=True)
         side = QWidget()
         sl = QVBoxLayout(side)
         sl.setContentsMargins(PAD, 0, PAD, PAD)
@@ -65,15 +64,19 @@ class GrainDesigner(QMainWindow):
         tb.addSeparator()
         use = QPushButton("Use in Analysis")
         use.setToolTip(self.USE_TIP)
+        use.setShortcut("Ctrl+U")
         use.clicked.connect(self.use_in_analysis)
         tb.addWidget(use)
         save = QPushButton("Save Design")
+        save.setShortcut("Ctrl+S")
         save.clicked.connect(self.save_design)
         tb.addWidget(save)
         opn = QPushButton("Open Design")
+        opn.setShortcut("Ctrl+O")
         opn.clicked.connect(self.open_design)
         tb.addWidget(opn)
         send = QPushButton("Open in Main Window")
+        send.setShortcut("Ctrl+M")
         send.clicked.connect(self.open_in_main)
         tb.addWidget(send)
         panels = QPushButton("Panels")
@@ -121,7 +124,7 @@ class GrainDesigner(QMainWindow):
         self.ctrl = cls()                                   # its own controller: the main window's scene is untouched
         self.form = ParamForm(self.ctrl.Params)
         self.form.changed.connect(self.refresh)
-        self.form.hovered.connect(self.hover.setText)
+        self.form.hovered.connect(self.hover.setLatex)
         self.params_holder.setWidget(self.form)
         self.vp.plotter.clear()
         self.ctrl.reset_scene()

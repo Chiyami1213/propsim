@@ -61,12 +61,25 @@ class CycleAnimation(QWidget):
             self.view.update()
 
     # ------------------------------------------------------------------ drawing
-    def draw(self, p: QPainter, size: QRectF, phase: float) -> None:
+    def draw(self, p: QPainter, size: QRectF, phase: float, export: bool = False) -> None:
         """Paint the cycle into ``size`` at animation phase ``phase`` (0..1, one loop)."""
         from .cycle_schematic import Schematic
         sch = Schematic(self.canvas.graph)
         if sch.kind != "custom":                                # a known cycle: the textbook-style schematic
             sch.draw(p, size, phase)
+            return
+        if not export:                                          # not a standard cycle: do not repeat the diagram here
+            t = theme.t
+            p.fillRect(size, QColor(t["viewport_bg"]))
+            p.setPen(QColor(t["dim"]))
+            f = QFont(p.font())
+            f.setPointSizeF(10.0)
+            p.setFont(f)
+            p.drawText(size.adjusted(24, 24, -24, -24), Qt.AlignCenter | Qt.TextWordWrap,
+                       "Custom cycle: this engine is not one of the standard cycles (pressure-fed, gas generator, "
+                       "tap-off, expander, expander bleed, staged combustion, full-flow, electric pump-fed), so there "
+                       "is no textbook schematic." + chr(10) + chr(10) + "Press Play Flow to animate the flow diagram "
+                       "itself. Export GIF still saves an animation of the diagram.")
             return
         from .cycle_sandbox import NODE_W, EdgeItem, NodeItem
         t = theme.t
@@ -131,7 +144,7 @@ class CycleAnimation(QWidget):
         img = QImage(w, h, QImage.Format_RGB32)
         p = QPainter(img)
         try:
-            self.draw(p, QRectF(0, 0, w, h), phase)
+            self.draw(p, QRectF(0, 0, w, h), phase, export=True)
         finally:
             p.end()
         return img

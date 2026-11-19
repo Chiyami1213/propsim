@@ -126,3 +126,12 @@ def test_active_design_feeds_the_analysis_modules(qapp, tmp_path):
     names = list(w.bindings)
     assert any(n.startswith("Design:") for n in names) and "Analysis: Run" in names
     assert any(n.startswith("Validation:") for n in names)
+
+
+def test_every_menu_command_has_a_distinct_default_shortcut(qapp, tmp_path):
+    w = _win(tmp_path)
+    missing = [k for k, (a, d) in w.bindings.items() if not d and a.isEnabled()]
+    assert missing == []
+    keys = [d for _, d in w.bindings.values() if d]
+    assert len(keys) == len(set(keys))                           # no two commands share a shortcut
+    assert w.bindings["Design: Hybrid Motor Designer"][1] == "Ctrl+H"

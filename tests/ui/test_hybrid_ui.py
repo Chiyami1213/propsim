@@ -190,3 +190,14 @@ def test_electric_designer_feeds_the_electric_runs(qapp, tmp_path):
     v = win.form.values()
     assert v.Vd == 350.0 and abs(v.A - math.pi * (45.0**2 - 30.0**2) / 100.0) < 0.6                  # on the slider grid
     assert "Design: Electric Propulsion Designer" in list(win.bindings)
+
+
+def test_designer_hover_text_is_typeset_not_raw_latex(qapp, tmp_path):
+    from propsim.ui.latex import LatexLabel
+    from propsim.ui.main_window import MainWindow
+    win = MainWindow(home=tmp_path, use_settings=False)
+    win.open_nuclear_designer()
+    nd = win.nuclear_win
+    assert isinstance(nd.hover, LatexLabel)
+    nd.form.hovered.emit(r"$\mathrm{regression\ law}$ — local regression law  $[1]$")
+    assert nd.hover.pixmap() is not None and not nd.hover.pixmap().isNull()

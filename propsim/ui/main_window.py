@@ -37,6 +37,24 @@ MODULE_TITLES = {"Hybrid": "Hybrid Rocket", "Liquid": "Liquid Engine", "Solid": 
 KEY_ROLE = Qt.UserRole + 1
 
 
+# default shortcuts of the menu commands that have no standard one (all can be changed in Edit > Preferences)
+DEFAULT_KEYS = {
+    "File: Open Result": "Ctrl+Shift+O", "File: Open Design": "Ctrl+Shift+D", "File: Restore Last Session": "Ctrl+Shift+L",
+    "File: Data Folder": "Ctrl+Alt+D", "File: Open Data Folder": "Ctrl+Shift+F", "File: Quit": "Ctrl+Q",
+    "Send Thrust to Vehicle: Stage 1": "Ctrl+Alt+1", "Send Thrust to Vehicle: Stage 2": "Ctrl+Alt+2",
+    "Send Thrust to Vehicle: Stage 3": "Ctrl+Alt+3",
+    "Export Report: HTML Report (.html)": "Ctrl+Alt+H", "Export Report: PDF Report (.pdf)": "Ctrl+Alt+P",
+    "Export Report: LaTeX Tables and Figures (.tex)": "Ctrl+Alt+T", "File: Export Thrust Curve (.eng)": "Ctrl+Alt+E",
+    "Export Code: Python Script (.py)": "Ctrl+Alt+Y", "Export Code: MATLAB Script (.m)": "Ctrl+Alt+M",
+    "Edit: Reset Parameters to Defaults": "Ctrl+Shift+R",
+    "Design: Hybrid Motor Designer": "Ctrl+H", "Design: Nuclear Thermal Designer": "Ctrl+Shift+N",
+    "Design: Electric Propulsion Designer": "Ctrl+Shift+E",
+    "Analysis: Use Active Design in This Module": "Ctrl+Shift+A", "Analysis: Clear Active Design": "Ctrl+Alt+C",
+    "Validation: Run Reference + Core Tests": "Ctrl+Shift+V",
+    "Help: User Guide": "Shift+F1", "Help: Online Help (GitHub)": "Ctrl+F1", "Help: About PropSim": "Alt+F1",
+}
+
+
 def color_scheme_for(theme_name: str):
     """The system color scheme (title bars, dialogs) that goes with a theme: light for Light, dark for the others."""
     return Qt.ColorScheme.Light if theme_name == "light" else Qt.ColorScheme.Dark
@@ -278,10 +296,12 @@ class MainWindow(QMainWindow):
     def _act(self, menu, text, slot, shortcut=None) -> QAction:
         a = QAction(apa(text), self)                       # menus use APA title case
         a.triggered.connect(lambda _=False: slot())
+        name = f"{menu.title().replace('&', '')}: {a.text()}"
         if shortcut:
             a.setShortcut(shortcut)
+        if a.shortcut().isEmpty() and name in DEFAULT_KEYS:          # no standard key on this platform (Quit on Windows)
+            a.setShortcut(DEFAULT_KEYS[name])
         menu.addAction(a)
-        name = f"{menu.title().replace('&', '')}: {a.text()}"
         self.bindings[name] = (a, a.shortcut().toString(QKeySequence.PortableText))
         return a
 
