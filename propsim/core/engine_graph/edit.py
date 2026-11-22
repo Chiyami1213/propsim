@@ -39,7 +39,9 @@ OPTIONS: dict[str, dict[str, list[str]]] = {
                 "rayleigh_loss": ["on", "off"]},
     "nozzle_bell": {"cooling": ["regenerative", "radiative", "ablative", "uncooled"], "emissivity": ["0.8"],
                     "split_area_ratio": ["5"]},
-    "pump_centrifugal": {"shutoff_ratio": ["1.25"]},
+    "pump_centrifugal": {"shutoff_ratio": ["1.25"], "efficiency_curve": ["parabolic", "constant"],
+                         "suction_specific_speed": ["auto"]},
+    "inducer": {"suction_specific_speed": ["auto"]},
     "injector": {"type": ["coaxial", "impinging", "showerhead", "pintle"]},
 }
 OPTION_HELP = {
@@ -51,7 +53,9 @@ OPTION_HELP = {
     "sections meet", "hydraulics": "friction: the jacket's own channel loss; none: a separate orifice carries it",
     "cooling": "how this wall is cooled", "rayleigh_loss": "injector-end to nozzle-stagnation pressure loss",
     "emissivity": "radiating wall emissivity", "shutoff_ratio": "shut-off head over design head",
-    "type": "injector element type", "arrangement": "turbine staging"}
+    "type": "injector element type", "arrangement": "turbine staging",
+    "efficiency_curve": "pump efficiency off design: eta_design q(2 - q) at corresponding points, or constant",
+    "suction_specific_speed": "Omega_ss at the cavitation limit (SI); auto: an inducer's on the shaft, else 2.93"}
 
 
 def library() -> dict[str, dict]:

@@ -192,7 +192,47 @@ class Venturi(Through):
 
 
 class Inducer(Through):
-    """Inducer: suction-performance check only (its head is small and not modelled); no pressure change."""
+    """Inducer: suction-performance check only (its head is small and not modelled); no pressure change.  Its
+    suction specific speed is the cavitation limit of the pump stage it protects (Stenning: an inducer lets the
+    pump run at about three times the bare impeller's suction specific speed)."""
+
+    def outputs(self, x, ev):
+        o = super().outputs(x, ev)
+        s = ev.inlet(self.id, self.pin)
+        if s.kind != "gas":
+            rho = self.rho_in(ev)
+            pv = props(s.fluid).p_vap(s.T)
+            Q = max(x[0] / rho, 0.0)
+            req = npsh_required(abs(ev.speed(self.id)), Q, inducer_omega_ss(self))
+            o.update(npsh_available=(ev.p(self.id, self.pin) - pv) / (rho * G0), npsh_required=req,
+                     speed=ev.speed(self.id))
+            o["npsh_margin"] = o["npsh_available"] - req
+        return o
+
+
+# Suction specific speed at the cavitation limit, SI dimensionless Omega_ss = w sqrt(Q) / (g NPSH)^(3/4).
+# Bare impeller: S = N sqrt(Q) / NPSH^(3/4) of 8000-10000 (rpm, US gal/min, ft), the low end taken (Stenning, as in
+# Chiyami's turbomachinery notes ch. 7 sec. 5.1); S/2733 converts US units to Omega_ss.  Inducer: the lower bound of
+# Huzel & Huang Table 6-5 (7.3-18.3) when the inducer gives none.
+OMEGA_SS_BARE = 8000.0 / 2733.0
+OMEGA_SS_INDUCER = 7.3
+
+
+def npsh_required(w: float, Q: float, omega_ss: float) -> float:
+    """NPSH (m) at the cavitation limit: :math:`NPSH_r=\\frac{1}{g}\\left(\\frac{\\omega\\sqrt Q}{\\Omega_{ss}}\\right)^{4/3}`."""
+    return (w * np.sqrt(max(Q, 0.0)) / omega_ss) ** (4.0 / 3.0) / G0
+
+
+def _opt_float(m, key: str):
+    try:
+        return float(m.opt.get(key, "auto"))
+    except (TypeError, ValueError):
+        return None
+
+
+def inducer_omega_ss(m) -> float:
+    v = _opt_float(m, "suction_specific_speed") or m.par("suction_specific_speed", None)
+    return float(v) if v else OMEGA_SS_INDUCER
 
 
 class Pump(Through):
@@ -217,9 +257,39 @@ class Pump(Through):
     def eta(self) -> float:
         return self.par("eta_design")
 
+    def eta_at(self, m, ev) -> float:
+        """Efficiency off design: :math:`\\eta=\\eta_d\\,q(2-q)` in the flow ratio at corresponding points,
+        :math:`q=\\frac{Q/Q_d}{N/N_d}` (affinity: equal efficiency at equal flow coefficient, Dixon sec. 2.3; the
+        parabola is the typical E-Q shape, PROPSIM-EST), floored at a tenth of the design value so the shut-off and
+        run-out powers stay finite."""
+        if self.opt.get("efficiency_curve", "parabolic") == "constant" or getattr(self.net, "const_eta", False):
+            return self.eta()
+        n = abs(ev.speed(self.id)) / self.par("N_design")
+        q = (m / self.rho_in(ev)) / self.par("Q_design") / max(n, 0.05)
+        f = q * (2.0 - q)
+        return self.eta() * 0.5 * (f + 0.1 + np.sqrt((f - 0.1) ** 2 + 4e-3))      # smooth max(f, 0.1)
+
+    def omega_ss(self) -> float:
+        """Suction specific speed at the cavitation limit: the pump's own, else an inducer's on the same shaft."""
+        v = _opt_float(self, "suction_specific_speed") or self.par("suction_specific_speed", None)
+        if v:
+            return float(v)
+        k = self.net.shaft_of.get(self.id)
+        if k is not None:
+            for nid in self.net.shaft_groups[k]:
+                if self.net.nodes[nid]["type"] == "inducer":
+                    return inducer_omega_ss(self.net.models[nid])
+        return OMEGA_SS_BARE
+
+    def omega_ss_known(self) -> bool:
+        """True when the cavitation limit is the user's or an inducer's, not the bare-impeller estimate (which
+        rocket pumps, almost all fitted with inducers, beat by far): only then is a negative margin a warning."""
+        return self.omega_ss() != OMEGA_SS_BARE or bool(_opt_float(self, "suction_specific_speed")
+                                                         or self.par("suction_specific_speed", None))
+
     def power(self, x, ev) -> float:
         dp = ev.p(self.id, self.pout) - ev.p(self.id, self.pin)
-        return x[0] * dp / (self.rho_in(ev) * self.eta())
+        return x[0] * dp / (self.rho_in(ev) * self.eta_at(x[0], ev))
 
     def shaft_power(self, x, ev):
         return -self.power(x, ev)
@@ -242,8 +312,11 @@ class Pump(Through):
         N = ev.speed(self.id)
         Q = x[0] / rho
         H = dp / (rho * G0)
-        return dict(mdot=x[0], dp=dp, head=H, power=self.power(x, ev), efficiency=self.eta(), speed=N,
-                    npsh_available=(p1 - pv) / (rho * G0), flow_ratio=Q / self.par("Q_design"),
+        npsh_a = (p1 - pv) / (rho * G0)
+        npsh_r = 0.0 if s.kind == "gas" else npsh_required(abs(N), Q, self.omega_ss())
+        return dict(mdot=x[0], dp=dp, head=H, power=self.power(x, ev), efficiency=self.eta_at(x[0], ev), speed=N,
+                    npsh_available=npsh_a, npsh_required=npsh_r, npsh_margin=npsh_a - npsh_r,
+                    flow_ratio=Q / self.par("Q_design"),
                     specific_speed=N * np.sqrt(max(Q, 0.0)) / max(G0 * H, 1e-9) ** 0.75)
 
 
@@ -282,9 +355,10 @@ class Turbine(Through):
 
     def eta_at(self, ev, w_s: float) -> float:
         """Efficiency at the present blade-speed ratio.  Steady solves hold the design value; a transient sets
-        ``nu_design`` (the design u/c0) and the efficiency follows the parabola through zero at standstill and at
-        twice that ratio, peaking at it (PROPSIM-EST: the usual impulse-turbine approximation), which gives a finite
-        starting torque."""
+        ``nu_design`` (the design u/c0) and the efficiency follows the impulse-runner parabola
+        :math:`\\eta_R\\propto\\nu(2\\nu_d-\\nu)`: Dixon eq. 9.3 (Pelton runner, :math:`\\eta_R=2\\nu(1-\\nu)(1-k\\cos\\beta_2)`,
+        zero at standstill and at the jet speed, peak at half of it), with the peak moved to the turbine's own design
+        ratio and scaled to its design efficiency (that scaling is PROPSIM-EST).  It gives a finite starting torque."""
         nu_d = self.par("nu_design", None)
         if not nu_d:
             return self.eta()
