@@ -44,3 +44,11 @@ def test_small_propellant_load_runs_dry():
     seq.loads = {"fuel_tank": 0.05}
     r = run(d, seq)
     assert "ran dry" in r.message and r.tank_mass["fuel_tank"][-1] < 0.05
+
+
+def test_fast_valve_closure_reports_the_water_hammer_surge():
+    d = E.template("pressure_fed_kerolox")
+    seq = default_sequence(d, 1.5)
+    seq.valves["ox_valve"].t_close, seq.valves["ox_valve"].ramp_close = 1.0, 0.001
+    r = run(d, seq)
+    assert any(n.startswith("ox_valve closes") and "surge" in n for n in r.notes)

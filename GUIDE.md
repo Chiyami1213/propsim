@@ -81,6 +81,27 @@ for an output (for example chamber pressure and mixture ratio) and free a parame
 size it, as an engine controller would. The templates include the Huzel & Huang pressure-fed, gas-generator and
 expander engines and an RS-25 style staged-combustion cycle. Save and open diagrams as `.json` files.
 
+Away from its design flow a pump's efficiency follows eta_design q(2 - q), where q is the flow ratio at corresponding
+points, (Q/Q_design)/(N/N_design) (affinity laws: equal efficiency at equal flow coefficient, Dixon sec. 2.3; the
+parabolic shape is PROPSIM-EST), so shut-off and run-out cost power and heat the liquid; choose *Efficiency curve:
+constant* on a pump to hold the design value. Each pump and inducer reports the NPSH it requires,
+(omega sqrt(Q)/Omega_ss)^(4/3)/g, and its margin. Omega_ss is the pump's own *suction_specific_speed* if given, else an
+inducer's on the same shaft (its value, or 7.3, the low end of Huzel & Huang Table 6-5), else a bare impeller's 2.93
+(S = 8000 in rpm, gal/min, ft, the low end of the usual 8000-10000). A negative margin is a warning only when the limit
+is the pump's own or an inducer's: the bare-impeller figure is far below what inducer-fitted rocket pumps reach.
+
+Lines use Churchill's (1977) friction factor, one smooth curve from laminar (64/Re) through the critical zone to
+fully rough flow, so trickle flows during a start-up are no longer treated as turbulent. A line's options add its
+fittings, each from Rennels & Hudson's *Pipe Flow* (2012): an entrance from a large volume (sharp 0.57, rounded by
+r/d, re-entrant by t/d), a sudden contraction from a larger pipe, smooth bends by angle and r/d (eq. 15.1), miter
+bends, a sudden expansion (Borda-Carnot) and free discharge (one velocity head); *K_fittings* adds anything else.
+The line reports its Reynolds number, friction factor, total K, the pressure-wave speed (the fluid's sound speed,
+the rigid-wall upper bound) and the Joukowsky surge rho a V with the wave's round-trip time 2L/a. Gas lines follow
+the isothermal compressible relation with friction (eq. 4.26b). An orifice or injector can take its discharge
+coefficient from its edge instead of a typed Cd: sharp (0.60 in a wall) or thick with length t/d (0.80 at 1.4 d,
+where the jet has reattached; longer holes add bore friction). In a start-up, a valve that closes faster than the
+round trip of the line feeding it gets a note with the surge it would see.
+
 The diagram follows ANSI/ISA-5.1 symbols: process lines are solid (colored by propellant), the shaft link is dash-dot,
 and the bubbles (PT, TT, ST, FT, PDT) are field instruments with their tag numbers. The *Cycle Animation* panel shows
 the flow moving through the cycle and exports it as a GIF or PNG. Every sandbox panel can be dragged; *Panels* brings
@@ -119,9 +140,9 @@ speeds and tank states, and only the shaft speeds and tank masses are integrated
 power - pump power - accessory load + starter, and propellant mass). Line and volume filling, fluid inertia and
 wall thermal lag are not modelled, so the first fraction of a second after a valve cracks open is idealised. Shaft
 inertia defaults to steel disks sized from the wheel diameters (PROPSIM-EST; enter the real value on the *Shaft*
-if known); the accessory load falls with speed cubed (PROPSIM-EST); a turbine's efficiency follows
-max(1 - (1 - nu/nu_design)^2, 0) about its design blade-speed ratio (PROPSIM-EST), which gives it a finite starting
-torque. A staged-combustion engine may stay below its design speed in a short run: give it a starter or a longer
+if known); the accessory load falls with speed cubed (PROPSIM-EST); a turbine's efficiency follows the impulse-runner
+parabola of Dixon eq. 9.3 (zero at standstill, peak at the design blade-speed ratio nu_design, zero again at twice it),
+scaled to its design efficiency (the scaling is PROPSIM-EST), which gives it a finite starting torque. A staged-combustion engine may stay below its design speed in a short run: give it a starter or a longer
 run. The transient equation set follows Seymour (2003) and Binder et al., NASA TM-107318; start-up data to compare
 against are in Bradley, AIAA 97-2687, and Szuch, NASA TN D-3136 (cited, not reproduced).
 

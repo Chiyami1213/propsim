@@ -39,8 +39,16 @@ OPTIONS: dict[str, dict[str, list[str]]] = {
                 "rayleigh_loss": ["on", "off"]},
     "nozzle_bell": {"cooling": ["regenerative", "radiative", "ablative", "uncooled"], "emissivity": ["0.8"],
                     "split_area_ratio": ["5"]},
-    "pump_centrifugal": {"shutoff_ratio": ["1.25"]},
-    "injector": {"type": ["coaxial", "impinging", "showerhead", "pintle"]},
+    "pump_centrifugal": {"shutoff_ratio": ["1.25"], "efficiency_curve": ["parabolic", "constant"],
+                         "suction_specific_speed": ["auto"]},
+    "inducer": {"suction_specific_speed": ["auto"]},
+    "injector": {"type": ["coaxial", "impinging", "showerhead", "pintle"], "edge": ["given_Cd", "sharp", "thick"],
+                 "thickness_ratio": ["4"]},
+    "orifice": {"edge": ["given_Cd", "sharp", "thick"], "thickness_ratio": ["1.0"], "beta": ["0"]},
+    "line": {"entrance": ["none", "sharp", "rounded", "re-entrant"], "entrance_ratio": ["0.1"],
+             "contraction_beta": ["1"], "bends": ["0"], "miters": ["0"], "bend_angle": ["90"],
+             "bend_r_over_d": ["1.5"], "expansion_beta": ["1"], "exit": ["none", "free_discharge"],
+             "gas_flow": ["isothermal", "incompressible"]},
 }
 OPTION_HELP = {
     "fluid": "propellant in the tank (fluids.csv)", "position": "valve opening, 1 = fully open",
@@ -51,7 +59,18 @@ OPTION_HELP = {
     "sections meet", "hydraulics": "friction: the jacket's own channel loss; none: a separate orifice carries it",
     "cooling": "how this wall is cooled", "rayleigh_loss": "injector-end to nozzle-stagnation pressure loss",
     "emissivity": "radiating wall emissivity", "shutoff_ratio": "shut-off head over design head",
-    "type": "injector element type", "arrangement": "turbine staging"}
+    "type": "injector element type", "arrangement": "turbine staging",
+    "efficiency_curve": "pump efficiency off design: eta_design q(2 - q) at corresponding points, or constant",
+    "suction_specific_speed": "Omega_ss at the cavitation limit (SI); auto: an inducer's on the shaft, else 2.93",
+    "edge": "discharge coefficient: as given (Cd), or from a sharp or thick edge (Rennels & Hudson ch. 13)",
+    "thickness_ratio": "orifice or injector hole length over its diameter, t/d_o", "beta": "orifice diameter over the "
+    "pipe diameter (0: in a wall or manifold)",
+    "entrance": "line inlet from a large volume (Rennels & Hudson ch. 9)", "entrance_ratio": "inlet radius r/d "
+    "(rounded) or wall thickness t/d (re-entrant)", "contraction_beta": "this line's diameter over the larger one "
+    "feeding it (1: none)", "bends": "number of smooth bends", "miters": "number of miter bends", "bend_angle":
+    "bend angle (deg)", "bend_r_over_d": "bend radius over diameter", "expansion_beta": "this line's diameter over "
+    "the larger one it feeds (1: none)", "exit": "free discharge into a large volume adds one velocity head",
+    "gas_flow": "gas lines: isothermal compressible flow with friction, or constant inlet density"}
 
 
 def library() -> dict[str, dict]:

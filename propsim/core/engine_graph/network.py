@@ -314,6 +314,17 @@ class Network:
             for t, b in zip(self.targets, goal):
                 t["value"] = b
             return sol
+        if x0 is None and any(m.type == "pump_centrifugal" for m in self.models.values()):
+            # a cold start far from design sends the off-design pump efficiency to its floor; start from the
+            # constant-efficiency answer and switch the efficiency curves on from there
+            self.const_eta = True
+            try:
+                sol0 = self._solve_from(None, outer)
+            finally:
+                self.const_eta = False
+            if sol0.converged:
+                sol = self._solve_from(self.x, outer)
+                return sol
         return self._solve_from(x0, outer)
 
     def _free_start(self, f: dict) -> float:
@@ -490,6 +501,11 @@ class Network:
             t = c.get("type")
             if t == "pump_centrifugal" and c.get("npsh_available", 1.0) < 0:
                 out.append(f"{nid}: inlet below the vapour pressure (cavitation)")
+            known = t == "inducer" or (t == "pump_centrifugal" and nid in self.models
+                                       and self.models[nid].omega_ss_known())
+            if known and c.get("npsh_available", 1.0) >= 0 and c.get("npsh_margin", 1.0) < 0:
+                out.append(f"{nid}: NPSH available {c['npsh_available']:.1f} m below the {c['npsh_required']:.1f} m "
+                           "required at its suction specific speed (cavitation)")
             if t == "pump_centrifugal" and not 0.5 < c.get("flow_ratio", 1.0) < 1.5:
                 out.append(f"{nid}: running at {c['flow_ratio']:.2f} of design flow (curve extrapolated)")
             if t == "injector" and c.get("stiffness", 1.0) < 0.15 and c.get("dp", 0) > 0:

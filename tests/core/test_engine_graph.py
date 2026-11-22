@@ -116,3 +116,45 @@ def test_sweep_of_a_target_resizes_the_free_parameters():
     r = sweep(d, "target", "chamber", "p_c", [19e6, 20.4774e6])
     assert all(r["converged"])
     assert abs(r["summary"]["p_c"][0] - 19e6) < 2e3 and r["outputs"]["opov.position"][0] < r["outputs"]["opov.position"][1]
+
+
+def test_pump_efficiency_follows_the_flow_ratio_and_npsh_required():
+    """Off-design pump efficiency eta_d q(2 - q) at corresponding points, NPSH required from the suction specific
+    speed (bare impeller, or an inducer on the same shaft)."""
+    from propsim.core.engine_graph import edit as E
+    from propsim.core.engine_graph.models import OMEGA_SS_BARE, npsh_required
+    from propsim.core.engine_graph.network import Network
+    d = E.template("gg_kerolox")
+    sol = Network(d["graph"]).solve()
+    assert sol.converged
+    p = sol.components["ox_pump"]
+    q = p["flow_ratio"] / (abs(p["speed"]) / Network(d["graph"]).param("ox_pump", "N_design"))
+    assert p["efficiency"] == pytest.approx(0.707 * q * (2 - q), rel=2e-3)       # smooth floor far below
+    assert p["npsh_required"] == pytest.approx(npsh_required(abs(p["speed"]), p["mdot"] / (p["dp"] / (9.80665 * p["head"])),
+                                                             OMEGA_SS_BARE), rel=1e-6)
+    assert not any("NPSH available" in w for w in sol.warnings)       # bare-impeller estimate: output only
+    # 8000 (rpm, gal/min, ft) is 2.93 in SI units; an inducer's lower bound (H&H Table 6-5) cuts NPSHr by (2.93/7.3)^(4/3)
+    assert OMEGA_SS_BARE == pytest.approx(2.927, abs=2e-3)
+    assert npsh_required(1000.0, 0.1, 7.3) / npsh_required(1000.0, 0.1, OMEGA_SS_BARE) == pytest.approx(
+        (OMEGA_SS_BARE / 7.3) ** (4 / 3))
+
+
+def test_inducer_on_the_pump_shaft_sets_the_cavitation_limit():
+    from propsim.core.engine_graph import edit as E
+    from propsim.core.engine_graph.network import Network
+    d = E.template("gg_kerolox")
+    g = d["graph"]
+    g["nodes"].append({"id": "ox_inducer", "type": "inducer", "params": {"suction_specific_speed": {"value": 7.3}}})
+    g["edges"] = [e for e in g["edges"] if e["id"] != "ox_tank.outlet->ox_pump.inlet"]
+    g["edges"] += [
+        {"id": "a", "from": {"node": "ox_tank", "port": "outlet"}, "to": {"node": "ox_inducer", "port": "inlet"},
+         "kind": "fluid", "medium": "LOX"},
+        {"id": "b", "from": {"node": "ox_inducer", "port": "outlet"}, "to": {"node": "ox_pump", "port": "inlet"},
+         "kind": "fluid", "medium": "LOX"},
+        {"id": "c", "from": {"node": "shaft", "port": "load"}, "to": {"node": "ox_inducer", "port": "shaft"},
+         "kind": "shaft", "medium": "torque"}]
+    sol = Network(g).solve()
+    assert sol.converged
+    ind, pump = sol.components["ox_inducer"], sol.components["ox_pump"]
+    assert ind["npsh_required"] == pytest.approx(pump["npsh_required"], rel=1e-3)
+    assert (ind["npsh_margin"] < 0) == any(w.startswith("ox_inducer: NPSH available") for w in sol.warnings)
