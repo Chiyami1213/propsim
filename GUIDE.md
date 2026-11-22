@@ -90,6 +90,18 @@ inducer's on the same shaft (its value, or 7.3, the low end of Huzel & Huang Tab
 (S = 8000 in rpm, gal/min, ft, the low end of the usual 8000-10000). A negative margin is a warning only when the limit
 is the pump's own or an inducer's: the bare-impeller figure is far below what inducer-fitted rocket pumps reach.
 
+Lines use Churchill's (1977) friction factor, one smooth curve from laminar (64/Re) through the critical zone to
+fully rough flow, so trickle flows during a start-up are no longer treated as turbulent. A line's options add its
+fittings, each from Rennels & Hudson's *Pipe Flow* (2012): an entrance from a large volume (sharp 0.57, rounded by
+r/d, re-entrant by t/d), a sudden contraction from a larger pipe, smooth bends by angle and r/d (eq. 15.1), miter
+bends, a sudden expansion (Borda-Carnot) and free discharge (one velocity head); *K_fittings* adds anything else.
+The line reports its Reynolds number, friction factor, total K, the pressure-wave speed (the fluid's sound speed,
+the rigid-wall upper bound) and the Joukowsky surge rho a V with the wave's round-trip time 2L/a. Gas lines follow
+the isothermal compressible relation with friction (eq. 4.26b). An orifice or injector can take its discharge
+coefficient from its edge instead of a typed Cd: sharp (0.60 in a wall) or thick with length t/d (0.80 at 1.4 d,
+where the jet has reattached; longer holes add bore friction). In a start-up, a valve that closes faster than the
+round trip of the line feeding it gets a note with the surge it would see.
+
 The diagram follows ANSI/ISA-5.1 symbols: process lines are solid (colored by propellant), the shaft link is dash-dot,
 and the bubbles (PT, TT, ST, FT, PDT) are field instruments with their tag numbers. The *Cycle Animation* panel shows
 the flow moving through the cycle and exports it as a GIF or PNG. Every sandbox panel can be dragged; *Panels* brings

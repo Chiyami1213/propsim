@@ -125,6 +125,18 @@ class Props:
         except ValueError:
             return self.at(p, h, T_hint)["rho"]
 
+    def sound_speed(self, p: float, h: float) -> float:
+        """Speed of sound (m/s) at ``(p, h)``; 0 when the equation of state cannot give it."""
+        if self.incompressible:
+            return 0.0
+        import CoolProp.CoolProp as CP
+        st = self._st()
+        try:
+            st.update(CP.HmassP_INPUTS, h, max(p, 1e3))
+            return float(st.speed_sound())
+        except ValueError:
+            return 0.0
+
     def at(self, p: float, h: float, T_hint: float) -> dict[str, float]:
         """``T, rho, mu, cp, k, phase`` (``phase``: liquid, gas or supercritical) and ``s`` at ``(p, h)``."""
         if self.incompressible:

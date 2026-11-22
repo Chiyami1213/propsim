@@ -8,6 +8,10 @@ New changes go above this line, newest first.
   affinity-scaled; the old constant efficiency is an option), and pumps and inducers report NPSH required from the
   suction specific speed and their NPSH margin, with a cavitation warning when an inducer or the pump sets the limit.
   The start-up turbine efficiency curve now follows Dixon's impulse-runner relation (eq. 9.3).
+- Cycle sandbox: pipe-flow losses from Rennels & Hudson. Churchill all-regime friction in lines; line fittings
+  (entrance, contraction, bends, miters, expansion, free discharge); orifice and injector Cd from a sharp or thick
+  edge; isothermal compressible gas lines; line wave speed, Joukowsky surge and round-trip time, with a start-up note
+  when a valve closes faster than the round trip.
 - Solid motors: grain design and internal ballistics extended. New sections: moon burner, C-slot, D-grain, X-core and
   end burner (no port, burns its aft face); any section can be repeated as identical segments with inhibited or
   burning end faces (a BATES motor is a circular bore with both ends burning), also in the 3D burnback. The Grain

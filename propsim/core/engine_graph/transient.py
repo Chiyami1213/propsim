@@ -100,6 +100,25 @@ def default_sequence(doc: dict, t_end: float = 3.0) -> Sequence:
     return seq
 
 
+def surge_notes(g: dict, seq: Sequence, sol) -> list[str]:
+    """Water hammer at shut-down: a valve that closes faster than the pressure wave's round trip along the line
+    feeding it sees the full Joukowsky surge rho a V (Rennels & Hudson ch. 21; rigid-wall wave speed unless the
+    line gives its wall); slower closures cut it in the ratio 2L/(a t_close)."""
+    out = []
+    for e in g["edges"]:
+        v, ln = e["to"]["node"], e["from"]["node"]
+        st = seq.valves.get(v)
+        c = sol.components.get(ln, {})
+        if st is None or st.t_close is None or c.get("type") != "line" or "surge_dp" not in c:
+            continue
+        t_rt = c["round_trip_time"]
+        dp = c["surge_dp"] * min(1.0, t_rt / max(st.ramp_close, 1e-9))
+        msg = (f"{v} closes in {st.ramp_close:g} s; the wave round trip in {ln} is {1e3 * t_rt:.1f} ms, so the surge "
+               f"there is up to {dp / 1e6:.2f} MPa above the line pressure (not in the quasi-steady run)")
+        out.append(msg)
+    return out
+
+
 def _feeds(g: dict, types: tuple[str, ...]) -> set[str]:
     """Components upstream of any node of ``types`` without passing a chamber or pump (their feed valves)."""
     nodes = {n["id"]: n for n in g["nodes"]}
@@ -207,6 +226,7 @@ def run(doc: dict, seq: Sequence, progress=None, cancelled=None) -> Transient:
         m0 = min(m0, V * rho * 0.999)
         tanks[nid] = dict(m=m0, rho=rho, V=V, Vu0=V - m0 / rho, p0=p0, kind=m.type,
                           n=float(net.param(nid, "n_poly", 1.2) or 1.2) if m.type == "tank_blowdown" else 0.0)
+    notes.extend(surge_notes(g, seq, sol_d))
     # start state
     N = [0.03 * max(abs(n), 100.0) for n in N_des]
     pos = {v: POS_MIN for v in seq.valves}

@@ -21,6 +21,7 @@ import numpy as np
 
 from ..constants import G0
 from ..nozzle import CF, Gamma, exit_state
+from . import pipeflow as PF
 from .drive_gas import drive_gas
 from .props import State, density, gas_state, liquid_state, props
 
@@ -109,23 +110,52 @@ class Through(Model):
 
 
 class Line(Through):
+    """Feed line: Darcy friction in every flow regime (Churchill 1977) plus the fittings on its options (entrance,
+    contraction, bends, miters, expansion, free discharge; Rennels & Hudson ch. 9-15, ``pipeflow.py``) and any
+    ``K_fittings`` given.  A gas line follows the isothermal compressible relation (Rennels & Hudson eq. 4.26b)."""
+
     def update_slow(self, x, ev):
         s = ev.inlet(self.id, self.pin)
         p = ev.p(self.id, self.pin)
         D = self.par("diameter")
-        mu = 1e-5 if s.kind == "gas" else props(s.fluid).at(p, s.h, s.T)["mu"]
-        Re = max(abs(x[0]) * D / (area(D) * mu), 2300.0)
+        mu = 1.8e-5 if s.kind == "gas" else props(s.fluid).at(p, s.h, s.T)["mu"]
+        Re = max(abs(x[0]) * D / (area(D) * mu), 1.0)
         eps = (self.par("roughness", 1.5e-5) or 1.5e-5) / D
-        self.slow["f"] = (-1.8 * np.log10(6.9 / Re + (eps / 3.7) ** 1.11)) ** -2
+        f = PF.churchill(Re, eps)
+        self.slow["f"], self.slow["Re"] = f, Re
+        self.slow["K_fit"], self.slow["K_parts"] = PF.fittings_K(self.opt, f)
+
+    def K(self) -> float:
+        D, L = self.par("diameter"), self.par("length")
+        return ((self.par("K_fittings", 0.0) or 0.0) + self.slow.get("K_fit", 0.0)
+                + self.slow.get("f", 0.02) * L / D)
 
     def dp(self, m, ev):
-        D, L = self.par("diameter"), self.par("length")
-        K = (self.par("K_fittings", 0.0) or 0.0) + self.slow.get("f", 0.02) * L / D
-        return K * sq(m) / (2.0 * self.rho_in(ev) * area(D) ** 2)
+        return self.K() * sq(m) / (2.0 * self.rho_in(ev) * area(self.par("diameter")) ** 2)
+
+    def residuals(self, x, ev):
+        s = ev.inlet(self.id, self.pin)
+        if s.kind != "gas" or self.opt.get("gas_flow", "isothermal") != "isothermal":
+            return super().residuals(x, ev)
+        G = x[0] / area(self.par("diameter"))
+        return [PF.isothermal_residual(ev.p(self.id, self.pin), ev.p(self.id, self.pout), G, s.R * s.T, self.K())
+                / ev.p_ref]
 
     def outputs(self, x, ev):
         o = super().outputs(x, ev)
-        o["velocity"] = x[0] / (self.rho_in(ev) * area(self.par("diameter")))
+        D = self.par("diameter")
+        rho = self.rho_in(ev)
+        v = x[0] / (rho * area(D))
+        o.update(velocity=v, reynolds=self.slow.get("Re", 0.0), friction_factor=self.slow.get("f", 0.0),
+                 K_total=self.K())
+        s = ev.inlet(self.id, self.pin)
+        if s.kind != "gas":
+            p = ev.p(self.id, self.pin)
+            a = PF.wave_speed(props(s.fluid).sound_speed(p, s.h), rho, D, float(self.par("wall_modulus", 0.0) or 0.0),
+                              float(self.par("wall_thickness", 0.0) or 0.0))
+            if a > 0:
+                dp_s, t_rt = PF.surge(rho, a, v, self.par("length"))
+                o.update(wave_speed=a, surge_dp=dp_s, round_trip_time=t_rt)
         return o
 
 
@@ -151,18 +181,39 @@ class CheckValve(Through):
 
 
 class Orifice(Through):
+    """Orifice: ``Cd`` as given, or (option *edge*) from the edge geometry, Rennels & Hudson eqs. 13.3-13.14:
+    sharp-edged, or thick with length ``t/d_o`` (option *thickness_ratio*), in a pipe of diameter ratio *beta*."""
+
+    def _num(self, key: str, default: float) -> float:
+        try:
+            return float(self.opt.get(key, default))
+        except (TypeError, ValueError):
+            return default
+
+    def cd(self) -> float:
+        edge = self.opt.get("edge", "given_Cd")
+        if edge == "given_Cd":
+            return self.par("Cd")
+        t = 0.0 if edge == "sharp" else self._num("thickness_ratio", 1.0)
+        return PF.cd_from_K(PF.orifice_K(self._num("beta", 0.0), t))
+
     def cda(self) -> float:
-        return self.par("Cd") * area(self.par("diameter"))
+        return self.cd() * area(self.par("diameter"))
 
     def dp(self, m, ev):
         return sq(m) / (2.0 * self.rho_in(ev) * self.cda() ** 2)
+
+    def outputs(self, x, ev):
+        o = super().outputs(x, ev)
+        o["Cd"] = self.cd()
+        return o
 
 
 class Injector(Orifice):
     pin, pout = "inlet", "outlet"
 
     def cda(self) -> float:
-        return self.par("Cd") * self.par("A_total")
+        return self.cd() * self.par("A_total")
 
     def outputs(self, x, ev):
         o = super().outputs(x, ev)
